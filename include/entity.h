@@ -14,6 +14,7 @@ typedef struct Entity_S
 	GFC_Vector2D	position;							//position of entity on screen
 	GFC_Vector2D	scale;								//size of entity
 	GFC_Vector2D	velocity;							//rate of position change per update
+	GFC_Vector2D	origin;								//
 	float			rotation;
 	Sprite*			sprite;
 	float			frame;
