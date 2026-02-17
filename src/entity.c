@@ -96,11 +96,12 @@ void entity_draw(Entity* self) {
 	GFC_Vector2D offset;
 	if (!self) return;
 	offset = camera_get_offset();
-	//gfc_vector2d_add(self->position, self->position, offset);
+	self->position.x - (self->sprite->frame_w / 2);
+	self->position.y - (self->sprite->frame_h / 2);
 	if (self->sprite) {
 		gf2d_sprite_render(
 			self->sprite,
-			self->position,
+			gfc_vector2d(self->position.x + offset.x, self->position.y + offset.y),
 			NULL,
 			NULL,
 			NULL,
@@ -117,6 +118,19 @@ void entity_manager_draw_all() {
 		if (!entityManager.entityList[i]._inuse) continue;
 		entity_draw(&entityManager.entityList[i]);
 	}
+}
+
+Entity* check_collision(Entity* self) {
+	int i;
+	for (i = 0; i < entityManager.entityMax; i++) {
+		if (!entityManager.entityList[i]._inuse) continue;
+		if (self == &entityManager.entityList[i])continue;
+		if (gfc_shape_overlap(self->collision, entityManager.entityList[i].collision)) {
+			slog("Collision Detected:\n   Type: %d\n   ColBox (%f, %f)\n   Position (%f, %f)",entityManager.entityList[i].type, self->collision.s.r.x,self->collision.s.r.y, self->position.x,self->position.y);
+			return &entityManager.entityList[i];
+		}
+	}
+	return NULL;
 }
 
 /*eol@eof*/

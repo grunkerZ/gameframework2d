@@ -7,7 +7,7 @@
 #include "player.h"
 #include "world.h"
 #include "camera.h"
-#include "time.h"
+#include "monster.h"
 
 int main(int argc, char * argv[])
 {
@@ -23,6 +23,9 @@ int main(int argc, char * argv[])
     Sprite *mouse;
     //Level* level;
     Entity* player;
+    Entity* monster;
+
+
     GFC_Color mouseGFC_Color = gfc_color8(0,100,255,200);
     
     /*program initializtion*/
@@ -43,12 +46,12 @@ int main(int argc, char * argv[])
     SDL_ShowCursor(SDL_DISABLE);
     
     /*demo setup*/
-    //level = level_test_new();
-    mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
-    //sprite = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");
-    player = player_new();
 
+    mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
+    player = player_new();
+    monster = monster_new();
     level = level_test_new();
+
     GFC_Vector2D offset = camera_get_offset();
 
     slog("press [escape] to quit");

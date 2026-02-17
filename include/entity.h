@@ -3,9 +3,15 @@
 
 #include <SDL.h>
 #include "gfc_text.h"
-
+#include "gfc_shape.h"
 #include "gf2d_sprite.h"
 
+
+typedef enum {
+	MONSTER,
+	PLAYER,
+	PROJECTILE
+}EntityType;
 
 typedef struct Entity_S
 {
@@ -13,11 +19,12 @@ typedef struct Entity_S
 	GFC_TextLine	name;								//name of entity for debug
 	GFC_Vector2D	position;							//position of entity on screen
 	GFC_Vector2D	scale;								//size of entity
-	GFC_Vector2D	velocity;							//rate of position change per update
-	GFC_Vector2D	origin;								//
+	GFC_Vector2D	velocity;							//rate of position change per update							//
 	float			rotation;
 	Sprite*			sprite;
 	float			frame;
+	GFC_Shape		collision;
+	EntityType		type;
 	void			(*think)(struct Entity_S* self);	//called every frame if defined for entity
 	void			(*update)(struct Entity_S* self);	//execute entity decisions
 	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data
@@ -52,6 +59,12 @@ void entity_manager_think_all();
 */
 void entity_manager_update_all();
 
+/**
+* @brief checks if 2 entities are touching
+* @param self the entity to check for collisions
+* @returns the entity pointer self collides with, otherwise NULL
+*/
+Entity* check_collision(Entity* self);
 
 /**
 * @brief free an entity

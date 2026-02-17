@@ -29,6 +29,12 @@ Entity* player_new() {
 		0);
 	self->frame=0;
 	self->position = gfc_vector2d(0,0);
+	self->collision.type = ST_RECT;
+	self->collision.s.r.w = self->sprite->frame_w;
+	self->collision.s.r.h = self->sprite->frame_h;
+	self->collision.s.r.x = self->position.x;
+	self->collision.s.r.y = self->position.y;
+	self->type = PLAYER;
 	self->think = player_think;
 	self->update = player_update;
 	self->free = player_free;
@@ -86,9 +92,6 @@ void player_think(Entity* self) {
 			gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
 		}
 	}
-	//slog("Ticks: %llu", SDL_GetTicks64());
-	//slog("timeAtShot: %llu",timeAtShot);
-
 }
 
 void player_update(Entity* self) {
@@ -97,6 +100,8 @@ void player_update(Entity* self) {
 	self->frame += 0.1;
 	if (self->frame >= 16) self->frame = 0;
 	gfc_vector2d_add(self->position, self->position, self->velocity);
+	self->collision.s.r.x = self->position.x;
+	self->collision.s.r.y = self->position.y;
 }
 
 void player_free(Entity* self) {
