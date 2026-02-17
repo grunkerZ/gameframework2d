@@ -1,0 +1,14 @@
+{
+	"world":
+	{
+		"background":"ph_background.png",
+		"tileSet":"placeholder/testTileSet.png",
+		"frame_w":16,
+		"frame_h":16,
+		"frames_per_line":1,
+		"tileMap":
+		[
+			[]
+		]
+	}
+}

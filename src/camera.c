@@ -23,7 +23,7 @@ void camera_set_dimension(GFC_Vector2D dimensions) {
 
 void camera_center_on(GFC_Vector2D position) {
 	camera.bounds.x = position.x - camera.bounds.w*0.5;
-	camera.bounds.y = position.y-camera.bounds.h*0.5;
+	camera.bounds.y = position.y - camera.bounds.h*0.5;
 }
 
 /*eol@eof*/

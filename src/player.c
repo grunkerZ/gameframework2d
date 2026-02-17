@@ -15,6 +15,7 @@ Entity* player_new() {
 		slog("failed to spawn a player entity");
 		return NULL;
 	}
+	slog("Created New Player");
 
 	self->sprite = gf2d_sprite_load_all(
 		"images/ed210.png",
@@ -33,13 +34,13 @@ Entity* player_new() {
 
 void player_think(Entity* self) {
 	GFC_Vector2D dir = { 0 };
-	Uint32 mx = 0, my = 0;
+	const Uint8* keys;
 	if (!self) return;
-	SDL_GetMouseState(&mx,&my);
-	if (self->position.x < mx) dir.x = 1;
-	if (self->position.y < my) dir.y = 1;
-	if (self->position.x > mx) dir.x = -1;
-	if (self->position.y > my) dir.y = -1;
+	keys=SDL_GetKeyboardState(NULL);
+	if (keys[SDL_SCANCODE_D]) dir.x = 1;
+	if (keys[SDL_SCANCODE_S]) dir.y = 1;
+	if (keys[SDL_SCANCODE_A]) dir.x = -1;
+	if (keys[SDL_SCANCODE_W]) dir.y = -1;
 	gfc_vector2d_normalize(&dir);
 	gfc_vector2d_scale(self->velocity,dir,3);
 
@@ -47,7 +48,7 @@ void player_think(Entity* self) {
 
 void player_update(Entity* self) {
 	if (!self) return;
-	camera_center_on(self->position);
+	GFC_Vector2D offset = camera_get_offset();
 	self->frame += 0.1;
 	if (self->frame >= 16) self->frame = 0;
 	gfc_vector2d_add(self->position, self->position, self->velocity);

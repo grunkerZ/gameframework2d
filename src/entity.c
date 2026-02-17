@@ -96,7 +96,7 @@ void entity_draw(Entity* self) {
 	GFC_Vector2D offset;
 	if (!self) return;
 	offset = camera_get_offset();
-	gfc_vector2d_add(self->position, self->position, offset);
+	//gfc_vector2d_add(self->position, self->position, offset);
 	if (self->sprite) {
 		gf2d_sprite_render(
 			self->sprite,
@@ -118,3 +118,5 @@ void entity_manager_draw_all() {
 		entity_draw(&entityManager.entityList[i]);
 	}
 }
+
+/*eol@eof*/

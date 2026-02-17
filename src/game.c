@@ -28,7 +28,7 @@ int main(int argc, char * argv[])
     init_logger("gf2d.log",0);
     slog("---==== BEGIN ====---");
     gf2d_graphics_initialize(
-        "gf2d",
+        "GODPUNCH",
         1200,
         720,
         1200,
@@ -48,12 +48,13 @@ int main(int argc, char * argv[])
     player = player_new();
 
     level = level_test_new();
-    //level_create("images/backgrounds/bg_flat.png","images/placeholder/basictileset.png",32,32,16,16,1);
+    GFC_Vector2D offset = camera_get_offset();
 
     slog("press [escape] to quit");
     /*main game loop*/
     while(!done)
     {
+     
         SDL_PumpEvents();   // update SDL's internal event structures
         keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
         /*update things here*/
@@ -63,15 +64,19 @@ int main(int argc, char * argv[])
 
         entity_manager_think_all();
         entity_manager_update_all();
+      
 
         gf2d_graphics_clear_screen();// clears drawing buffers
         // all drawing should happen betweem clear_screen and next_frame
             //backgrounds drawn first
            // gf2d_sprite_draw_image(sprite,gfc_vector2d(0,0));
            level_draw(level);
-           level_add_border(level, 1);
             
             entity_manager_draw_all();
+            camera_center_on(player->position);
+            //slog("Player Pos (%f, %f)", player->position.x, player->position.y);
+            //slog("Camera Pos (%f, %f)", camera_get_position().x, camera_get_position().y);
+            //slog("Background Pos (%f, %f)", offset.x, offset.y);
 
             //UI elements last
             gf2d_sprite_draw(

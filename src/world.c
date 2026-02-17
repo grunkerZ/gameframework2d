@@ -8,8 +8,6 @@ void level_tile_layer_build(Level* level) {
 	int i, j;
 	Uint8 tile;
 	Uint32 index;
-	GFC_Vector2D offset;
-	offset = camera_get_offset();
 
 	if (!level)return;
 	if (!level->tileSet)return;
@@ -36,7 +34,7 @@ void level_tile_layer_build(Level* level) {
 
 			gf2d_sprite_draw_to_surface(
 				level->tileSet,
-				gfc_vector2d((i * level->tileWidth) + offset.x, (j * level->tileHeight) + offset.y),
+				gfc_vector2d((i * level->tileWidth), (j * level->tileHeight)),
 				NULL,
 				NULL,
 				tile - 1,
@@ -54,20 +52,20 @@ void level_tile_layer_build(Level* level) {
 
 Level* level_test_new() {
 	Level* level;
-	int i, j;
-	int width = 75, height = 45;
+	int i;
+	int width = 45, height = 75;
 
-	level = level_create("images/backgrounds/bg_flat.png", "images/placeholder/basictileset.png",width, height,16,16,1);
+	level = level_create("images/backgrounds/bg_flat.png", "images/placeholder/testTileSet.png",width, height,16,16,1);
 
 	if (!level) return NULL;
 
 	for (i = 0; i < width; i++) {
 		level->tileMap[i] = 1;
-		level->tileMap[i + ((height-1) * width)];
+		level->tileMap[i + ((height-1) * width)] = 1;
 	}
 	for (i = 0; i < height; i++) {
-		level->tileMap[i *width] = 1;
-		level->tileMap[i*width + width-1];
+		level->tileMap[i * width] = 1;
+		level->tileMap[i * width + (width-1)] = 1;
 	}
 	level_tile_layer_build(level);
 	return level;
@@ -156,21 +154,18 @@ void level_free(Level* level) {
 }
 
 void level_draw(Level* level) {
-	int i, j;
-	int index;
-	Uint8 tile;
-	GFC_Vector2D offset, position;
-	offset = camera_get_offset();
-
+	GFC_Vector2D offset = camera_get_offset();
+	
 	if (!level) {
 		slog("no valid world to draw");
 		return;
 	}
+
 	if (level->background){
-		gf2d_sprite_draw_image(level->background, gfc_vector2d(0, 0));
+		gf2d_sprite_draw_image(level->background, offset);
 	}
 	if (level->tileSet) {
-		gf2d_sprite_draw_image(level->tileLayer, gfc_vector2d(0, 0));
+		gf2d_sprite_draw_image(level->tileLayer, offset);
 
 		/*for (j = 0; j < level->height; j++) {
 			for (i = 0; i < level->width; i++) {

@@ -27,6 +27,9 @@ void camera_set_position(GFC_Vector2D position);
 * @brief set the bounds of the camera
 */
 void camera_set_dimension(GFC_Vector2D dimensions);
+/**
+* @brief centers the camera on a position
+*/
 void camera_center_on(GFC_Vector2D position);
 
 
