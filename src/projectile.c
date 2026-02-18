@@ -45,18 +45,21 @@ void projectile_free(Entity* self) {
 
 void projectile_think(Entity* self) {
 	Entity* collider;
-	collider = check_collision(self);
+	CollisionInfo info;
+	collider = check_entity_collision(self);
 	if (collider) {
-		if (collider->type == MONSTER) {
-			((MonsterData*)collider->data)->health-=((ProjectileData*)self->data)->damage;
-			slog("Dealt %f damage, Monster health at %f", ((ProjectileData*)self->data)->damage, ((MonsterData*)collider->data)->health);
-			projectile_free(self);
-			return;
+		if (collider != ((ProjectileData*)self->data)->parent) {
+			if (collider->type == MONSTER) {
+				((MonsterData*)collider->data)->health -= ((ProjectileData*)self->data)->damage;
+				slog("Dealt %f damage, Monster health at %f", ((ProjectileData*)self->data)->damage, ((MonsterData*)collider->data)->health);
+				projectile_free(self);
+				return;
+			}
 		}
 	}
-	if (tile_at(self->position.x, self->position.y) != 0) {
-		projectile_free(self);
-	}
+	info = check_map_collision(self);
+	if (info.collided) projectile_free(self);
+	return;
 }
 
 void projectile_update(Entity* self) {

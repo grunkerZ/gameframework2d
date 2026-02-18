@@ -60,6 +60,13 @@ int level_get_tile_index(Level* level, Uint32 x, Uint32 y);
 int tile_at(float x, float y);
 
 /**
+* @brief a getter for the dimensions of a tile in pixels
+* @return A 2D array (width, height), or (-1,-1) on error
+*/
+GFC_Vector2D get_tile_dimensions();
+
+
+/**
 *
 */
 void level_add_border(Level* level, Uint8 tile);

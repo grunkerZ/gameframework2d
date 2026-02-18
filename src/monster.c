@@ -17,7 +17,7 @@ Entity* monster_new() {
 
 	self->data = gfc_allocate_array(sizeof(MonsterData), 1);
 	((MonsterData*)self->data)->health = 2;
-	self->position = gfc_vector2d(0,0);
+	self->position = gfc_vector2d(86,86);
 	self->sprite= gf2d_sprite_load_image("images/placeholder/monster.png");
 	self->collision.s.r.w = self->sprite->frame_w;
 	self->collision.s.r.h = self->sprite->frame_h;
@@ -28,6 +28,7 @@ Entity* monster_new() {
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
 	self->type = MONSTER;
+	self->gravity = 1;
 	return self;
 }
 

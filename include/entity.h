@@ -5,6 +5,7 @@
 #include "gfc_text.h"
 #include "gfc_shape.h"
 #include "gf2d_sprite.h"
+#include "world.h"
 
 
 typedef enum {
@@ -19,7 +20,8 @@ typedef struct Entity_S
 	GFC_TextLine	name;								//name of entity for debug
 	GFC_Vector2D	position;							//position of entity on screen
 	GFC_Vector2D	scale;								//size of entity
-	GFC_Vector2D	velocity;							//rate of position change per update							//
+	GFC_Vector2D	velocity;							//rate of position change per update
+	Uint8			gravity;
 	float			rotation;
 	Sprite*			sprite;
 	float			frame;
@@ -30,6 +32,14 @@ typedef struct Entity_S
 	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data
 	void*			data;								//for ad hoc addtion data
 }Entity;
+
+typedef struct {
+	Uint8	collided;
+	Uint8	top;
+	Uint8	left;
+	Uint8	right;
+	Uint8	bottom;
+}CollisionInfo;
 
 /**
 * @brief initialize the entity sub system
@@ -64,7 +74,14 @@ void entity_manager_update_all();
 * @param self the entity to check for collisions
 * @returns the entity pointer self collides with, otherwise NULL
 */
-Entity* check_collision(Entity* self);
+Entity* check_entity_collision(Entity* self);
+
+/**
+* @brief checks if an entity collides with a map tile
+* @param self the entity to check
+* @return NULL on error, a CollisionInfo pointer otherwise
+*/
+CollisionInfo check_map_collision(Entity* self);
 
 /**
 * @brief free an entity

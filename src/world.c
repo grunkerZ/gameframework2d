@@ -66,6 +66,12 @@ int tile_at(float x,float y) {
 	return activeLevel->tileMap[index];
 }
 
+GFC_Vector2D get_tile_dimensions() {
+	if (!activeLevel) return gfc_vector2d(-1,-1);
+
+	return gfc_vector2d(activeLevel->tileWidth, activeLevel->tileHeight);
+}
+
 Level* level_load(const char* filename) {
 
 	Level* level = NULL;
