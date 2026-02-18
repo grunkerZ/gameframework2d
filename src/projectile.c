@@ -19,8 +19,8 @@ Entity* projectile_new(Entity* owner) {
 	
 	self->data = gfc_allocate_array(sizeof(ProjectileData), 1);
 	slog("New Projectile Created");
-	self->position=owner->position;
-	((ProjectileData*)self->data)->origin = owner->position;
+	self->position= gfc_vector2d(owner->position.x, owner->position.y + (owner->sprite->frame_h*0.25));
+	((ProjectileData*)self->data)->origin = gfc_vector2d(owner->position.x,owner->position.y+(owner->sprite->frame_h / 2));
 	((ProjectileData*)self->data)->damage = 1;
 	
 	self->scale = gfc_vector2d(0.5,0.5);

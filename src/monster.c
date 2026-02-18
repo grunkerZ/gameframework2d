@@ -40,6 +40,7 @@ void monster_think(Entity* self) {
 
 void monster_update(Entity* self) {
 	GFC_Vector2D offset = camera_get_offset();
+	//gfc_vector2d_negate(offset, offset);
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
 }

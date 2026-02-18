@@ -3,7 +3,6 @@
 #include "gf2d_graphics.h"
 #include "camera.h"
 
-
 void level_tile_layer_build(Level* level) {
 	int i, j;
 	Uint8 tile;
@@ -12,23 +11,25 @@ void level_tile_layer_build(Level* level) {
 	if (!level)return;
 	if (!level->tileSet)return;
 
+	slog("World Size: %ix%i", level->width, level->height);
 	if (level->tileLayer) {
 		gf2d_sprite_free(level->tileLayer);
 	}
 	level->tileLayer = gf2d_sprite_new();
 
 	level->tileLayer->surface = gf2d_graphics_create_surface(
-		level->width * level->tileSet->frame_w, 
-		level->height * level->tileSet->frame_h
+		level->width * level->tileWidth,
+		level->height * level->tileHeight
 	);
+	slog("Tile Frame: %u x%u", level->tileWidth, level->tileHeight);
 
-	level->tileLayer->frame_w = level->width * level->tileSet->frame_w;
-	level->tileLayer->frame_h = level->height * level->tileSet->frame_h;
+	level->tileLayer->frame_w = level->width * level->tileWidth;
+	level->tileLayer->frame_h = level->height * level->tileHeight;
 
 	for (j = 0; j < level->height; j++) {
 		for (i = 0; i < level->width; i++) {
 			index = level_get_tile_index(level, i, j);
-			if (index = 0)continue;
+			//if (index == 0)continue;
 			tile = level->tileMap[index];
 			if (!tile)continue;
 
@@ -48,6 +49,75 @@ void level_tile_layer_build(Level* level) {
 		slog("failed to convert world tile layer to texture");
 		return;
 	}
+}
+
+Level* level_load(const char* filename) {
+
+	Level* level = NULL;
+	SJson* json = NULL;
+	SJson* wjson = NULL;
+	SJson* vertical, * horizontal;
+	SJson* item;
+	int tileWidth, tileHeight, framesPerLine;
+	int tile;
+	int w = 0, h = 0;
+	int i, j;
+	if (!filename) {
+		slog("no filename provided for level_load");
+		return NULL;
+	}
+
+	json = sj_load(filename);
+	if (!json) {
+		slog("failed to load level file $s", filename);
+		return NULL;
+	}
+
+	wjson = sj_object_get_value(json, "world");
+	if (!wjson) {
+		slog("%s missing 'world' object", filename);
+		sj_free(json);
+		return NULL;
+	}
+
+	vertical = sj_object_get_value(wjson, "tileMap");
+	if (!vertical) {
+		slog("%s missing 'tileMap' object", filename);
+		sj_free(json);
+		return NULL;
+	}
+	h = sj_array_get_count(vertical);
+
+	horizontal = sj_array_get_nth(vertical, 0);
+	w = sj_array_get_count(horizontal);
+
+	sj_object_get_value_as_int(wjson, "frame_w", &tileWidth);
+	sj_object_get_value_as_int(wjson, "frame_h", &tileHeight);
+	sj_object_get_value_as_int(wjson, "frames_per_line", &framesPerLine);
+
+	level = level_create(sj_object_get_value_as_string(wjson, "background"), sj_object_get_value_as_string(wjson, "tileSet"), w, h, tileWidth, tileHeight, framesPerLine);
+	if (!level) {
+		slog("failed to create space for a new level for file %s", filename);
+		sj_free(json);
+		return NULL;
+	}
+
+	for (j = 0; j < h; j++) {
+		horizontal = sj_array_get_nth(vertical, j);
+		if (!horizontal)continue;
+		for (i = 0; i < w; i++) {
+			item = sj_array_get_nth(horizontal, i);
+			if (!item)continue;
+			tile = 0;
+			sj_get_integer_value(item, &tile);
+			level->tileMap[i + (j * w)] = tile;
+		}
+	}
+
+	level_tile_layer_build(level);
+
+	sj_free(json);
+	return level;
 }
 
 Level* level_test_new() {
@@ -108,8 +178,8 @@ Level* level_create(const char* background, const char* tileSet, Uint32 width, U
 	}
 
 	level->tileMap = gfc_allocate_array(sizeof(Uint8), height * width);
-	level->width = height;
-	level->height = width;
+	level->width = width;
+	level->height = height;
 	level->tileWidth = tileWidth;
 	level->tileHeight = tileHeight;
 
@@ -166,26 +236,6 @@ void level_draw(Level* level) {
 	}
 	if (level->tileSet) {
 		gf2d_sprite_draw_image(level->tileLayer, offset);
-
-		/*for (j = 0; j < level->height; j++) {
-			for (i = 0; i < level->width; i++) {
-				index = level_get_tile_index(level, i, j);
-				if (index = 0)continue;
-				tile = level->tileMap[index];
-				if (!tile)continue;
-
-				gf2d_sprite_draw(
-					level->tileSet,
-					gfc_vector2d((i * level->tileWidth) + offset.x, (j * level->tileHeight)+offset.y),
-					NULL,
-					NULL,
-					NULL,
-					NULL,
-					NULL,
-					tile-1);
-			}
-		}
-		*/
 	}
 	
 }

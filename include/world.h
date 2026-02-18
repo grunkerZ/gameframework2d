@@ -15,6 +15,14 @@ typedef struct
 }Level;
 
 /**
+*@brief load a world from a config file
+* @param filename the name of the world file to load
+* @return NULL on error or a usable level otherwise
+*/
+Level* level_load(const char* filename);
+
+
+/**
 * @brief allocate new empty level
 * @return NULL on error, or blank level
 */

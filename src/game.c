@@ -50,7 +50,7 @@ int main(int argc, char * argv[])
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     player = player_new();
     monster = monster_new();
-    level = level_test_new();
+    level = level_load("maps/testworld.map");
 
     GFC_Vector2D offset = camera_get_offset();
 
@@ -76,7 +76,7 @@ int main(int argc, char * argv[])
            level_draw(level);
             
             entity_manager_draw_all();
-            camera_center_on(player->position);
+            camera_center_on(gfc_vector2d(player->position.x+(player->sprite->frame_w / 2), player->position.y + (player->sprite->frame_h / 2)));
             //slog("Player Pos (%f, %f)", player->position.x, player->position.y);
             //slog("Camera Pos (%f, %f)", camera_get_position().x, camera_get_position().y);
             //slog("Background Pos (%f, %f)", offset.x, offset.y);
