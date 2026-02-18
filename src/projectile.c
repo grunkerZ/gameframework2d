@@ -3,6 +3,7 @@
 #include "gf2d_sprite.h"
 #include "camera.h"
 #include "monster.h"
+#include "world.h"
 
 void projectile_think(Entity* self);
 void projectile_update(Entity* self);
@@ -52,6 +53,9 @@ void projectile_think(Entity* self) {
 			projectile_free(self);
 			return;
 		}
+	}
+	if (tile_at(self->position.x, self->position.y) != 0) {
+		projectile_free(self);
 	}
 }
 

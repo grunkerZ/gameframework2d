@@ -96,8 +96,6 @@ void entity_draw(Entity* self) {
 	GFC_Vector2D offset;
 	if (!self) return;
 	offset = camera_get_offset();
-	self->position.x - (self->sprite->frame_w / 2);
-	self->position.y - (self->sprite->frame_h / 2);
 	if (self->sprite) {
 		gf2d_sprite_render(
 			self->sprite,

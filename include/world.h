@@ -43,13 +43,21 @@ Level* level_test_new();
 Level* level_create(const char* background, const char* tileSet, Uint32 width, Uint32 height, Uint32 tileWidth, Uint32 tileHeight, Uint32 tilesPerLine);
 
 /**
-* @brief given a level, het the index of the tileMap for a file's coordinates
+* @brief given a level, get the index of the tileMap for a file's coordinates
 * @param level to check
 * @param x the x coordinate
 * @param y the y coordinate
 * @return -1 is level is bad or the coordinates are outside map bounds, the index otherwise
 */
 int level_get_tile_index(Level* level, Uint32 x, Uint32 y);
+
+/**
+* @brief gets the tile at a position
+* @param x the x coordinate
+* @param y the y coordinate
+* @returns -1 if out of bounds, otherwise the number tile at that index
+*/
+int tile_at(float x, float y);
 
 /**
 *

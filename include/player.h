@@ -3,6 +3,10 @@
 
 #include "entity.h"
 
+typedef struct {
+	Uint8		canJump;
+}PlayerData;
+
 /**
 * @brief spawn a player
 * @return NULL on error, otherwise return pointer to player

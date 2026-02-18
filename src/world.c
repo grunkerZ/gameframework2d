@@ -3,6 +3,8 @@
 #include "gf2d_graphics.h"
 #include "camera.h"
 
+static Level* activeLevel = NULL;
+
 void level_tile_layer_build(Level* level) {
 	int i, j;
 	Uint8 tile;
@@ -29,7 +31,6 @@ void level_tile_layer_build(Level* level) {
 	for (j = 0; j < level->height; j++) {
 		for (i = 0; i < level->width; i++) {
 			index = level_get_tile_index(level, i, j);
-			//if (index == 0)continue;
 			tile = level->tileMap[index];
 			if (!tile)continue;
 
@@ -49,6 +50,20 @@ void level_tile_layer_build(Level* level) {
 		slog("failed to convert world tile layer to texture");
 		return;
 	}
+}
+
+int tile_at(float x,float y) {
+	int col = x / activeLevel->tileWidth;
+	int row = y / activeLevel->tileHeight;
+	int index;
+	if (col > activeLevel->width || row > activeLevel->height) {
+		slog("out of bounds tile");
+		return -1;
+	}
+
+	index = (activeLevel->width * row) + col;
+
+	return activeLevel->tileMap[index];
 }
 
 Level* level_load(const char* filename) {
@@ -116,6 +131,7 @@ Level* level_load(const char* filename) {
 
 	level_tile_layer_build(level);
 
+	activeLevel = level;
 	sj_free(json);
 	return level;
 }
@@ -216,6 +232,7 @@ void level_add_border(Level* level, Uint8 tile) {
 
 void level_free(Level* level) {
 	if (!level)return;
+	activeLevel = NULL;
 	gf2d_sprite_free(level->background);
 	gf2d_sprite_free(level->tileSet);
 	if (level->tileMap)free(level->tileMap);
