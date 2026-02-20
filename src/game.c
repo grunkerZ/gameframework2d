@@ -8,6 +8,7 @@
 #include "world.h"
 #include "camera.h"
 #include "monster.h"
+#include "simple_ui.h"
 
 int main(int argc, char * argv[])
 {
@@ -17,8 +18,8 @@ int main(int argc, char * argv[])
         GS_DEATH
     }GameState;
 
-    /*variable declarations*/
 
+    /*variable declarations*/
 
     int done = 0;
     const Uint8 * keys;
@@ -29,9 +30,13 @@ int main(int argc, char * argv[])
     Entity* player;
     Entity* monster;
     GFC_Color mouseGFC_Color = gfc_color8(0,100,255,200);
+    GameState state = GS_MAINMENU;
+    GenericMenu* mainMenu;
+    GenericMenu* deathMenu;
     
 
     /*program initializtion*/
+
     init_logger("gf2d.log",0);
     slog("---==== BEGIN ====---");
     gf2d_graphics_initialize(
@@ -47,7 +52,8 @@ int main(int argc, char * argv[])
     gf2d_sprite_init(1024);
     entity_manager_init(1024);
     SDL_ShowCursor(SDL_DISABLE);
-    
+
+
 
     /*demo setup*/
 
@@ -56,51 +62,105 @@ int main(int argc, char * argv[])
     monster = monster_new();
     level = level_load("maps/testworld.map");
     GFC_Vector2D offset = camera_get_offset();
-
+    mainMenu = main_menu_init();
+    deathMenu = death_menu_init();
 
     slog("press [escape] to quit");
+
+
     /*main game loop*/
     while(!done)
     {
         SDL_PumpEvents();   // update SDL's internal event structures
         keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
-        /*update things here*/
-        SDL_GetMouseState(&mx,&my);
-        mf+=0.1;
+
+        SDL_GetMouseState(&mx, &my);
+        mf += 0.1;
         if (mf >= 16.0)mf = 0;
 
-        entity_manager_think_all();
-        entity_manager_update_all();
-      
+        gf2d_graphics_clear_screen(); //draw after updates
 
-        gf2d_graphics_clear_screen();// clears drawing buffers
-        // all drawing should happen betweem clear_screen and next_frame
-            //backgrounds drawn first
-           // gf2d_sprite_draw_image(sprite,gfc_vector2d(0,0));
-           level_draw(level);
-            
-            entity_manager_draw_all();
-            camera_center_on(gfc_vector2d(player->position.x+(player->sprite->frame_w / 2), player->position.y + (player->sprite->frame_h / 2)));
-            //slog("Player Pos (%f, %f)", player->position.x, player->position.y);
-            //slog("Camera Pos (%f, %f)", camera_get_position().x, camera_get_position().y);
-            //slog("Background Pos (%f, %f)", offset.x, offset.y);
+        switch (state) {
+            case GS_MAINMENU:
+                //updates
+                menu_update(mainMenu);
+               
+                //draw
+                menu_draw(mainMenu);
+                gf2d_sprite_draw(
+                    mouse,
+                    gfc_vector2d(mx, my),
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    &mouseGFC_Color,
+                    (int)mf);
 
-            //UI elements last
-            gf2d_sprite_draw(
-                mouse,
-                gfc_vector2d(mx,my),
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                &mouseGFC_Color,
-                (int)mf);
+                if (mainMenu->Menu.start.startButton.clicked) {
+                    state = GS_PLAYING;
+                    entity_free(player);
+                    entity_free(monster);
+                    level_free(level);
+                    player = player_new();
+                    monster = monster_new();
+                    level = level_load("maps/testworld.map");
+                }
+                if (mainMenu->Menu.start.exitButton.clicked) {
+                    done = 1;
+                }
+                break;
+
+            case GS_PLAYING:
+                //updates
+                entity_manager_think_all();
+                entity_manager_update_all();
+
+                //draw
+                level_draw(level);
+                entity_manager_draw_all();
+                camera_center_on(gfc_vector2d(player->position.x + (player->sprite->frame_w / 2), player->position.y + (player->sprite->frame_h / 2)));
+
+                if (((PlayerData*)player->data)->health <= 0) {
+                    state = GS_DEATH;
+                }
+
+                break;
+
+            case GS_DEATH:
+                //updates
+                menu_update(deathMenu);
+
+                //draw
+                menu_draw(deathMenu);
+
+                gf2d_sprite_draw(
+                    mouse,
+                    gfc_vector2d(mx, my),
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    &mouseGFC_Color,
+                    (int)mf);
+
+                if (deathMenu->Menu.death.mainMenuButton.clicked) {
+                    state = GS_MAINMENU;
+                }
+                if (deathMenu->Menu.death.exitButton.clicked) {
+                    done = 1;
+                }
+                break;
+
+        }
 
         gf2d_graphics_next_frame();// render current draw frame and skip to the next frame
         
         if (keys[SDL_SCANCODE_ESCAPE])done = 1; // exit condition
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
+    menu_free(mainMenu);
+    menu_free(deathMenu);
     entity_free(player);
     level_free(level);
     slog("---==== END ====---");

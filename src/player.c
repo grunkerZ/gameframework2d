@@ -36,6 +36,7 @@ Entity* player_new() {
 	((PlayerData*)self->data)->canJump = 1;
 	((PlayerData*)self->data)->projectileSpeed = 1;
 	((PlayerData*)self->data)->moveSpeed = 1;
+	((PlayerData*)self->data)->health = 5;
 	self->gravity = 1;
 	self->type = PLAYER;
 	self->think = player_think;
