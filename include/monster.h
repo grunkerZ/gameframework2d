@@ -7,6 +7,10 @@ typedef struct {
 	Uint8			health;
 	Uint8			damage;
 	Uint8			attackSpeed;
+	Uint8			touchDamage;
+	Uint32			stun;
+	Uint32			timeAtStun;
+	Uint8			moveSpeed;
 	void*			data;
 }MonsterData;
 

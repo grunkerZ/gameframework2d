@@ -11,23 +11,26 @@
 
 int main(int argc, char * argv[])
 {
+    typedef enum {
+        GS_MAINMENU,
+        GS_PLAYING,
+        GS_DEATH
+    }GameState;
+
     /*variable declarations*/
+
+
     int done = 0;
     const Uint8 * keys;
-    //Sprite *sprite;
-    
     Level* level;
-
     int mx,my;
     float mf = 0;
     Sprite *mouse;
-    //Level* level;
     Entity* player;
     Entity* monster;
-
-
     GFC_Color mouseGFC_Color = gfc_color8(0,100,255,200);
     
+
     /*program initializtion*/
     init_logger("gf2d.log",0);
     slog("---==== BEGIN ====---");
@@ -45,14 +48,15 @@ int main(int argc, char * argv[])
     entity_manager_init(1024);
     SDL_ShowCursor(SDL_DISABLE);
     
+
     /*demo setup*/
 
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     player = player_new();
     monster = monster_new();
     level = level_load("maps/testworld.map");
-
     GFC_Vector2D offset = camera_get_offset();
+
 
     slog("press [escape] to quit");
     /*main game loop*/

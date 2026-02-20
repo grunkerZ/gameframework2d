@@ -149,7 +149,7 @@ CollisionInfo check_map_collision(Entity* self) {
 		float tilePos_x, tilePos_y;
 		float closest_x, closest_y;
 		GFC_Vector2D tileDim = get_tile_dimensions();
-		if (tileDim.x == -1 || tileDim.y == -1 || tileDim.x == 0 || tileDim.y == 0) {
+		if (tileDim.x == 0 || tileDim.y == 0) {
 			slog("failed to detect projectile collision");
 			return info;
 		}

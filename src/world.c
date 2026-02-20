@@ -67,7 +67,7 @@ int tile_at(float x,float y) {
 }
 
 GFC_Vector2D get_tile_dimensions() {
-	if (!activeLevel) return gfc_vector2d(-1,-1);
+	if (!activeLevel) return;
 
 	return gfc_vector2d(activeLevel->tileWidth, activeLevel->tileHeight);
 }

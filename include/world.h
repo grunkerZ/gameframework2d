@@ -61,7 +61,7 @@ int tile_at(float x, float y);
 
 /**
 * @brief a getter for the dimensions of a tile in pixels
-* @return A 2D array (width, height), or (-1,-1) on error
+* @return A 2D array (width, height), or NULL on error;
 */
 GFC_Vector2D get_tile_dimensions();
 
