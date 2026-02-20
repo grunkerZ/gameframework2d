@@ -218,4 +218,19 @@ CollisionInfo check_map_collision(Entity* self) {
 	return info;
 }
 
+void collision_bounce(Entity* self, Entity* collider){
+	GFC_Vector2D bounce;
+	GFC_Vector2D colliderCenter = gfc_vector2d(
+		collider->position.x + (collider->sprite->frame_w / 2),
+		collider->position.y + (collider->sprite->frame_h / 2));
+	GFC_Vector2D selfCenter = gfc_vector2d(
+		self->position.x + (self->sprite->frame_w / 2),
+		self->position.y + (self->sprite->frame_h / 2));
+
+	gfc_vector2d_sub(bounce, selfCenter, colliderCenter);
+	gfc_vector2d_normalize(&bounce);
+	gfc_vector2d_scale(self->velocity, bounce, 3);
+
+}
+
 /*eol@eof*/

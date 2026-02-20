@@ -83,6 +83,8 @@ Entity* check_entity_collision(Entity* self);
 */
 CollisionInfo check_map_collision(Entity* self);
 
+void collision_bounce(Entity* self, Entity* collider);
+
 /**
 * @brief free an entity
 * @param self the entity to free

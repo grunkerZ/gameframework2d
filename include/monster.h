@@ -14,11 +14,16 @@ typedef struct {
 	void*			data;
 }MonsterData;
 
-/**
+/*
 * @brief allocates memory for a new monster
 * @return NULL on error, otherwise a pointer to a monster entity
 */
 Entity* monster_new();
+
+/*
+* @brief detects if the entity is on a ledge
+*/
+void detect_ledge(Entity* self);
 
 
 #endif //__MONSTER_H__

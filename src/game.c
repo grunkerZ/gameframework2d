@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "monster.h"
 #include "simple_ui.h"
+#include "m_damned.h"
 
 int main(int argc, char * argv[])
 {
@@ -59,7 +60,7 @@ int main(int argc, char * argv[])
 
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     player = player_new();
-    monster = monster_new();
+    monster = damned_new(gfc_vector2d(128,128));
     level = level_load("maps/testworld.map");
     GFC_Vector2D offset = camera_get_offset();
     mainMenu = main_menu_init();
@@ -103,7 +104,7 @@ int main(int argc, char * argv[])
                     entity_free(monster);
                     level_free(level);
                     player = player_new();
-                    monster = monster_new();
+                    monster = damned_new(gfc_vector2d(128, 128));
                     level = level_load("maps/testworld.map");
                 }
                 if (mainMenu->Menu.start.exitButton.clicked) {

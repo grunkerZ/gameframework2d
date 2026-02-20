@@ -9,6 +9,7 @@ typedef struct {
 	Uint32		stun;
 	Uint8		projectileSpeed;
 	Uint8		moveSpeed;
+	Uint8		damaged;
 }PlayerData;
 
 /**
