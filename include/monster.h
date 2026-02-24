@@ -2,6 +2,7 @@
 #define __MONSTER_H__
 
 #include "entity.h"
+#include "pathfinding.h"
 
 typedef struct {
 	Uint8			health;
@@ -11,6 +12,10 @@ typedef struct {
 	Uint32			stun;
 	Uint32			timeAtStun;
 	Uint8			moveSpeed;
+	PathNode*		path;
+	Uint8			stopDistance;
+	GFC_Vector2I	lastPlayerGridPos;
+	Uint32			timeAtPathCalc;
 	void*			data;
 }MonsterData;
 
@@ -24,6 +29,23 @@ Entity* monster_new();
 * @brief detects if the entity is on a ledge
 */
 void detect_ledge(Entity* self);
+
+/*
+* @brief detects if there is an unobstructed direct line of sight between an entity and a target position
+* @param self the entity to check
+* @param targetPos the target world position to check
+* @return true if there is a direct unobstructed line of sight, false otherwise
+*/
+Uint8 detect_los(Entity* self, GFC_Vector2D targetPos);
+
+/*
+* @brief moves an entity towards a targetPos using A*
+* @param self the entity to move
+* @param targetPos the target to move to in world position
+* @note returns early if within stopping distance
+* @note returns early if self has line of sight with the target position
+*/
+void move_to(Entity* self, GFC_Vector2D targetPos);
 
 
 #endif //__MONSTER_H__

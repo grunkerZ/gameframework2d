@@ -52,24 +52,36 @@ void level_tile_layer_build(Level* level) {
 	}
 }
 
-int tile_at(float x,float y) {
-	int col = x / activeLevel->tileWidth;
-	int row = y / activeLevel->tileHeight;
+int tile_at(GFC_Vector2D position) {
+	GFC_Vector2I gridPos = world_to_grid(position);
 	int index;
-	if (col > activeLevel->width || row > activeLevel->height) {
+	if (gridPos.x > activeLevel->width-1 || gridPos.y > activeLevel->height-1) {
 		slog("out of bounds tile");
 		return -1;
 	}
 
-	index = (activeLevel->width * row) + col;
+	index = (activeLevel->width * gridPos.y) + gridPos.x;
 
 	return activeLevel->tileMap[index];
 }
 
 GFC_Vector2D get_tile_dimensions() {
-	if (!activeLevel) return;
+	if (!activeLevel) return gfc_vector2d(0,0);
 
 	return gfc_vector2d(activeLevel->tileWidth, activeLevel->tileHeight);
+}
+
+GFC_Vector2I world_to_grid(GFC_Vector2D position) {
+	Uint8 col = position.x / activeLevel->tileWidth;
+	Uint8 row = position.y / activeLevel->tileHeight;
+	GFC_Vector2I gridPos = { col,row };
+	return gridPos;
+}
+
+GFC_Vector2D grid_to_world(GFC_Vector2I position) {
+	GFC_Vector2D worldPos;
+	worldPos.x = (position.x * activeLevel->tileWidth) + (activeLevel->tileWidth / 2);
+	worldPos.y = (position.y * activeLevel->height) + (activeLevel->tileHeight / 2);
 }
 
 Level* level_load(const char* filename) {

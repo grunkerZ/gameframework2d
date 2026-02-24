@@ -1,4 +1,5 @@
 #include "pathfinding.h"
+#include "entity.h"
 #include "simple_logger.h"
 
 PathNode* path_node_new(GFC_Vector2I gridPos) {
@@ -94,7 +95,7 @@ PathNode* pathfind_2d(GFC_Vector2I startPos, GFC_Vector2I targetPos) {
 			neighborPos.x = bestNode->gridPos.x + positions[i].x;
 			neighborPos.y = bestNode->gridPos.y + positions[i].y;
 
-			if (tile_at(neighborPos.x * get_tile_dimensions().x, neighborPos.y * get_tile_dimensions().y) != 0) continue;
+			if (tile_at(gfc_vector2d(neighborPos.x * get_tile_dimensions().x, neighborPos.y * get_tile_dimensions().y)) != 0) continue;
 			if (node_list_get_node(closeList, neighborPos)) continue;
 
 			neighbor = node_list_get_node(openList, neighborPos);
@@ -140,3 +141,5 @@ PathNode* pathfind_2d(GFC_Vector2I startPos, GFC_Vector2I targetPos) {
 	neighbor = NULL;
 	return NULL;
 }
+
+/*eol@eof*/

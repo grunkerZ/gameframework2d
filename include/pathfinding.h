@@ -41,7 +41,7 @@ PathNode* node_list_get_node(PathNode* head, GFC_Vector2I gridPos);
 /*
 * @brief finds a path of walkable tiles between a start position and a target position
 * @param startPos the starting position of the entity pathfinding on the grid
-* @param targetPos the target position on the grid
+* @param targetPos the target's grid position
 * @return NULL if no path is found, otherwise a node list of the path with targetPos as the head
 */
 PathNode* pathfind_2d(GFC_Vector2I startPos, GFC_Vector2I targetPos);

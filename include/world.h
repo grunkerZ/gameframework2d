@@ -53,15 +53,28 @@ int level_get_tile_index(Level* level, Uint32 x, Uint32 y);
 
 /**
 * @brief gets the tile at a position
-* @param x the x coordinate
-* @param y the y coordinate
+* @param position the world position you want to check
 * @returns -1 if out of bounds, otherwise the number tile at that index
 */
-int tile_at(float x, float y);
+int tile_at(GFC_Vector2D position);
+
+/*
+* @brief converts the world position to grid position
+* @param position the world position
+* @return a 2d integer vector of the grid position
+*/
+GFC_Vector2I world_to_grid(GFC_Vector2D position);
+
+/*
+* @brief converts the grid position to world position
+* @param position the grid position to convert
+* @return the world position at the center of the tile at the grid location
+*/
+GFC_Vector2D grid_to_world(GFC_Vector2I position);
 
 /**
 * @brief a getter for the dimensions of a tile in pixels
-* @return A 2D array (width, height), or NULL on error;
+* @return A 2D array (width, height), or a 0 vector on error;
 */
 GFC_Vector2D get_tile_dimensions();
 
