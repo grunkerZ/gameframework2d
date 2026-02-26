@@ -100,6 +100,14 @@ void entity_manager_update_all() {
 	}
 }
 
+void entity_manager_free_all() {
+	int i;
+	for (i = 0; i < entityManager.entityMax; i++) {
+		if (!entityManager.entityList[i]._inuse) continue;
+		entity_free(&entityManager.entityList[i]);
+	}
+}
+
 void entity_draw(Entity* self) {
 	GFC_Vector2D offset;
 	if (!self) return;
@@ -131,8 +139,9 @@ Entity* check_entity_collision(Entity* self) {
 	for (i = 0; i < entityManager.entityMax; i++) {
 		if (!entityManager.entityList[i]._inuse) continue;
 		if (self == &entityManager.entityList[i])continue;
+		if (self->type == entityManager.entityList[i].type) continue;
 		if (gfc_shape_overlap(self->collision, entityManager.entityList[i].collision)) {
-			slog("Collision Detected:\n   Type: %d\n   ColBox (%f, %f)\n   Position (%f, %f)",entityManager.entityList[i].type, self->collision.s.r.x,self->collision.s.r.y, self->position.x,self->position.y);
+			//slog("Collision Detected:\n   Type: %d\n   ColBox (%f, %f)\n   Position (%f, %f)",entityManager.entityList[i].type, self->collision.s.r.x,self->collision.s.r.y, self->position.x,self->position.y);
 			return &entityManager.entityList[i];
 		}
 	}

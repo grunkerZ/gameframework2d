@@ -14,10 +14,11 @@ Entity* monster_new() {
 		slog("Failed to create a new monster entity");
 		return NULL;
 	}
+	self->data = gfc_allocate_array(sizeof(MonsterData), 1);
 	stats = self->data;
 	slog("created new monster");
 
-	self->data = gfc_allocate_array(sizeof(MonsterData), 1);
+	self->sprite = gf2d_sprite_new();
 	self->free = monster_free;
 	self->collision.type = ST_RECT;
 	self->type = MONSTER;
@@ -46,6 +47,13 @@ void detect_ledge(Entity* self) {
 
 void monster_free(Entity* self) {
 	if (!self)return;
+	PathNode* temp;
+	while (((MonsterData*)self->data)->path) {
+		temp = ((MonsterData*)self->data)->path;
+		((MonsterData*)self->data)->path = ((MonsterData*)self->data)->path->next;
+		free(temp);
+	}
+	free(self->data);
 	entity_free(self);
 }
 
@@ -80,7 +88,7 @@ void move_to(Entity* self, GFC_Vector2D targetPos) {
 
 	gfc_vector2d_sub(distance, targetPos, self->position);
 
-	if (gfc_vector2d_magnitude(distance) <= stats->stopDistance) {
+	if (gfc_vector2d_magnitude(distance) <= stats->stopDistance && detect_los(self,targetPos)) {
 		self->velocity = gfc_vector2d(0,0);
 		return;
 	}
@@ -91,11 +99,14 @@ void move_to(Entity* self, GFC_Vector2D targetPos) {
 			stats->path = stats->path->next;
 			free(temp);
 		}
-		gfc_vector2d_move_towards(&self->velocity, self->position, targetPos, 2);
+		gfc_vector2d_sub(distance, targetPos, self->position);
+		gfc_vector2d_normalize(&distance);
+		gfc_vector2d_scale(distance, distance, stats->moveSpeed);
+		self->velocity = distance;
 		return;
 	}
 
-	if ((!stats->path && (SDL_GetTicks64()-stats->timeAtPathCalc>500)) || SDL_GetTicks64() - stats->timeAtPathCalc > 500 || !gfc_vector2d_distance_between_less_than(grid_to_world(stats->lastPlayerGridPos),targetPos,96)) {
+	if ((!stats->path && (SDL_GetTicks64()-stats->timeAtPathCalc>500)) || SDL_GetTicks64() - stats->timeAtPathCalc > 500 || !gfc_vector2d_distance_between_less_than(grid_to_world(stats->lastPlayerGridPos),targetPos,64)) {
 		//slog("move_to has no path");
 		while (stats->path) {
 			temp = stats->path;

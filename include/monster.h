@@ -3,11 +3,12 @@
 
 #include "entity.h"
 #include "pathfinding.h"
+#include "projectile.h"
 
 typedef struct {
 	Uint8			health;
 	Uint8			damage;
-	Uint8			attackSpeed;
+	Uint32			attackSpeed;
 	Uint8			touchDamage;
 	Uint32			stun;
 	Uint32			timeAtStun;
@@ -16,6 +17,8 @@ typedef struct {
 	Uint8			stopDistance;
 	GFC_Vector2I	lastPlayerGridPos;
 	Uint32			timeAtPathCalc;
+	Uint32			lastShotTime;
+	ProjectileData  projectileStats;
 	void*			data;
 }MonsterData;
 

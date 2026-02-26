@@ -2,14 +2,16 @@
 #define __PLAYER_H__
 
 #include <entity.h>
+#include "projectile.h"
 
 typedef struct {
-	Uint8		canJump;
-	Uint8		health;
-	Uint32		stun;
-	Uint8		projectileSpeed;
-	Uint8		moveSpeed;
-	Uint8		damaged;
+	Uint8				jumps;
+	Uint8				health;
+	Uint32				stun;
+	Uint8				moveSpeed;
+	Uint8				damaged;
+	Uint8				grounded;
+	ProjectileData		projectileStats;
 }PlayerData;
 
 /**

@@ -5,6 +5,31 @@
 void damned_think(Entity* self);
 void damned_update(Entity* self);
 
+Entity* damned_new(GFC_Vector2D position) {
+	Entity* self = monster_new();
+	MonsterData* stats;
+	if (!self) {
+		slog("failed to create a new damned");
+		return NULL;
+	}
+	stats = ((MonsterData*)self->data);
+	stats->touchDamage = 1;
+	stats->moveSpeed = 2;
+	stats->health = 2;
+	self->gravity = 1;
+	self->position = position;
+	self->sprite = gf2d_sprite_load_image("images/placeholder/monster.png");
+	self->collision.s.r.x = self->position.x;
+	self->collision.s.r.y = self->position.y;
+	self->collision.s.r.w = self->sprite->frame_w;
+	self->collision.s.r.h = self->sprite->frame_h;
+
+	self->think = damned_think;
+	self->update = damned_update;
+
+	return self;
+}
+
 void damned_think(Entity* self) {
 	GFC_Vector2D playerPos;
 	Entity* collider;
@@ -28,28 +53,7 @@ void damned_think(Entity* self) {
 			collision_bounce(self, collider);
 		}
 	}
-}
 
-Entity* damned_new(GFC_Vector2D position) {
-	Entity* self = monster_new();
-	if (!self) {
-		slog("failed to create a new damned");
-		return NULL;
-	}
-	MonsterData* stats = ((MonsterData*)self->data);
-	stats->touchDamage = 1;
-	stats->moveSpeed = 2;
-	stats->health = 2;
-	self->gravity = 1;
-	self->position = position;
-	self->sprite = gf2d_sprite_load_image("images/placeholder/monster.png");
-	self->collision.s.r.x = self->position.x;
-	self->collision.s.r.y = self->position.y;
-	self->collision.s.r.w = self->sprite->frame_w;
-	self->collision.s.r.h = self->sprite->frame_h;
-
-	self->think = damned_think;
-	self->update = damned_update;
 }
 
 void damned_update(Entity* self) {
@@ -66,4 +70,4 @@ void damned_update(Entity* self) {
 }
 
 
-
+/*eol@eof*/

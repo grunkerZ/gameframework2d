@@ -2,7 +2,6 @@
 #include "player.h"
 #include "gf2d_sprite.h"
 #include "camera.h"
-#include "projectile.h"
 #include "gfc_input.h"
 #include "monster.h"
 
@@ -37,8 +36,7 @@ Entity* player_new() {
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
 	
-	stats->canJump = 1;
-	stats->projectileSpeed = 1;
+	stats->jumps = 0;
 	stats->moveSpeed = 1;
 	stats->health = 5;
 	self->gravity = 1;
@@ -47,6 +45,8 @@ Entity* player_new() {
 	self->update = player_update;
 	self->free = player_free;
 	stats->damaged = 0;
+	stats->projectileStats.damage = 1;
+	stats->projectileStats.speed = 1;
 	player = self;
 	return self;
 }
@@ -76,9 +76,14 @@ void player_think(Entity* self) {
 		if (keys[SDL_SCANCODE_A]) {
 			dir.x = -stats->moveSpeed;
 		}
-		if (keys[SDL_SCANCODE_W] && stats->canJump) {
-			dir.y = -7;
-			stats->canJump = 0;
+		if (keys[SDL_SCANCODE_W]) {
+			if (stats->grounded) {
+				dir.y = -7;
+			}
+			else if (stats->jumps>0){
+				dir.y = -7;
+				stats->jumps -= 1;
+			}
 		}
 		self->velocity.x = dir.x * 3;
 		self->velocity.y += dir.y;
@@ -103,15 +108,18 @@ void player_think(Entity* self) {
 
 	info = check_map_collision(self);
 	if (info.bottom) {
-		stats->canJump = 1;
+		stats->grounded = 1;
+	}
+	else {
+		stats->grounded = 0;
 	}
 
 	if (keys[SDL_SCANCODE_UP]) {
 		if (SDL_GetTicks64() - timeAtShot >= 800) {
 			timeAtShot = SDL_GetTicks64();
-			Entity* projectile = projectile_new(self);
+			Entity* projectile = projectile_new(self,&stats->projectileStats);
 			((ProjectileData*)projectile->data)->parent = self;
-			projectileDir.y = -stats->projectileSpeed;
+			projectileDir.y = -stats->projectileStats.speed;
 			gfc_vector2d_normalize(&projectileDir);
 			gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
 		}
@@ -120,9 +128,9 @@ void player_think(Entity* self) {
 	else if (keys[SDL_SCANCODE_DOWN]) {
 		if (SDL_GetTicks64() - timeAtShot >= 800) {
 			timeAtShot = SDL_GetTicks64();
-			Entity* projectile = projectile_new(self);
+			Entity* projectile = projectile_new(self, &stats->projectileStats);
 			((ProjectileData*)projectile->data)->parent = self;
-			projectileDir.y = stats->projectileSpeed;
+			projectileDir.y = stats->projectileStats.speed;
 			gfc_vector2d_normalize(&projectileDir);
 			gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
 		}
@@ -130,9 +138,9 @@ void player_think(Entity* self) {
 	else if (keys[SDL_SCANCODE_LEFT]) {
 		if (SDL_GetTicks64() - timeAtShot >= 800) {
 			timeAtShot = SDL_GetTicks64();
-			Entity* projectile = projectile_new(self);
+			Entity* projectile = projectile_new(self, &stats->projectileStats);
 			((ProjectileData*)projectile->data)->parent = self;
-			projectileDir.x = -stats->projectileSpeed;
+			projectileDir.x = -stats->projectileStats.speed;
 			gfc_vector2d_normalize(&projectileDir);
 			gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
 		}
@@ -140,9 +148,9 @@ void player_think(Entity* self) {
 	else if (keys[SDL_SCANCODE_RIGHT]) {
 		if (SDL_GetTicks64() - timeAtShot >= 800) {
 			timeAtShot = SDL_GetTicks64();
-			Entity* projectile = projectile_new(self);
+			Entity* projectile = projectile_new(self, &stats->projectileStats);
 			((ProjectileData*)projectile->data)->parent = self;
-			projectileDir.x = stats->projectileSpeed;
+			projectileDir.x = stats->projectileStats.speed;
 			gfc_vector2d_normalize(&projectileDir);
 			gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
 		}
@@ -159,27 +167,29 @@ void player_update(Entity* self) {
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
-	slog("Health: %u | Incoming Damage: %u", stats->health, stats->damaged);
+	//slog("Health: %u | Incoming Damage: %u", stats->health, stats->damaged);
 	if (stats->damaged > 0){
 		if (SDL_GetTicks64() - timeAtHit > 300) {
 			stats->health -= stats->damaged;
 			stats->damaged = 0;
 		}
 	}
-	slog("Health: %u | Reset Damage: %u", stats->health, stats->damaged);
+	//slog("Health: %u | Reset Damage: %u", stats->health, stats->damaged);
 }
 
 void player_free(Entity* self) {
 	player = NULL;
 	if (!self) return;
+	free(self->data);
+	entity_free(self);
 }
 
 GFC_Vector2D player_get_position() {
 	if (!player) {
 		slog("Failed to get position. Current player is NULL");
-		return;
+		return gfc_vector2d(0,0);
 	}
-	return player->position;
+	return gfc_vector2d(player->position.x+(player->sprite->frame_w/2), player->position.y + (player->sprite->frame_h/2));
 }
 
 /*eol@eof*/

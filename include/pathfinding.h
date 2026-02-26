@@ -9,7 +9,6 @@ typedef struct PathNode_S {
 	Uint32					distanceTraveled;
 	Uint32					totalDistance;
 	GFC_Vector2I			gridPos;
-	Uint8					isPath;
 	struct PathNode_S*		parent;
 	struct PathNode_S*		next;
 }PathNode;

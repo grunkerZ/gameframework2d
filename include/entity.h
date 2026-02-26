@@ -92,4 +92,9 @@ void collision_bounce(Entity* self, Entity* collider);
 */
 void entity_free(Entity* self);
 
+/*
+* @brief frees all in use entities
+*/
+void entity_manager_free_all();
+
 #endif // !__ENTITY_H__

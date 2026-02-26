@@ -71,22 +71,22 @@ PathNode* pathfind_2d(GFC_Vector2I startPos, GFC_Vector2I targetPos) {
 		if (bestNode->gridPos.x == targetPos.x && bestNode->gridPos.y == targetPos.y) {
 			PathNode* current = bestNode;
 			while (current) {
-				current->next = path;
-				path = current;
-				path->isPath = 1;
+				PathNode* temp;
+				temp = path_node_new(current->gridPos);
+				temp->next = path;
+				path = temp;
 				current = current->parent;
 			}
 			while (closeList) {
 				PathNode* temp = closeList->next;
-				if(!(closeList->isPath)) free(closeList);
+				free(closeList);
 				closeList = temp;
 			}
 			while (openList) {
 				PathNode* temp = openList->next;
-				if (!(openList->isPath)) free(openList);
+				free(openList);
 				openList = temp;
 			}
-			free(neighbor);
 			return path;
 		}
 
@@ -137,8 +137,6 @@ PathNode* pathfind_2d(GFC_Vector2I startPos, GFC_Vector2I targetPos) {
 		free(openList);
 		openList = temp;
 	}
-	if(neighbor) free(neighbor);
-	neighbor = NULL;
 	return NULL;
 }
 

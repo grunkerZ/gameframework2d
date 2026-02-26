@@ -10,6 +10,7 @@
 #include "monster.h"
 #include "simple_ui.h"
 #include "m_damned.h"
+#include "m_imp.h"
 
 int main(int argc, char * argv[])
 {
@@ -30,6 +31,7 @@ int main(int argc, char * argv[])
     Sprite *mouse;
     Entity* player;
     Entity* monster;
+    Entity* imp;
     GFC_Color mouseGFC_Color = gfc_color8(0,100,255,200);
     GameState state = GS_MAINMENU;
     GenericMenu* mainMenu;
@@ -60,7 +62,8 @@ int main(int argc, char * argv[])
 
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     player = player_new();
-    monster = damned_new(gfc_vector2d(128,128));
+    monster = damned_new(gfc_vector2d(128,120));
+    imp = imp_new(gfc_vector2d(128, 120));
     level = level_load("maps/testworld.map");
     GFC_Vector2D offset = camera_get_offset();
     mainMenu = main_menu_init();
@@ -98,13 +101,14 @@ int main(int argc, char * argv[])
                     &mouseGFC_Color,
                     (int)mf);
 
+                //state change
                 if (mainMenu->Menu.start.startButton.clicked) {
                     state = GS_PLAYING;
-                    entity_free(player);
-                    entity_free(monster);
+                    entity_manager_free_all();
                     level_free(level);
                     player = player_new();
-                    monster = damned_new(gfc_vector2d(128, 128));
+                    monster = damned_new(gfc_vector2d(128, 100));
+                    imp = imp_new(gfc_vector2d(128, 100));
                     level = level_load("maps/testworld.map");
                 }
                 if (mainMenu->Menu.start.exitButton.clicked) {
@@ -122,6 +126,7 @@ int main(int argc, char * argv[])
                 entity_manager_draw_all();
                 camera_center_on(gfc_vector2d(player->position.x + (player->sprite->frame_w / 2), player->position.y + (player->sprite->frame_h / 2)));
 
+                //state change
                 if (((PlayerData*)player->data)->health <= 0) {
                     state = GS_DEATH;
                 }
@@ -145,6 +150,7 @@ int main(int argc, char * argv[])
                     &mouseGFC_Color,
                     (int)mf);
 
+                //state change
                 if (deathMenu->Menu.death.mainMenuButton.clicked) {
                     state = GS_MAINMENU;
                 }

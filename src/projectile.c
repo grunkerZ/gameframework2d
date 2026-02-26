@@ -4,13 +4,19 @@
 #include "camera.h"
 #include "monster.h"
 #include "world.h"
+#include "player.h"
 
 void projectile_think(Entity* self);
 void projectile_update(Entity* self);
 void projectile_free(Entity* self);
 
-Entity* projectile_new(Entity* owner) {
+Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	Entity* self;
+	if (!owner) {
+		slog("no owner for projectile");
+		return NULL;
+	}
+	
 	self = entity_new();
 
 	if (!self) {
@@ -19,13 +25,16 @@ Entity* projectile_new(Entity* owner) {
 	}
 	
 	self->data = gfc_allocate_array(sizeof(ProjectileData), 1);
+	stats = self->data;
+
 	slog("New Projectile Created");
-	self->position= gfc_vector2d(owner->position.x, owner->position.y + (owner->sprite->frame_h*0.25));
-	((ProjectileData*)self->data)->origin = gfc_vector2d(owner->position.x,owner->position.y+(owner->sprite->frame_h / 2));
-	((ProjectileData*)self->data)->damage = 1;
+	self->sprite = gf2d_sprite_load_image("images/placeholder/projectile.png");
+	self->position= gfc_vector2d(owner->position.x + ((owner->sprite->frame_w / 2) - (self->sprite->frame_w / 2)), owner->position.y + (owner->sprite->frame_h * 0.25));
+	stats->origin = gfc_vector2d(owner->position.x,owner->position.y+(owner->sprite->frame_h / 2));
+	//stats->damage = 1;
 	
 	self->scale = gfc_vector2d(0.5,0.5);
-	self->sprite= gf2d_sprite_load_image("images/placeholder/projectile.png");
+	
 	self->collision.type = ST_CIRCLE;
 	self->collision.s.c.x = self->position.x + (self->sprite->frame_w / 2);
 	self->collision.s.c.y = self->position.y + (self->sprite->frame_h / 2);
@@ -46,12 +55,18 @@ void projectile_free(Entity* self) {
 void projectile_think(Entity* self) {
 	Entity* collider;
 	CollisionInfo info;
+	ProjectileData* stats = self->data;
 	collider = check_entity_collision(self);
 	if (collider) {
-		if (collider != ((ProjectileData*)self->data)->parent) {
+		if (collider != stats->parent) {
 			if (collider->type == MONSTER) {
-				((MonsterData*)collider->data)->health -= ((ProjectileData*)self->data)->damage;
-				slog("Dealt %f damage, Monster health at %f", ((ProjectileData*)self->data)->damage, ((MonsterData*)collider->data)->health);
+				((MonsterData*)collider->data)->health -= stats->damage;
+				slog("Dealt %f damage, Monster health at %f", stats->damage, ((MonsterData*)collider->data)->health);
+				projectile_free(self);
+				return;
+			}
+			if (collider->type == PLAYER) {
+				((PlayerData*)collider->data)->health -= stats->damage;
 				projectile_free(self);
 				return;
 			}
@@ -64,7 +79,8 @@ void projectile_think(Entity* self) {
 
 void projectile_update(Entity* self) {
 	GFC_Vector2D offset = camera_get_offset();
-	if (gfc_vector2d_distance_between_less_than(self->position, ((ProjectileData*)self->data)->origin,1000) == false) {
+	ProjectileData* stats = self->data;
+	if (gfc_vector2d_distance_between_less_than(self->position, stats->origin,1000) == false) {
 		projectile_free(self);
 		return;
 	}

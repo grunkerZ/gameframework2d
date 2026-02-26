@@ -72,14 +72,22 @@ GFC_Vector2D get_tile_dimensions() {
 }
 
 GFC_Vector2I world_to_grid(GFC_Vector2D position) {
+	GFC_Vector2I gridPos;
+	if (!activeLevel) {
+		gridPos.x = 0;
+		gridPos.y = 0;
+		return gridPos;
+	}
 	Uint8 col = position.x / activeLevel->tileWidth;
 	Uint8 row = position.y / activeLevel->tileHeight;
-	GFC_Vector2I gridPos = { col,row };
+	gridPos.x = col;
+	gridPos.y = row;
 	return gridPos;
 }
 
 GFC_Vector2D grid_to_world(GFC_Vector2I position) {
 	GFC_Vector2D worldPos;
+	if (!activeLevel) return worldPos = gfc_vector2d(0, 0);
 	worldPos.x = (position.x * activeLevel->tileWidth) + (activeLevel->tileWidth / 2);
 	worldPos.y = (position.y * activeLevel->height) + (activeLevel->tileHeight / 2);
 }
