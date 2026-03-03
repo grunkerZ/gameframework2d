@@ -70,17 +70,16 @@ void player_think(Entity* self) {
 		if (keys[SDL_SCANCODE_D]) {
 			dir.x = stats->moveSpeed;
 		}
-		/*if (keys[SDL_SCANCODE_S]) {
-			dir.y = 1;
-		}*/
+		if (keys[SDL_SCANCODE_S]) {
+			if (!self->gravity) dir.y = stats->moveSpeed;
+		}
 		if (keys[SDL_SCANCODE_A]) {
 			dir.x = -stats->moveSpeed;
 		}
 		if (keys[SDL_SCANCODE_W]) {
-			if (stats->grounded) {
-				dir.y = -7;
-			}
-			else if (stats->jumps>0){
+			if (stats->grounded) dir.y = -7;
+			if (!self->gravity) dir.y = -stats->moveSpeed;
+			else if (stats->jumps > 0) {
 				dir.y = -7;
 				stats->jumps -= 1;
 			}

@@ -11,6 +11,7 @@
 #include "simple_ui.h"
 #include "m_damned.h"
 #include "m_imp.h"
+#include "m_hellhound.h"
 
 int main(int argc, char * argv[])
 {
@@ -32,6 +33,7 @@ int main(int argc, char * argv[])
     Entity* player;
     Entity* monster;
     Entity* imp;
+    Entity* hellhound;
     GFC_Color mouseGFC_Color = gfc_color8(0,100,255,200);
     GameState state = GS_MAINMENU;
     GenericMenu* mainMenu;
@@ -64,6 +66,7 @@ int main(int argc, char * argv[])
     player = player_new();
     monster = damned_new(gfc_vector2d(128,120));
     imp = imp_new(gfc_vector2d(128, 120));
+    hellhound = hellhound_new(gfc_vector2d(128, 120));
     level = level_load("maps/testworld.map");
     GFC_Vector2D offset = camera_get_offset();
     mainMenu = main_menu_init();
@@ -107,8 +110,9 @@ int main(int argc, char * argv[])
                     entity_manager_free_all();
                     level_free(level);
                     player = player_new();
-                    monster = damned_new(gfc_vector2d(128, 100));
-                    imp = imp_new(gfc_vector2d(128, 100));
+                  //  monster = damned_new(gfc_vector2d(128, 100));
+                   // imp = imp_new(gfc_vector2d(128, 100));
+                    hellhound = hellhound_new(gfc_vector2d(128, 120));
                     level = level_load("maps/testworld.map");
                 }
                 if (mainMenu->Menu.start.exitButton.clicked) {
@@ -117,9 +121,14 @@ int main(int argc, char * argv[])
                 break;
 
             case GS_PLAYING:
+                if (keys[SDL_SCANCODE_F]) {
+                    player->gravity = 0;
+                }
+
                 //updates
                 entity_manager_think_all();
                 entity_manager_update_all();
+
 
                 //draw
                 level_draw(level);

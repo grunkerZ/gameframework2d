@@ -15,7 +15,7 @@ typedef struct {
 	Uint32			stun;
 	Uint32			timeAtStun;
 	PathNode*		path;
-	Uint8			stopDistance;
+	Uint32			stopDistance;
 	GFC_Vector2I	lastPlayerGridPos;
 	Uint32			timeAtPathCalc;
 	Uint32			lastShotTime;
@@ -43,13 +43,20 @@ void detect_ledge(Entity* self);
 Uint8 detect_los(Entity* self, GFC_Vector2D targetPos);
 
 /*
+* @brief moves an entity towards a targetPos in the x dimension
+* @param self the entity to move
+* @param targetPos the target to move to
+*/
+void move_to_1d(Entity* self, GFC_Vector2D targetPos);
+
+/*
 * @brief moves an entity towards a targetPos using A*
 * @param self the entity to move
 * @param targetPos the target to move to in world position
 * @note returns early if within stopping distance
 * @note returns early if self has line of sight with the target position
 */
-void move_to(Entity* self, GFC_Vector2D targetPos);
+void move_to_2d(Entity* self, GFC_Vector2D targetPos);
 
 
 #endif //__MONSTER_H__

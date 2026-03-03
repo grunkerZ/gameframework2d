@@ -35,18 +35,10 @@ void damned_think(Entity* self) {
 	Entity* collider;
 	MonsterData* stats = (MonsterData*)self->data;
 	if (!self) return;
+	playerPos = player_get_position();
 
-	if (SDL_GetTicks64() - stats->timeAtStun > stats->stun) {
-		playerPos = player_get_position();
-		if (self->position.x > playerPos.x) {
-			self->velocity.x = -((MonsterData*)self->data)->moveSpeed;
-		}
-		if (self->position.x < playerPos.x) {
-			self->velocity.x = ((MonsterData*)self->data)->moveSpeed;;
-		}
+	move_to_1d(self, playerPos);
 
-		detect_ledge(self);
-	}
 	collider = check_entity_collision(self);
 	if (collider) {
 		if (collider->type == PLAYER) {

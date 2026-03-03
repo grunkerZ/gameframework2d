@@ -42,7 +42,7 @@ void imp_think(Entity* self) {
 	MonsterData* stats = ((MonsterData*)self->data);
 
 
-	move_to(self, playerPos);
+	move_to_2d(self, playerPos);
 
 	collider = check_entity_collision(self);
 	if (collider) {

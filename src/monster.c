@@ -108,7 +108,24 @@ Uint8 detect_los(Entity* self, GFC_Vector2D targetPos) {
 	return 1;
 }
 
-void move_to(Entity* self, GFC_Vector2D targetPos) {
+void move_to_1d(Entity* self, GFC_Vector2D targetPos) {
+	MonsterData* stats = self->data;
+
+	if (SDL_GetTicks64() - stats->timeAtStun > stats->stun) {
+
+		if (self->position.x > targetPos.x) {
+			self->velocity.x = -stats->moveSpeed;
+		}
+
+		if (self->position.x < targetPos.x) {
+			self->velocity.x = stats->moveSpeed;
+		}
+
+		detect_ledge(self);
+	}
+}
+
+void move_to_2d(Entity* self, GFC_Vector2D targetPos) {
 	MonsterData* stats = self->data;
 	GFC_Vector2I selfGrid = world_to_grid(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)));
 	GFC_Vector2I targetGrid = world_to_grid(targetPos);
