@@ -10,9 +10,10 @@ typedef struct {
 	Uint8			damage;
 	Uint32			attackSpeed;
 	Uint8			touchDamage;
+	Uint8			moveSpeed;
+	Uint8			charging;
 	Uint32			stun;
 	Uint32			timeAtStun;
-	Uint8			moveSpeed;
 	PathNode*		path;
 	Uint8			stopDistance;
 	GFC_Vector2I	lastPlayerGridPos;

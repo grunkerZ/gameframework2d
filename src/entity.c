@@ -188,7 +188,7 @@ CollisionInfo check_map_collision(Entity* self) {
 		float check_x;
 		if (self->velocity.x > 0) {
 			check_x = (nextPos.x + self->collision.s.r.w);
-			if (tile_at(gfc_vector2d(check_x, self->position.y)) != 0 || tile_at(gfc_vector2d(check_x, self->position.y + self->collision.s.r.h)) != 0) {
+			if (tile_at(gfc_vector2d(check_x, self->position.y+1)) != 0 || tile_at(gfc_vector2d(check_x, self->position.y + self->collision.s.r.h - 1)) != 0) {
 				self->velocity.x = 0;
 				info.right = 1;
 				info.collided = 1;
@@ -196,22 +196,22 @@ CollisionInfo check_map_collision(Entity* self) {
 		}
 		else {
 			check_x = nextPos.x;
-			if (tile_at(gfc_vector2d(check_x, self->position.y)) != 0 || tile_at(gfc_vector2d(check_x, self->position.y + self->collision.s.r.h)) != 0) {
+			if (tile_at(gfc_vector2d(check_x, self->position.y + 1)) != 0 || tile_at(gfc_vector2d(check_x, self->position.y + self->collision.s.r.h - 1)) != 0) {
 				self->velocity.x = 0;
 				info.left = 1;
 				info.collided = 1;
 			}
-		}
-
-		
+		}	
 	}
+
+	nextPos.x = self->position.x + self->velocity.x;
 
 	if (self->velocity.y != 0) {
 		nextPos.y = self->position.y + self->velocity.y;
 		float check_y;
 		if (self->velocity.y > 0) {
 			check_y = (nextPos.y + self->collision.s.r.h);
-			if (tile_at(gfc_vector2d(self->position.x, check_y)) != 0 || tile_at(gfc_vector2d(self->position.x + self->collision.s.r.w, check_y)) != 0) {
+			if (tile_at(gfc_vector2d(nextPos.x + 1, check_y)) != 0 || tile_at(gfc_vector2d(nextPos.x + self->collision.s.r.w - 1, check_y)) != 0) {
 				self->velocity.y = 0;
 				info.bottom = 1;
 				info.collided = 1;
@@ -219,7 +219,7 @@ CollisionInfo check_map_collision(Entity* self) {
 		}
 		else {
 			check_y = nextPos.y;
-			if (tile_at(gfc_vector2d(self->position.x, check_y)) != 0 || tile_at(gfc_vector2d(self->position.x + self->collision.s.r.w, check_y)) != 0) {
+			if (tile_at(gfc_vector2d(nextPos.x + 1, check_y)) != 0 || tile_at(gfc_vector2d(nextPos.x + self->collision.s.r.w - 1, check_y)) != 0) {
 				self->velocity.y = 0;
 				info.top = 1;
 				info.collided = 1;

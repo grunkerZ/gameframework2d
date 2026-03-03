@@ -24,10 +24,10 @@ Entity* imp_new(GFC_Vector2D position) {
 	self->gravity = 0;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/imp.png");
-	self->collision.s.r.x = self->position.x;
-	self->collision.s.r.y = self->position.y;
-	self->collision.s.r.w = self->sprite->frame_w;
-	self->collision.s.r.h = self->sprite->frame_h;
+	self->collision.s.r.x = self->position.x+3;
+	self->collision.s.r.y = self->position.y+3;
+	self->collision.s.r.w = self->sprite->frame_w-6;
+	self->collision.s.r.h = self->sprite->frame_h-6;
 
 	self->think = imp_think;
 	self->update = imp_update;
@@ -72,8 +72,8 @@ void imp_update(Entity* self) {
 		monster_free(self);
 		return;
 	}
-	self->collision.s.r.x = self->position.x;
-	self->collision.s.r.y = self->position.y;
+	self->collision.s.r.x = self->position.x+3;
+	self->collision.s.r.y = self->position.y+3;
 	info = check_map_collision(self);
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 }

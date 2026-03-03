@@ -89,7 +89,8 @@ GFC_Vector2D grid_to_world(GFC_Vector2I position) {
 	GFC_Vector2D worldPos;
 	if (!activeLevel) return worldPos = gfc_vector2d(0, 0);
 	worldPos.x = (position.x * activeLevel->tileWidth) + (activeLevel->tileWidth / 2);
-	worldPos.y = (position.y * activeLevel->height) + (activeLevel->tileHeight / 2);
+	worldPos.y = (position.y * activeLevel->tileHeight) + (activeLevel->tileHeight / 2);
+	return worldPos;
 }
 
 Level* level_load(const char* filename) {

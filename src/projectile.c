@@ -12,6 +12,7 @@ void projectile_free(Entity* self);
 
 Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	Entity* self;
+	ProjectileData* selfStats;
 	if (!owner) {
 		slog("no owner for projectile");
 		return NULL;
@@ -25,15 +26,14 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	}
 	
 	self->data = gfc_allocate_array(sizeof(ProjectileData), 1);
-	stats = self->data;
+	selfStats = self->data;
+	*selfStats = *stats;
 
 	slog("New Projectile Created");
 	self->sprite = gf2d_sprite_load_image("images/placeholder/projectile.png");
 	self->position= gfc_vector2d(owner->position.x + ((owner->sprite->frame_w / 2) - (self->sprite->frame_w / 2)), owner->position.y + (owner->sprite->frame_h * 0.25));
-	stats->origin = gfc_vector2d(owner->position.x,owner->position.y+(owner->sprite->frame_h / 2));
-	//stats->damage = 1;
-	
-	self->scale = gfc_vector2d(0.5,0.5);
+	selfStats->origin = gfc_vector2d(owner->position.x,owner->position.y+(owner->sprite->frame_h / 2));
+	selfStats->parent = owner;
 	
 	self->collision.type = ST_CIRCLE;
 	self->collision.s.c.x = self->position.x + (self->sprite->frame_w / 2);

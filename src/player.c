@@ -118,7 +118,6 @@ void player_think(Entity* self) {
 		if (SDL_GetTicks64() - timeAtShot >= 800) {
 			timeAtShot = SDL_GetTicks64();
 			Entity* projectile = projectile_new(self,&stats->projectileStats);
-			((ProjectileData*)projectile->data)->parent = self;
 			projectileDir.y = -stats->projectileStats.speed;
 			gfc_vector2d_normalize(&projectileDir);
 			gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
