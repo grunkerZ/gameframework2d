@@ -34,6 +34,7 @@ C:\git\gameframework2d\src\gf2d_graphics.c;C:\git\gameframework2d\God Punch\God 
 C:\git\gameframework2d\src\gf2d_sprite.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\gf2d_sprite.obj
 C:\git\gameframework2d\src\monster.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\monster.obj
 C:\git\gameframework2d\src\m_damned.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\m_damned.obj
+C:\git\gameframework2d\src\m_fiend.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\m_fiend.obj
 C:\git\gameframework2d\src\m_hellhound.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\m_hellhound.obj
 C:\git\gameframework2d\src\m_imp.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\m_imp.obj
 C:\git\gameframework2d\src\pathfinding.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\pathfinding.obj
