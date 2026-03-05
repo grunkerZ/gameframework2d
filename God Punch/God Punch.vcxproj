@@ -53,6 +53,7 @@
     <ClCompile Include="..\src\gf2d_draw.c" />
     <ClCompile Include="..\src\gf2d_graphics.c" />
     <ClCompile Include="..\src\gf2d_sprite.c" />
+    <ClCompile Include="..\src\item.c" />
     <ClCompile Include="..\src\monster.c" />
     <ClCompile Include="..\src\m_damned.c" />
     <ClCompile Include="..\src\m_fiend.c" />
@@ -101,6 +102,7 @@
     <ClInclude Include="..\include\gf2d_draw.h" />
     <ClInclude Include="..\include\gf2d_graphics.h" />
     <ClInclude Include="..\include\gf2d_sprite.h" />
+    <ClInclude Include="..\include\item.h" />
     <ClInclude Include="..\include\monster.h" />
     <ClInclude Include="..\include\m_damned.h" />
     <ClInclude Include="..\include\m_fiend.h" />

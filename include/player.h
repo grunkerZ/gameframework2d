@@ -3,15 +3,29 @@
 
 #include <entity.h>
 #include "projectile.h"
+#include "item.h"
 
 typedef struct {
-	Uint8				jumps;
+	Uint8				baseMaxHealth;
+	Uint8				maxHealth;
+	Uint8				baseHealth;
 	Uint8				health;
+	Uint8				baseMoveSpeed;
 	Uint8				moveSpeed;
-	Uint8				grounded;
+	Uint8				baseTouchDamage;
 	Uint8				touchDamage;
+	Uint8				baseJumps;
+	Uint8				baseShotSpeed;
+	Uint8				shotSpeed;
+	Uint8				baseRange;
+	Uint8				range;
+	Uint32				baseFireRate;
+	Uint32				fireRate;
+	Uint8				jumps;
+	Uint8				grounded;
 	Uint32				stun;
 	ProjectileData		projectileStats;
+	int					inventory[ITEM_MAX];
 }PlayerData;
 
 /**

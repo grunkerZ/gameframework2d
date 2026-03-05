@@ -162,6 +162,9 @@
     <ClCompile Include="..\src\m_repenter.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\item.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\entity.h">
@@ -300,6 +303,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\m_repenter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\item.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -40,8 +40,13 @@ Entity* player_new() {
 	self->invincibility = 500;
 	self->type = PLAYER;
 	
+	stats->baseHealth = 6;
+	stats->maxHealth = 6;
+	stats->baseJumps = 0;
+	stats->baseMoveSpeed = 3;
+	stats->baseTouchDamage = 0;
 	stats->jumps = 0;
-	stats->moveSpeed = 1;
+	stats->moveSpeed = 3;
 	stats->health = 5;
 	stats->touchDamage;
 
@@ -92,7 +97,7 @@ void player_think(Entity* self) {
 				stats->jumps -= 1;
 			}
 		}
-		self->velocity.x = dir.x * 3;
+		self->velocity.x = dir.x;
 		self->velocity.y += dir.y;
 	}
 
@@ -178,6 +183,35 @@ GFC_Vector2D player_get_position() {
 		return gfc_vector2d(0,0);
 	}
 	return gfc_vector2d(player->position.x+(player->sprite->frame_w/2), player->position.y + (player->sprite->frame_h/2));
+}
+
+void player_calculate_stats(Entity* self) {
+	PlayerData* stats = self->data;
+	Item* item;
+	int i;
+	//reset to base stats
+	stats->health = stats->baseHealth;
+	stats->maxHealth = stats->baseMaxHealth;
+	stats->jumps = stats->baseJumps;
+	stats->moveSpeed = stats->baseMoveSpeed;
+	stats->touchDamage = stats->baseTouchDamage;
+	stats->shotSpeed = stats->baseShotSpeed;
+	stats->range = stats->baseRange;
+	stats->fireRate = stats->baseFireRate;
+
+	//check inventory and add buffs and set flags
+	for (i = 0; i < ITEM_MAX; i++) {
+		if (stats->inventory[i] <= 0) continue;
+		item = get_item(i);
+		stats->health = item->healthMod;
+		stats->maxHealth = item->maxHealthMod;
+		stats->jumps = item->jumpsMod;
+		stats->moveSpeed = item->moveSpeedMod;
+		stats->touchDamage = item->touchDamageMod;
+		stats->shotSpeed = item->shotSpeedMod;
+		stats->range += item->rangeMod;
+		stats->fireRate += item->fireRateMod;
+	}
 }
 
 /*eol@eof*/
