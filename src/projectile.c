@@ -80,7 +80,7 @@ void projectile_think(Entity* self) {
 void projectile_update(Entity* self) {
 	GFC_Vector2D offset = camera_get_offset();
 	ProjectileData* stats = self->data;
-	if (gfc_vector2d_distance_between_less_than(self->position, stats->origin,1000) == false) {
+	if (gfc_vector2d_distance_between_less_than(self->position, stats->origin, stats->range) == false) {
 		projectile_free(self);
 		return;
 	}

@@ -116,7 +116,7 @@ int main(int argc, char * argv[])
                   //  monster = damned_new(gfc_vector2d(128, 100));
                    // imp = imp_new(gfc_vector2d(128, 100));
                    // hellhound = hellhound_new(gfc_vector2d(128, 120));
-                    fiend = fiend_new(gfc_vector2d(128, 120));
+                    fiend = fiend_new(gfc_vector2d(192, 128));
                     level = level_load("maps/testworld.map");
                 }
                 if (mainMenu->Menu.start.exitButton.clicked) {

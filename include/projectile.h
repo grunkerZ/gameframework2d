@@ -6,6 +6,7 @@
 typedef struct {
 	Uint8			damage;
 	Uint8			speed;
+	Uint32			range;
 	GFC_Vector2D	origin;
 	Entity*			parent;
 }ProjectileData;

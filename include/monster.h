@@ -8,10 +8,11 @@
 typedef struct {
 	Uint8			health;
 	Uint8			damage;
-	Uint32			attackSpeed;
+	Uint8			sentry;
 	Uint8			touchDamage;
 	Uint8			moveSpeed;
 	Uint8			charging;
+	Uint32			attackSpeed;
 	Uint32			stun;
 	Uint32			timeAtStun;
 	PathNode*		path;
@@ -31,8 +32,17 @@ Entity* monster_new();
 
 /*
 * @brief detects if the entity is on a ledge
+* @param self the entity to check
+* @return 1 if ledge is detected, 0 otherwise
 */
-void detect_ledge(Entity* self);
+Uint8 detect_ledge(Entity* self);
+
+/*
+* @brief detects if dropping from a height will be non harmful
+* @param self the entity to check
+* @return 1 if the drop is safe, 0 otherwise
+*/
+Uint8 is_drop_safe(Entity* self);
 
 /*
 * @brief detects if there is an unobstructed direct line of sight between an entity and a target position
