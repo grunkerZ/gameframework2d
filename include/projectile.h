@@ -6,6 +6,10 @@
 typedef struct {
 	Uint8			damage;
 	Uint8			speed;
+	Uint8			explodes;
+	Uint8			exploded;
+	Uint8			explosionTime;
+	Uint32			timeAtExplosion;
 	Uint32			range;
 	GFC_Vector2D	origin;
 	Entity*			parent;

@@ -17,17 +17,19 @@ typedef enum {
 typedef struct Entity_S
 {
 	Uint8			_inuse;								//dont touch
+	Uint8			gravity;
+	float			rotation;
+	float			frame;
 	GFC_TextLine	name;								//name of entity for debug
 	GFC_Vector2D	position;							//position of entity on screen
 	GFC_Vector2D	scale;								//size of entity
+	GFC_Vector2D	flip;
 	GFC_Vector2D	velocity;							//rate of position change per update
 	GFC_Vector2D	centerPos;
-	Uint8			gravity;
-	float			rotation;
-	Sprite*			sprite;
-	float			frame;
+	GFC_Vector2D	forward;
 	GFC_Shape		collision;
 	EntityType		type;
+	Sprite* sprite;
 	void			(*think)(struct Entity_S* self);	//called every frame if defined for entity
 	void			(*update)(struct Entity_S* self);	//execute entity decisions
 	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data

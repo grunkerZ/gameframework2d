@@ -13,9 +13,7 @@ Entity* hellhound_new(GFC_Vector2D position) {
 		return NULL;
 	}
 	stats = ((MonsterData*)self->data);
-	stats->touchDamage = 1;
-	stats->moveSpeed = 2;
-	stats->health = 2;
+
 	self->gravity = 1;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/hellhound.png");
@@ -24,10 +22,16 @@ Entity* hellhound_new(GFC_Vector2D position) {
 	self->collision.s.r.w = self->sprite->frame_w;
 	self->collision.s.r.h = self->sprite->frame_h;
 	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
+
+	stats->touchDamage = 1;
+	stats->moveSpeed = 2;
+	stats->health = 2;
 	stats->stopDistance = 300;
 	stats->attackSpeed = 1000;
-	stats->lastShotTime = 0;
-	stats->charging = 0;
+	stats->timeAtAttack = 0;
+	stats->attacking = 0;
+	stats->attackCooldown = 500;
+	stats->attackDelay = 500;
 
 	self->think = hellhound_think;
 	self->update = hellhound_update;
@@ -56,22 +60,22 @@ void hellhound_think(Entity* self) {
 	info = check_map_collision(self);
 
 	if (gfc_vector2d_distance_between_less_than(playerPos, self->position, stats->stopDistance) && info.bottom) {
-		slog("charging: %u", stats->charging);
-		if (stats->charging) {
+		slog("attacking: %u", stats->attacking);
+		if (stats->attacking) {
 			self->velocity.x = 0;
-			if (SDL_GetTicks64() - stats->lastShotTime > stats->attackSpeed) {
-				stats->charging = 0;
+			if (SDL_GetTicks64() - stats->attackDelay > stats->attackSpeed) {
 				gfc_vector2d_sub(self->velocity, playerPos, self->position);
 				gfc_vector2d_normalize(&self->velocity);
 				gfc_vector2d_scale(self->velocity, self->velocity, 8);
 				self->velocity.y = -2;
-				stats->timeAtStun = SDL_GetTicks64();
-				stats->stun = 500;
+				stats->timeAtAttack = SDL_GetTicks64();
+				stats->attackCooldown = 500;
+				stats->attacking = 0;
 			}
 		}
-		else if ((SDL_GetTicks64() - stats->timeAtStun > stats->stun) && world_to_grid(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2))).y == world_to_grid(playerPos).y){
-			stats->charging = 1;
-			stats->lastShotTime = SDL_GetTicks64();
+		else if ((SDL_GetTicks64() - stats->timeAtAttack > stats->attackCooldown) && world_to_grid(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2))).y == world_to_grid(playerPos).y){
+			stats->attacking = 1;
+			stats->attackDelay = SDL_GetTicks64();
 		}
 	}
 

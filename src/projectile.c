@@ -41,6 +41,8 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	self->collision.s.c.r = self->sprite->frame_w / 2;
 	self->type = PROJECTILE;
 
+	selfStats->exploded = 0;
+
 	self->think = projectile_think;
 	self->update = projectile_update;
 	self->free = projectile_free;
@@ -50,6 +52,41 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 void projectile_free(Entity* self) {
 	if (!self) return;
 	entity_free(self);
+}
+
+void projectile_damage(Entity* self, Entity* collider) {
+	ProjectileData* stats = self->data;
+	if (stats->explodes) {
+		self->scale = gfc_vector2d(1.5, 1.5);
+		stats->timeAtExplosion = SDL_GetTicks64();
+		if (!stats->exploded) {
+			switch (collider->type) {
+			case MONSTER:
+				((MonsterData*)collider->data)->health -= stats->damage;
+				stats->exploded = 1;
+				break;
+			case PLAYER:
+				((PlayerData*)collider->data)->health -= stats->damage;
+				stats->exploded = 1;
+				break;
+			}
+		}
+		if (SDL_GetTicks64() - stats->timeAtExplosion > stats->explosionTime) {
+			projectile_free(self);
+			return;
+		}
+	}
+	
+	switch (collider->type) {
+	case MONSTER:
+		((MonsterData*)collider->data)->health -= stats->damage;
+		projectile_free(self);
+		return;
+	case PLAYER:
+		((PlayerData*)collider->data)->health -= stats->damage;
+		projectile_free(self);
+		return;
+	}
 }
 
 void projectile_think(Entity* self) {

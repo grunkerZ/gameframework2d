@@ -13,9 +13,7 @@ Entity* fiend_new(GFC_Vector2D position) {
 		return NULL;
 	}
 	stats = ((MonsterData*)self->data);
-	stats->touchDamage = 1;
-	stats->moveSpeed = 1;
-	stats->health = 2;
+	
 	self->gravity = 1;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/fiend.png");
@@ -23,10 +21,14 @@ Entity* fiend_new(GFC_Vector2D position) {
 	self->collision.s.r.y = self->position.y;
 	self->collision.s.r.w = self->sprite->frame_w;
 	self->collision.s.r.h = self->sprite->frame_h;
+
+	stats->touchDamage = 1;
+	stats->moveSpeed = 1;
+	stats->health = 2;
 	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
 	stats->stopDistance = 500;
 	stats->attackSpeed = 1000;
-	stats->lastShotTime = 0;
+	stats->timeAtAttack = 0;
 
 	self->think = fiend_think;
 	self->update = fiend_update;
@@ -46,9 +48,9 @@ void fiend_think(Entity* self) {
 	move_to_1d(self, playerPos);
 
 	if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {
-		if (SDL_GetTicks64() - stats->lastShotTime > stats->attackSpeed) {
-			slog("fired shot, time passed: %llu", SDL_GetTicks64() - stats->lastShotTime);
-			stats->lastShotTime = SDL_GetTicks64();
+		if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackSpeed) {
+			slog("fired shot, time passed: %llu", SDL_GetTicks64() - stats->timeAtAttack);
+			stats->timeAtAttack = SDL_GetTicks64();
 			Entity* projectile = projectile_new(self, &stats->projectileStats);
 			((ProjectileData*)projectile->data)->parent = self;
 			((ProjectileData*)projectile->data)->origin = self->position;

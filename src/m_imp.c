@@ -19,7 +19,7 @@ Entity* imp_new(GFC_Vector2D position) {
 	stats->health = 2;
 	stats->stopDistance = 200;
 	stats->attackSpeed = 1000;
-	stats->lastShotTime = 0;
+	stats->timeAtAttack = 0;
 	stats->projectileStats.damage = 1;
 	self->gravity = 0;
 	self->position = position;
@@ -52,9 +52,9 @@ void imp_think(Entity* self) {
 	}
 
 	if (gfc_vector2d_distance_between_less_than(playerPos, self->position, stats->stopDistance + 1) && detect_los(self,playerPos)) {
-		if (SDL_GetTicks64() - stats->lastShotTime > stats->attackSpeed) {
-			slog("fired shot, time passed: %llu", SDL_GetTicks64() - stats->lastShotTime);
-			stats->lastShotTime = SDL_GetTicks64();
+		if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackSpeed) {
+			slog("fired shot, time passed: %llu", SDL_GetTicks64() - stats->timeAtAttack);
+			stats->timeAtAttack = SDL_GetTicks64();
 			Entity* projectile = projectile_new(self, &stats->projectileStats);
 			((ProjectileData*)projectile->data)->parent = self;
 			((ProjectileData*)projectile->data)->origin = self->position;

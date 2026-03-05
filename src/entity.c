@@ -81,6 +81,15 @@ void entity_think(Entity* self) {
 void entity_update(Entity* self) {
 	if (!self) return;
 
+	if (self->velocity.x > 0) {
+		self->forward = gfc_vector2d(1, 0);
+		self->flip = gfc_vector2d(0, 0);
+	}
+	if (self->velocity.x < 0) {
+		self->forward = gfc_vector2d(-1, 0);
+		self->flip = gfc_vector2d(1, 0);
+	}
+
 	if (self->update)self->update(self);
 }
 
@@ -116,10 +125,10 @@ void entity_draw(Entity* self) {
 		gf2d_sprite_render(
 			self->sprite,
 			gfc_vector2d(self->position.x + offset.x, self->position.y + offset.y),
+			&self->scale,
 			NULL,
 			NULL,
-			NULL,
-			NULL,
+			&self->flip,
 			NULL,
 			NULL,
 			(Uint32)self->frame);

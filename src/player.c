@@ -35,18 +35,22 @@ Entity* player_new() {
 	self->collision.s.r.h = self->sprite->frame_h;
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
+	self->forward = gfc_vector2d(1, 0);
+	self->gravity = 1;
+	self->type = PLAYER;
 	
 	stats->jumps = 0;
 	stats->moveSpeed = 1;
 	stats->health = 5;
-	self->gravity = 1;
-	self->type = PLAYER;
-	self->think = player_think;
-	self->update = player_update;
-	self->free = player_free;
 	stats->damaged = 0;
 	stats->projectileStats.damage = 1;
 	stats->projectileStats.speed = 1;
+	stats->invincibility = 500;
+
+	self->think = player_think;
+	self->update = player_update;
+	self->free = player_free;
+
 	player = self;
 	return self;
 }
@@ -167,7 +171,7 @@ void player_update(Entity* self) {
 	self->collision.s.r.y = self->position.y;
 	//slog("Health: %u | Incoming Damage: %u", stats->health, stats->damaged);
 	if (stats->damaged > 0){
-		if (SDL_GetTicks64() - timeAtHit > 300) {
+		if (SDL_GetTicks64() - timeAtHit > stats->invincibility) {
 			stats->health -= stats->damaged;
 			stats->damaged = 0;
 		}

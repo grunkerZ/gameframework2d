@@ -13,9 +13,7 @@ Entity* repenter_new(GFC_Vector2D position) {
 		return NULL;
 	}
 	stats = ((MonsterData*)self->data);
-	stats->touchDamage = 1;
-	stats->moveSpeed = 1;
-	stats->health = 2;
+
 	self->gravity = 1;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/repenter.png");
@@ -24,10 +22,18 @@ Entity* repenter_new(GFC_Vector2D position) {
 	self->collision.s.r.w = self->sprite->frame_w;
 	self->collision.s.r.h = self->sprite->frame_h;
 	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
-	stats->stopDistance = 500;
+
+	stats->touchDamage = 1;
+	stats->moveSpeed = 1;
+	stats->health = 2;
+	stats->stopDistance = 100;
 	stats->attackSpeed = 1000;
-	stats->lastShotTime = 0;
+	stats->timeAtAttack = 0;
 	stats->sentry = 1;
+	stats->projectileStats.damage = 1;
+	stats->projectileStats.speed = 1;
+	stats->projectileStats.parent = self;
+	stats->projectileStats.explodes = 1;
 
 	self->think = repenter_think;
 	self->update = repenter_update;
@@ -47,16 +53,19 @@ void repenter_think(Entity* self) {
 	move_to_1d(self, playerPos);
 
 	if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {
-		if (SDL_GetTicks64() - stats->lastShotTime > stats->attackSpeed) {
-			slog("fired shot, time passed: %llu", SDL_GetTicks64() - stats->lastShotTime);
-			stats->lastShotTime = SDL_GetTicks64();
-			Entity* projectile = projectile_new(self, &stats->projectileStats);
-			((ProjectileData*)projectile->data)->parent = self;
-			gfc_vector2d_sub(projectileDir, playerPos, gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)));
-			gfc_vector2d_normalize(&projectileDir);
-			gfc_vector2d_scale(projectileDir, projectileDir, 3);
-			gfc_vector2d_add(projectile->velocity, projectile->velocity, projectileDir);
+		if (stats->attacking) {
+			self->velocity.x = 0;
+			if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackDelay) {
+				Entity* projectile = projectile_new(self, &stats->projectileStats);
+				projectile->velocity = gfc_vector2d(stats->projectileStats.speed, -5);
+				stats->attacking = 0;
+			}
 		}
+		if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackCooldown) {
+			stats->attacking = 1;
+			stats->timeAtAttack = SDL_GetTicks64();
+		}
+		
 	}
 
 	collider = check_entity_collision(self);
@@ -65,7 +74,6 @@ void repenter_think(Entity* self) {
 			collision_bounce(self, collider);
 		}
 	}
-
 }
 
 void repenter_update(Entity* self) {

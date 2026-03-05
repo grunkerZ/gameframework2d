@@ -11,16 +11,18 @@ typedef struct {
 	Uint8			sentry;
 	Uint8			touchDamage;
 	Uint8			moveSpeed;
-	Uint8			charging;
+	Uint8			attacking;
 	Uint32			attackSpeed;
+	Uint32			attackDelay;
 	Uint32			stun;
-	Uint32			timeAtStun;
-	PathNode*		path;
+	Uint32			attackCooldown;
 	Uint32			stopDistance;
-	GFC_Vector2I	lastPlayerGridPos;
+	Uint32			timeAtStun;
 	Uint32			timeAtPathCalc;
-	Uint32			lastShotTime;
+	Uint32			timeAtAttack;
+	GFC_Vector2I	lastPlayerGridPos;
 	ProjectileData  projectileStats;
+	PathNode* path;
 	void*			data;
 }MonsterData;
 

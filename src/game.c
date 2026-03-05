@@ -13,6 +13,7 @@
 #include "m_imp.h"
 #include "m_hellhound.h"
 #include "m_fiend.h"
+#include "m_repenter.h"
 
 int main(int argc, char * argv[])
 {
@@ -36,6 +37,7 @@ int main(int argc, char * argv[])
     Entity* imp;
     Entity* hellhound;
     Entity* fiend;
+    Entity* repenter;
     GFC_Color mouseGFC_Color = gfc_color8(0,100,255,200);
     GameState state = GS_MAINMENU;
     GenericMenu* mainMenu;
@@ -70,6 +72,7 @@ int main(int argc, char * argv[])
     imp = imp_new(gfc_vector2d(128, 120));
     hellhound = hellhound_new(gfc_vector2d(128, 120));
     fiend = fiend_new(gfc_vector2d(128, 120));
+    repenter = repenter_new(gfc_vector2d(128, 120));
     level = level_load("maps/testworld.map");
     GFC_Vector2D offset = camera_get_offset();
     mainMenu = main_menu_init();
@@ -116,7 +119,8 @@ int main(int argc, char * argv[])
                   //  monster = damned_new(gfc_vector2d(128, 100));
                    // imp = imp_new(gfc_vector2d(128, 100));
                    // hellhound = hellhound_new(gfc_vector2d(128, 120));
-                    fiend = fiend_new(gfc_vector2d(192, 128));
+                    //fiend = fiend_new(gfc_vector2d(192, 128));
+                    repenter = repenter_new(gfc_vector2d(128, 120));
                     level = level_load("maps/testworld.map");
                 }
                 if (mainMenu->Menu.start.exitButton.clicked) {
