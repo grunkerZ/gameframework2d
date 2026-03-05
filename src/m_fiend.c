@@ -25,10 +25,10 @@ Entity* fiend_new(GFC_Vector2D position) {
 	stats->touchDamage = 1;
 	stats->moveSpeed = 1;
 	stats->health = 2;
-	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
 	stats->stopDistance = 500;
 	stats->attackSpeed = 1000;
 	stats->timeAtAttack = 0;
+	stats->monster = DAMNED;
 
 	self->think = fiend_think;
 	self->update = fiend_update;

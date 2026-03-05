@@ -31,7 +31,7 @@ typedef struct Entity_S
 	GFC_Vector2D	forward;
 	GFC_Shape		collision;
 	EntityType		type;
-	Sprite* sprite;
+	Sprite*			sprite;
 	void			(*think)(struct Entity_S* self);	//called every frame if defined for entity
 	void			(*update)(struct Entity_S* self);	//execute entity decisions
 	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data

@@ -33,6 +33,7 @@ Entity* repenter_new(GFC_Vector2D position) {
 	stats->timeAtAttack = 0;
 	stats->sentry = 1;
 	stats->touchDamage = 1;
+	stats->monster = REPENTER;
 
 	stats->projectileStats.damage = 1;
 	stats->projectileStats.speed = 1;

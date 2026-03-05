@@ -32,6 +32,7 @@ Entity* hellhound_new(GFC_Vector2D position) {
 	stats->attacking = 0;
 	stats->attackCooldown = 500;
 	stats->attackDelay = 500;
+	stats->monster = HELLHOUND;
 
 	self->think = hellhound_think;
 	self->update = hellhound_update;

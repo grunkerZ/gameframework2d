@@ -79,6 +79,23 @@ void projectile_damage(Entity* self, Entity* collider) {
 		}
 		switch (collider->type) {
 		case MONSTER:
+			if (collider->type == MONSTER && ((MonsterData*)collider->data)->monster == REPENTER) {
+				GFC_Rect front;
+				if (collider->forward.x == -1) {
+					slog("FACING LEFT");
+					front.x = collider->collision.s.r.x;
+				}
+				if (collider->forward.x == 1) {
+					slog("FACING RIGHT");
+					front.x = collider->collision.s.r.x + collider->sprite->frame_w / 2;
+				}
+				front.y = collider->collision.s.r.y;
+				front.w = collider->collision.s.r.w / 2;
+				front.h = collider->collision.s.r.h;
+				if (!gfc_circle_rect_overlap(self->collision.s.c, front)) {
+					break;
+				}
+			}
 			((MonsterData*)collider->data)->health = apply_damage(collider, stats->damage, ((MonsterData*)collider->data)->health);
 			break;
 		case PLAYER:
@@ -96,6 +113,24 @@ void projectile_damage(Entity* self, Entity* collider) {
 	
 	switch (collider->type) {
 	case MONSTER:
+		if (collider->type == MONSTER && ((MonsterData*)collider->data)->monster == REPENTER) {
+			GFC_Rect front;
+			if (collider->forward.x == -1) {
+				slog("FACING LEFT");
+				front.x = collider->collision.s.r.x;
+			}
+			if (collider->forward.x == 1) {
+				slog("FACING RIGHT");
+				front.x = collider->collision.s.r.x + collider->sprite->frame_w / 2;
+			}
+			front.y = collider->collision.s.r.y;
+			front.w = collider->collision.s.r.w / 2;
+			front.h = collider->collision.s.r.h;
+			if (!gfc_circle_rect_overlap(self->collision.s.c, front)) {
+				projectile_free(self);
+				return;
+			}
+		}
 		((MonsterData*)collider->data)->health = apply_damage(collider, stats->damage, ((MonsterData*)collider->data)->health);
 		projectile_free(self);
 		return;

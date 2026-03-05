@@ -1,7 +1,6 @@
 #include "m_imp.h"
 #include "player.h"
 #include "simple_logger.h"
-#include "projectile.h"
 
 void imp_think(Entity* self);
 void imp_update(Entity* self);
@@ -14,13 +13,7 @@ Entity* imp_new(GFC_Vector2D position) {
 		return NULL;
 	}
 	stats = ((MonsterData*)self->data);
-	stats->touchDamage = 1;
-	stats->moveSpeed = 2.5;
-	stats->health = 2;
-	stats->stopDistance = 200;
-	stats->attackSpeed = 1000;
-	stats->timeAtAttack = 0;
-	stats->projectileStats.damage = 1;
+
 	self->gravity = 0;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/imp.png");
@@ -28,6 +21,15 @@ Entity* imp_new(GFC_Vector2D position) {
 	self->collision.s.r.y = self->position.y+3;
 	self->collision.s.r.w = self->sprite->frame_w-6;
 	self->collision.s.r.h = self->sprite->frame_h-6;
+
+	stats->touchDamage = 1;
+	stats->moveSpeed = 2.5;
+	stats->health = 2;
+	stats->stopDistance = 200;
+	stats->attackSpeed = 1000;
+	stats->timeAtAttack = 0;
+	stats->projectileStats.damage = 1;
+	stats->monster = IMP;
 
 	self->think = imp_think;
 	self->update = imp_update;

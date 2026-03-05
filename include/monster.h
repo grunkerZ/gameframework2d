@@ -5,6 +5,14 @@
 #include "pathfinding.h"
 #include "projectile.h"
 
+typedef enum {
+	DAMNED,
+	IMP,
+	HELLHOUND,
+	FIEND,
+	REPENTER
+}MonsterType;
+
 typedef struct {
 	Uint8			health;
 	Uint8			damage;
@@ -21,8 +29,9 @@ typedef struct {
 	Uint32			timeAtPathCalc;
 	Uint32			timeAtAttack;
 	GFC_Vector2I	lastPlayerGridPos;
+	MonsterType		monster;
 	ProjectileData  projectileStats;
-	PathNode* path;
+	PathNode*		path;
 	void*			data;
 }MonsterData;
 
