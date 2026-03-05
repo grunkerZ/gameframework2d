@@ -24,6 +24,7 @@ Entity* monster_new() {
 	self->type = MONSTER;
 	self->forward = gfc_vector2d(1, 0);
 	self->flip = gfc_vector2d(0,0);
+	self->invincibility = 0;
 
 	stats->timeAtStun = SDL_GetTicks64();
 	stats->path = pathfind_2d(world_to_grid(self->position), world_to_grid(player_get_position()));
@@ -153,7 +154,6 @@ void move_to_1d(Entity* self, GFC_Vector2D targetPos) {
 				self->velocity.x = stats->moveSpeed;
 			}
 		}
-		return;
 	}
 
 	if (world_to_grid(targetPos).y > world_to_grid((gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)))).y) {
@@ -183,10 +183,11 @@ void move_to_1d(Entity* self, GFC_Vector2D targetPos) {
 		if (detect_ledge(self) && !is_drop_safe(self)) self->velocity.x = 0;
 		return;
 	}
-
-	if (targetPos.x < self->position.x) self->velocity.x = -stats->moveSpeed;
-	if (targetPos.x > self->position.x) self->velocity.x = stats->moveSpeed;
-	if((detect_ledge(self))) self->velocity.x = 0;
+	if (!stats->sentry) {
+		if (targetPos.x < self->position.x) self->velocity.x = -stats->moveSpeed;
+		if (targetPos.x > self->position.x) self->velocity.x = stats->moveSpeed;
+	}
+	if ((detect_ledge(self))) self->velocity.x = 0;
 
 }
 
@@ -260,5 +261,6 @@ void move_to_2d(Entity* self, GFC_Vector2D targetPos) {
 	self->velocity = distance;
 	return;
 }
+
 
 /*eol@eof*/

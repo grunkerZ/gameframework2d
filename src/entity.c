@@ -186,8 +186,8 @@ CollisionInfo check_map_collision(Entity* self) {
 				info.collided=1;
 			}
 		}
-		
-		
+		//slog("MAP COLLISION: Circle vs Rect");
+		return info;
 	}
 
 	//RECT VS RECT
@@ -235,8 +235,21 @@ CollisionInfo check_map_collision(Entity* self) {
 			}
 		}
 	}
-
+	//slog("MAP COLLISION: Rect vs Rect");
 	return info;
+}
+
+Uint8 apply_damage(Entity* target, Uint8 damage, Uint8 health) {
+	if (SDL_GetTicks64() - target->timeAtDamaged < target->invincibility) {
+		slog("Target invincible. Invincible Time: %u Time Since Damage: %llu", target->invincibility, target->timeAtDamaged);
+		slog("Current Health: %d", health);
+		return health;
+	}
+	target->timeAtDamaged = SDL_GetTicks64();
+	slog("Time Since Damage updated");
+	slog("Damaging target for %d damage", damage);
+	slog("Health Before: %d | Health After: %d", health, health - damage);
+	return health - damage;
 }
 
 void collision_bounce(Entity* self, Entity* collider){
@@ -251,7 +264,8 @@ void collision_bounce(Entity* self, Entity* collider){
 	gfc_vector2d_sub(bounce, selfCenter, colliderCenter);
 	gfc_vector2d_normalize(&bounce);
 	gfc_vector2d_scale(self->velocity, bounce, 3);
-
 }
+
+
 
 /*eol@eof*/

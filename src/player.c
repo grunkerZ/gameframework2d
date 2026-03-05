@@ -37,15 +37,18 @@ Entity* player_new() {
 	self->collision.s.r.y = self->position.y;
 	self->forward = gfc_vector2d(1, 0);
 	self->gravity = 1;
+	self->invincibility = 500;
 	self->type = PLAYER;
 	
 	stats->jumps = 0;
 	stats->moveSpeed = 1;
 	stats->health = 5;
-	stats->damaged = 0;
+	stats->touchDamage;
+
 	stats->projectileStats.damage = 1;
 	stats->projectileStats.speed = 1;
-	stats->invincibility = 500;
+	stats->projectileStats.range = 1000;
+	stats->projectileStats.parent = self;
 
 	self->think = player_think;
 	self->update = player_update;
@@ -61,6 +64,7 @@ void player_think(Entity* self) {
 	const Uint8* keys;
 	CollisionInfo info;
 	Entity* collider;
+	Entity* projectile = NULL;
 	PlayerData* stats;
 	GFC_Vector2D colliderCenter;
 	GFC_Vector2D playerCenter;
@@ -99,10 +103,8 @@ void player_think(Entity* self) {
 			stats->stun = 300;
 			timeAtStun = SDL_GetTicks64();
 			((MonsterData*)collider->data)->timeAtStun = SDL_GetTicks64();
-			if (SDL_GetTicks64() - timeAtHit > 300){
-				stats->damaged = ((MonsterData*)collider->data)->touchDamage;
-				timeAtHit = SDL_GetTicks64();
-			}
+			stats->health = apply_damage(self,((MonsterData*)collider->data)->touchDamage,stats->health);
+			((MonsterData*)collider->data)->health = apply_damage(collider, stats->touchDamage, ((MonsterData*)collider->data)->health);
 			collision_bounce(self, collider);
 
 		}
@@ -120,44 +122,36 @@ void player_think(Entity* self) {
 	if (keys[SDL_SCANCODE_UP]) {
 		if (SDL_GetTicks64() - timeAtShot >= 800) {
 			timeAtShot = SDL_GetTicks64();
-			Entity* projectile = projectile_new(self,&stats->projectileStats);
+			projectile = projectile_new(self,&stats->projectileStats);
 			projectileDir.y = -stats->projectileStats.speed;
-			gfc_vector2d_normalize(&projectileDir);
-			gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
 		}
 		
 	}
 	else if (keys[SDL_SCANCODE_DOWN]) {
 		if (SDL_GetTicks64() - timeAtShot >= 800) {
 			timeAtShot = SDL_GetTicks64();
-			Entity* projectile = projectile_new(self, &stats->projectileStats);
-			((ProjectileData*)projectile->data)->parent = self;
+			projectile = projectile_new(self, &stats->projectileStats);
 			projectileDir.y = stats->projectileStats.speed;
-			gfc_vector2d_normalize(&projectileDir);
-			gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
 		}
 	}
 	else if (keys[SDL_SCANCODE_LEFT]) {
 		if (SDL_GetTicks64() - timeAtShot >= 800) {
 			timeAtShot = SDL_GetTicks64();
-			Entity* projectile = projectile_new(self, &stats->projectileStats);
-			((ProjectileData*)projectile->data)->parent = self;
+			projectile = projectile_new(self, &stats->projectileStats);
 			projectileDir.x = -stats->projectileStats.speed;
-			gfc_vector2d_normalize(&projectileDir);
-			gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
 		}
 	}
 	else if (keys[SDL_SCANCODE_RIGHT]) {
 		if (SDL_GetTicks64() - timeAtShot >= 800) {
 			timeAtShot = SDL_GetTicks64();
-			Entity* projectile = projectile_new(self, &stats->projectileStats);
-			((ProjectileData*)projectile->data)->parent = self;
+			projectile = projectile_new(self, &stats->projectileStats);
 			projectileDir.x = stats->projectileStats.speed;
-			gfc_vector2d_normalize(&projectileDir);
-			gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
 		}
 	}
-
+	if (projectile) {
+		gfc_vector2d_normalize(&projectileDir);
+		gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
+	}
 }
 
 void player_update(Entity* self) {
@@ -169,14 +163,6 @@ void player_update(Entity* self) {
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
-	//slog("Health: %u | Incoming Damage: %u", stats->health, stats->damaged);
-	if (stats->damaged > 0){
-		if (SDL_GetTicks64() - timeAtHit > stats->invincibility) {
-			stats->health -= stats->damaged;
-			stats->damaged = 0;
-		}
-	}
-	//slog("Health: %u | Reset Damage: %u", stats->health, stats->damaged);
 }
 
 void player_free(Entity* self) {

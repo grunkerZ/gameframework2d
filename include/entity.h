@@ -18,6 +18,8 @@ typedef struct Entity_S
 {
 	Uint8			_inuse;								//dont touch
 	Uint8			gravity;
+	Uint32			invincibility;
+	Uint32			timeAtDamaged;
 	float			rotation;
 	float			frame;
 	GFC_TextLine	name;								//name of entity for debug
@@ -99,5 +101,14 @@ void entity_free(Entity* self);
 * @brief frees all in use entities
 */
 void entity_manager_free_all();
+
+/*
+* @brief applies damage to a target
+* @param target the entity that is to be damaged
+* @param damage the damage to be taken
+* @param the target's health
+* @return the value of health after damage is subtracted
+*/
+Uint8 apply_damage(Entity* target, Uint8 damage, Uint8 health);
 
 #endif // !__ENTITY_H__

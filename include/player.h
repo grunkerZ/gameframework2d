@@ -8,9 +8,8 @@ typedef struct {
 	Uint8				jumps;
 	Uint8				health;
 	Uint8				moveSpeed;
-	Uint8				damaged;
 	Uint8				grounded;
-	Uint32				invincibility;
+	Uint8				touchDamage;
 	Uint32				stun;
 	ProjectileData		projectileStats;
 }PlayerData;

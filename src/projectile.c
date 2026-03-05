@@ -29,10 +29,17 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	selfStats = self->data;
 	*selfStats = *stats;
 
-	slog("New Projectile Created");
+	//slog("New Projectile Created");
+	self->scale = gfc_vector2d(1, 1);
+	self->flip = gfc_vector2d(0, 0);
 	self->sprite = gf2d_sprite_load_image("images/placeholder/projectile.png");
-	self->position= gfc_vector2d(owner->position.x + ((owner->sprite->frame_w / 2) - (self->sprite->frame_w / 2)), owner->position.y + (owner->sprite->frame_h * 0.25));
-	selfStats->origin = gfc_vector2d(owner->position.x,owner->position.y+(owner->sprite->frame_h / 2));
+
+	selfStats->origin = gfc_vector2d(owner->position.x, owner->position.y + (owner->sprite->frame_h / 2));
+	self->position = selfStats->origin;
+	
+	slog("New Projectile Created at (%f,%f)",self->position.x,self->position.y);
+	slog("Owner Position at (%f,%f)",owner->position.x,owner->position.y);
+	
 	selfStats->parent = owner;
 	
 	self->collision.type = ST_CIRCLE;
@@ -41,6 +48,8 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	self->collision.s.c.r = self->sprite->frame_w / 2;
 	self->type = PROJECTILE;
 
+	selfStats->timeAtSpawn = SDL_GetTicks64();
+	selfStats->spawnImmunity = 300;
 	selfStats->exploded = 0;
 
 	self->think = projectile_think;
@@ -51,39 +60,47 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 
 void projectile_free(Entity* self) {
 	if (!self) return;
+	slog("Projectile Vanquished");
 	entity_free(self);
 }
 
 void projectile_damage(Entity* self, Entity* collider) {
 	ProjectileData* stats = self->data;
+
+	if (collider == stats->parent) return;
+	if (collider->type == stats->parent->type) return;
+
 	if (stats->explodes) {
-		self->scale = gfc_vector2d(1.5, 1.5);
-		stats->timeAtExplosion = SDL_GetTicks64();
+		self->velocity = gfc_vector2d(0, 0);
+		self->scale = gfc_vector2d(2, 2);
 		if (!stats->exploded) {
-			switch (collider->type) {
-			case MONSTER:
-				((MonsterData*)collider->data)->health -= stats->damage;
-				stats->exploded = 1;
-				break;
-			case PLAYER:
-				((PlayerData*)collider->data)->health -= stats->damage;
-				stats->exploded = 1;
-				break;
-			}
+			stats->timeAtExplosion = SDL_GetTicks64();
+			stats->exploded = 1;
 		}
+		switch (collider->type) {
+		case MONSTER:
+			((MonsterData*)collider->data)->health = apply_damage(collider, stats->damage, ((MonsterData*)collider->data)->health);
+			break;
+		case PLAYER:
+			((PlayerData*)collider->data)->health = apply_damage(collider, stats->damage, ((PlayerData*)collider->data)->health);
+			break;
+		}
+	
 		if (SDL_GetTicks64() - stats->timeAtExplosion > stats->explosionTime) {
 			projectile_free(self);
 			return;
 		}
+
+		return;
 	}
 	
 	switch (collider->type) {
 	case MONSTER:
-		((MonsterData*)collider->data)->health -= stats->damage;
+		((MonsterData*)collider->data)->health = apply_damage(collider, stats->damage, ((MonsterData*)collider->data)->health);
 		projectile_free(self);
 		return;
 	case PLAYER:
-		((PlayerData*)collider->data)->health -= stats->damage;
+		((PlayerData*)collider->data)->health = apply_damage(collider, stats->damage, ((PlayerData*)collider->data)->health);
 		projectile_free(self);
 		return;
 	}
@@ -95,22 +112,29 @@ void projectile_think(Entity* self) {
 	ProjectileData* stats = self->data;
 	collider = check_entity_collision(self);
 	if (collider) {
-		if (collider != stats->parent) {
-			if (collider->type == MONSTER) {
-				((MonsterData*)collider->data)->health -= stats->damage;
-				slog("Dealt %f damage, Monster health at %f", stats->damage, ((MonsterData*)collider->data)->health);
-				projectile_free(self);
-				return;
+		projectile_damage(self, collider);
+	}
+	info = check_map_collision(self);
+	if(SDL_GetTicks64() - stats->timeAtSpawn > stats->spawnImmunity){
+		if (info.collided) {
+			if (stats->explodes) {
+				self->velocity = gfc_vector2d(0, 0);
+				self->scale = gfc_vector2d(2, 2);
+				if (!stats->exploded) {
+					stats->timeAtExplosion = SDL_GetTicks64();
+					stats->exploded = 1;
+				}
 			}
-			if (collider->type == PLAYER) {
-				((PlayerData*)collider->data)->health -= stats->damage;
+			else {
 				projectile_free(self);
 				return;
 			}
 		}
+		if (SDL_GetTicks64() - stats->timeAtExplosion > stats->explosionTime && stats->exploded) {
+			projectile_free(self);
+			return;
+		}
 	}
-	info = check_map_collision(self);
-	if (info.collided) projectile_free(self);
 	return;
 }
 
