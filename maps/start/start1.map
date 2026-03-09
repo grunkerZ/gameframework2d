@@ -1,0 +1,25 @@
+{
+	"start":
+	{
+		"background":"images/placeholder/ph_background.png",
+		"tileSet":"images/placeholder/basetileset3.png",
+		"frame_w":64,
+		"frame_h":64,
+		"frames_per_line":1,
+		"uniqueTiles":11,
+		"tileLogic":["TT_EMPTY","TT_SOLID","TT_DANGEROUS","TT_SOLID","TT_SOLID","TT_PLATFORM","TT_EXPLODEABLE","TT_BREAKABLE","TT_SOLID","TT_DANGEROUS","TT_SOLID"],
+		"spawnPoints":[],
+		"tileMap":
+		[
+			[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+			[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,5,5,5,5,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,1],
+			[1,0,4,2,2,2,4,4,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1],
+			[1,0,0,7,7,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+
+		]
+	}
+}

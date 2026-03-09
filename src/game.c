@@ -29,7 +29,7 @@ int main(int argc, char * argv[])
 
     int done = 0;
     const Uint8 * keys;
-    Level* level;
+    Room* room;
     int mx,my;
     Uint8 paused=0;
     float mf = 0;
@@ -76,7 +76,7 @@ int main(int argc, char * argv[])
     hellhound = hellhound_new(gfc_vector2d(128, 120));
     fiend = fiend_new(gfc_vector2d(128, 120));
     repenter = repenter_new(gfc_vector2d(128, 120));
-    level = level_load("maps/testworld.map");
+    room = room_load("maps/testworld.map");
     GFC_Vector2D offset = camera_get_offset();
     mainMenu = main_menu_init();
     deathMenu = death_menu_init();
@@ -119,14 +119,14 @@ int main(int argc, char * argv[])
                 if (mainMenu->Menu.start.startButton.clicked) {
                     state = GS_PLAYING;
                     entity_manager_free_all();
-                    level_free(level);
+                    room_free(room);
                     player = player_new();
                   //  monster = damned_new(gfc_vector2d(128, 100));
                    // imp = imp_new(gfc_vector2d(128, 100));
                    // hellhound = hellhound_new(gfc_vector2d(128, 120));
                     //fiend = fiend_new(gfc_vector2d(192, 128));
                     repenter = repenter_new(gfc_vector2d(128, 120));
-                    level = level_load("maps/testworld.map");
+                    room = room_load("maps/testworld.map");
                 }
                 if (mainMenu->Menu.start.exitButton.clicked) {
                     done = 1;
@@ -141,7 +141,7 @@ int main(int argc, char * argv[])
 
 
                 //draw
-                level_draw(level);
+                room_draw(room);
                 entity_manager_draw_all();
                 camera_center_on(gfc_vector2d(player->position.x + (player->sprite->frame_w / 2), player->position.y + (player->sprite->frame_h / 2)));
 
@@ -184,7 +184,7 @@ int main(int argc, char * argv[])
             case GS_PAUSED:
                 menu_update(pauseMenu);
 
-                level_draw(level);
+                room_draw(room);
                 entity_manager_draw_all();
                 camera_center_on(gfc_vector2d(player->position.x + (player->sprite->frame_w / 2), player->position.y + (player->sprite->frame_h / 2)));
                 
@@ -220,7 +220,7 @@ int main(int argc, char * argv[])
     menu_free(deathMenu);
     menu_free(pauseMenu);
     entity_free(player);
-    level_free(level);
+    room_free(room);
     slog("---==== END ====---");
     return 0;
 }

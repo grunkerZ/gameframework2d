@@ -3,99 +3,269 @@
 #include "gf2d_graphics.h"
 #include "camera.h"
 
-static Level* activeLevel = NULL;
+/*
+* ===================
+* 
+* FLOOR FUNCTIONS
+* 
+* ===================
+*/
 
-void level_tile_layer_build(Level* level) {
+Floor* floor_new() {
+	Floor* floor;
+
+	floor = gfc_allocate_array(sizeof(Floor), 1);
+	if (!floor) {
+		slog("failed to allocate a new room");
+		return NULL;
+	}
+
+	return floor;
+}
+
+
+Floor* floor_create(Uint8 complexity, Uint8 difficulty, Uint8 specialRooms, Uint8 numItemRooms, Uint32 seed) {
+	Floor* floor = floor_new();
+	if (!floor) return NULL;
+	floor->complexity = complexity;
+	floor->difficulty = difficulty;
+	floor->specialRooms = specialRooms;
+	floor->seed = seed;
+	floor->roomsLeft = complexity;
+	floor->exitGenerated = 0;
+	floor->width = complexity * 2 + 1;
+	floor->height = complexity * 2 + 1;
+	if (specialRooms > 0 && numItemRooms) {
+		floor->numItemRooms = numItemRooms;
+	}
+	else if (specialRooms > 0 && !numItemRooms) {
+		floor->numItemRooms = 1;
+	}
+	else {
+		floor->numItemRooms = 0;
+	}
+
+	floor->floorMap = gfc_allocate_array(sizeof(Uint8), floor->width * floor->height);
+	
+
+
+
+	return floor;
+}
+
+Uint8* floor_generate(Floor* floor) {
+	GFC_Vector2I candidates[256];
+	int numCandidates = 0;
+	int startX, startY, i, j;
+	int room;
+	int minY;
+	GFC_Vector2I validSpot;
+	GFC_Vector2I topRooms[256];
+	GFC_Vector2I itemSpots[256];
+	int topCount = 0;
+	int itemCandidates = 0;
+	
+	srand(floor->seed);
+
+	//GENERATE STANDARD ROOMS
+
+	startX = floor->width / 2;
+	startY = floor->height - 1;
+	minY = startY;
+	floor->floorMap[floor_get_room_index(floor,startX,startY)] = START;
+	floor->roomsLeft--;
+
+	validSpot.x = startX;
+	validSpot.y = startY - 1;
+	candidates[numCandidates++] = validSpot;
+	validSpot.x = startX - 1;
+	validSpot.y = startY;
+	candidates[numCandidates++] = validSpot;
+	validSpot.x = startX + 1;
+	candidates[numCandidates++] = validSpot;
+
+	while (floor->roomsLeft > 0 && numCandidates > 0) {
+		int index = rand() % numCandidates;
+		GFC_Vector2I pos = candidates[index];
+
+		if(floor_count_neighbors(floor,pos.x,pos.y)==1){
+			floor->floorMap[floor_get_room_index(floor, pos.x, pos.y)] = STANDARD;
+			floor->roomsLeft--;
+
+			if (pos.y < minY) minY = pos.y;
+
+			validSpot.x = pos.x;
+			validSpot.y = pos.y - 1;
+			candidates[numCandidates++] = validSpot;
+			validSpot.x = pos.x - 1;
+			validSpot.y = pos.y;
+			candidates[numCandidates++] = validSpot;
+			validSpot.x = pos.x + 1;
+			candidates[numCandidates++] = validSpot;
+		}
+
+		candidates[index] = candidates[numCandidates - 1];
+		numCandidates--;
+	}
+
+	//PLACE EXIT
+
+	for (i = 0; i < floor->width; i++) {
+		if (floor_get_room_type(floor, i, minY) == STANDARD) {
+			validSpot.x = i;
+			validSpot.y = minY;
+			topRooms[topCount++] = validSpot;
+		}
+	}
+
+	if (topCount > 0) {
+		GFC_Vector2I exit = topRooms[rand() % topCount];
+		floor->floorMap[floor_get_room_index(floor, exit.x, exit.y)] = EXIT;
+	}
+
+	//PLACE SPECIAL ROOMS
+	
+	for (i = 0; i < floor->height; i++) {
+		for (j = 0; j < floor->width; j++) {
+			if (floor_get_room_type(floor, j, i) == EMPTY) {
+				if (floor_count_neighbors(floor,j,i) == 1) {
+					int neighborType = EMPTY;
+					if (floor_get_room_type(floor, j+1, i) != EMPTY) neighborType = floor_get_room_type(floor, j, i);
+					else if (floor_get_room_type(floor, j-1, i) != EMPTY) neighborType = floor_get_room_type(floor, j, i);
+					else if (floor_get_room_type(floor, j, i+1) != EMPTY) neighborType = floor_get_room_type(floor, j, i);
+					else if (floor_get_room_type(floor, j, i-1) != EMPTY) neighborType = floor_get_room_type(floor, j, i);
+					
+					if(neighborType==STANDARD){
+						validSpot.x = j;
+						validSpot.y = i;
+						itemSpots[itemCandidates++] = validSpot;
+					}
+				}
+			}
+		}
+	}
+
+	while (floor->numItemRooms > 0 && itemCandidates > 0) {
+		int index = rand() % itemCandidates;
+		GFC_Vector2I pos = itemSpots[index];
+
+		floor->floorMap[floor_get_room_index(floor, pos.x, pos.y)] = ITEM;
+		floor->numItemRooms--;
+
+		itemSpots[index] = itemSpots[itemCandidates - 1];
+		itemCandidates--;
+	}
+	return floor->floorMap;
+}
+
+
+void floor_free(Floor* floor) {
+	if (!floor)return;
+	if (floor->floorMap)free(floor->floorMap);
+	free(floor);
+}
+
+void print_floor(Floor* floor) {
+	int i, j;
+
+	printf("Floor Map");
+	printf("{");
+	for (j = 0; j < floor->height; j++) {
+		for (i = 0; i < floor->width; i++) {
+			printf("%d ",floor->floorMap[(j * floor->width) + i]);
+		}
+		printf("\n");
+	}
+	printf("}");
+	printf("END MAP");
+}
+
+int floor_get_room_index(Floor* floor, int x, int y) {
+	int index;
+	if (x<0 || y<0 || x>=floor->width || y>=floor->height) {
+		slog("Room Index Out of Bounds");
+		return -1;
+	}
+	index = (floor->width * y) + x;
+	return index;
+}
+
+int floor_get_room_type(Floor* floor, int x, int y) {
+	int type;
+	type=floor->floorMap[floor_get_room_index(floor, x, y)];
+	return type;
+}
+
+int floor_count_neighbors(Floor* floor, int x, int y) {
+	int count = 0;
+	if (floor_get_room_type(floor, x + 1, y) != EMPTY) count++;
+	if (floor_get_room_type(floor, x - 1, y) != EMPTY) count++;
+	if (floor_get_room_type(floor, x, y - 1) != EMPTY) count++;
+	if (floor_get_room_type(floor, x, y + 1) != EMPTY) count++;
+	return count;
+}
+
+
+/*
+* =====================
+* 
+* ROOM FUNCTIONS
+* 
+* =====================
+*/
+
+static Room* activeRoom = NULL;
+
+void room_tile_layer_build(Room* room) {
 	int i, j;
 	Uint8 tile;
 	Uint32 index;
 
-	if (!level)return;
-	if (!level->tileSet)return;
+	if (!room)return;
+	if (!room->tileSet)return;
 
-	slog("World Size: %ix%i", level->width, level->height);
-	if (level->tileLayer) {
-		gf2d_sprite_free(level->tileLayer);
+	slog("World Size: %ix%i", room->width, room->height);
+	if (room->tileLayer) {
+		gf2d_sprite_free(room->tileLayer);
 	}
-	level->tileLayer = gf2d_sprite_new();
+	room->tileLayer = gf2d_sprite_new();
 
-	level->tileLayer->surface = gf2d_graphics_create_surface(
-		level->width * level->tileWidth,
-		level->height * level->tileHeight
+	room->tileLayer->surface = gf2d_graphics_create_surface(
+		room->width * room->tileWidth,
+		room->height * room->tileHeight
 	);
-	slog("Tile Frame: %u x%u", level->tileWidth, level->tileHeight);
+	slog("Tile Frame: %u x%u", room->tileWidth, room->tileHeight);
 
-	level->tileLayer->frame_w = level->width * level->tileWidth;
-	level->tileLayer->frame_h = level->height * level->tileHeight;
+	room->tileLayer->frame_w = room->width * room->tileWidth;
+	room->tileLayer->frame_h = room->height * room->tileHeight;
 
-	for (j = 0; j < level->height; j++) {
-		for (i = 0; i < level->width; i++) {
-			index = level_get_tile_index(level, i, j);
-			tile = level->tileMap[index];
+	for (j = 0; j < room->height; j++) {
+		for (i = 0; i < room->width; i++) {
+			index = room_get_tile_index(room, i, j);
+			tile = room->tileMap[index];
 			if (!tile)continue;
 
 			gf2d_sprite_draw_to_surface(
-				level->tileSet,
-				gfc_vector2d((i * level->tileWidth), (j * level->tileHeight)),
+				room->tileSet,
+				gfc_vector2d((i * room->tileWidth), (j * room->tileHeight)),
 				NULL,
 				NULL,
 				tile - 1,
-				level->tileLayer->surface
+				room->tileLayer->surface
 			);
 		}
 	}
 
-	level->tileLayer->texture = SDL_CreateTextureFromSurface(gf2d_graphics_get_renderer(), level->tileLayer->surface);
-	if (!level->tileLayer->texture) {
+	room->tileLayer->texture = SDL_CreateTextureFromSurface(gf2d_graphics_get_renderer(), room->tileLayer->surface);
+	if (!room->tileLayer->texture) {
 		slog("failed to convert world tile layer to texture");
 		return;
 	}
 }
 
-int tile_at(GFC_Vector2D position) {
-	GFC_Vector2I gridPos = world_to_grid(position);
-	int index;
-	if (gridPos.x > activeLevel->width-1 || gridPos.y > activeLevel->height-1) {
-		slog("out of bounds tile");
-		return -1;
-	}
+Room* room_load(const char* filename) {
 
-	index = (activeLevel->width * gridPos.y) + gridPos.x;
-
-	return activeLevel->tileMap[index];
-}
-
-GFC_Vector2D get_tile_dimensions() {
-	if (!activeLevel) return gfc_vector2d(0,0);
-
-	return gfc_vector2d(activeLevel->tileWidth, activeLevel->tileHeight);
-}
-
-GFC_Vector2I world_to_grid(GFC_Vector2D position) {
-	GFC_Vector2I gridPos;
-	if (!activeLevel) {
-		gridPos.x = 0;
-		gridPos.y = 0;
-		return gridPos;
-	}
-	Uint8 col = position.x / activeLevel->tileWidth;
-	Uint8 row = position.y / activeLevel->tileHeight;
-	gridPos.x = col;
-	gridPos.y = row;
-	return gridPos;
-}
-
-GFC_Vector2D grid_to_world(GFC_Vector2I position) {
-	GFC_Vector2D worldPos;
-	if (!activeLevel) return worldPos = gfc_vector2d(0, 0);
-	worldPos.x = (position.x * activeLevel->tileWidth) + (activeLevel->tileWidth / 2);
-	worldPos.y = (position.y * activeLevel->tileHeight) + (activeLevel->tileHeight / 2);
-	return worldPos;
-}
-
-Level* level_load(const char* filename) {
-
-	Level* level = NULL;
+	Room* room = NULL;
 	SJson* json = NULL;
 	SJson* wjson = NULL;
 	SJson* vertical, * horizontal;
@@ -105,13 +275,13 @@ Level* level_load(const char* filename) {
 	int w = 0, h = 0;
 	int i, j;
 	if (!filename) {
-		slog("no filename provided for level_load");
+		slog("no filename provided for room_load");
 		return NULL;
 	}
 
 	json = sj_load(filename);
 	if (!json) {
-		slog("failed to load level file $s", filename);
+		slog("failed to load room file $s", filename);
 		return NULL;
 	}
 
@@ -137,9 +307,9 @@ Level* level_load(const char* filename) {
 	sj_object_get_value_as_int(wjson, "frame_h", &tileHeight);
 	sj_object_get_value_as_int(wjson, "frames_per_line", &framesPerLine);
 
-	level = level_create(sj_object_get_value_as_string(wjson, "background"), sj_object_get_value_as_string(wjson, "tileSet"), w, h, tileWidth, tileHeight, framesPerLine);
-	if (!level) {
-		slog("failed to create space for a new level for file %s", filename);
+	room = room_create(sj_object_get_value_as_string(wjson, "background"), sj_object_get_value_as_string(wjson, "tileSet"), w, h, tileWidth, tileHeight, framesPerLine);
+	if (!room) {
+		slog("failed to create space for a new room for file %s", filename);
 		sj_free(json);
 		return NULL;
 	}
@@ -152,66 +322,46 @@ Level* level_load(const char* filename) {
 			if (!item)continue;
 			tile = 0;
 			sj_get_integer_value(item, &tile);
-			level->tileMap[i + (j * w)] = tile;
+			room->tileMap[i + (j * w)] = tile;
 		}
 	}
 
-	level_tile_layer_build(level);
+	room_tile_layer_build(room);
 
-	activeLevel = level;
+	activeRoom = room;
 	sj_free(json);
-	return level;
+	return room;
 }
 
-Level* level_test_new() {
-	Level* level;
-	int i;
-	int width = 45, height = 75;
 
-	level = level_create("images/backgrounds/bg_flat.png", "images/placeholder/testTileSet.png",width, height,16,16,1);
+Room* room_new() {
+	Room* room;
 
-	if (!level) return NULL;
-
-	for (i = 0; i < width; i++) {
-		level->tileMap[i] = 1;
-		level->tileMap[i + ((height-1) * width)] = 1;
-	}
-	for (i = 0; i < height; i++) {
-		level->tileMap[i * width] = 1;
-		level->tileMap[i * width + (width-1)] = 1;
-	}
-	level_tile_layer_build(level);
-	return level;
-}
-
-Level* level_new() {
-	Level* level;
-
-	level = gfc_allocate_array(sizeof(Level), 1);
-	if (!level) {
-		slog("failed to allocate a new level");
+	room = gfc_allocate_array(sizeof(Room), 1);
+	if (!room) {
+		slog("failed to allocate a new room");
 		return NULL;
 	}
 
-	return level;
+	return room;
 }
 
-Level* level_create(const char* background, const char* tileSet, Uint32 width, Uint32 height, Uint32 tileWidth, Uint32 tileHeight, Uint32 tilesPerLine) {
-	Level* level;
+Room* room_create(const char* background, const char* tileSet, Uint32 width, Uint32 height, Uint32 tileWidth, Uint32 tileHeight, Uint32 tilesPerLine) {
+	Room* room;
 
-	level = level_new();
-	if (!level)return NULL;
+	room = room_new();
+	if (!room)return NULL;
 
 	if (!width || !height) {
-		slog("cannot create a level with 0 dimension");
+		slog("cannot create a room with 0 dimension");
 		return NULL;
 	}
 
 	if (background) {
-		level->background = gf2d_sprite_load_image(background);
+		room->background = gf2d_sprite_load_image(background);
 	}
 	if (tileSet) {
-		level->tileSet = gf2d_sprite_load_all(
+		room->tileSet = gf2d_sprite_load_all(
 			tileSet,
 			tileWidth,
 			tileHeight,
@@ -220,68 +370,185 @@ Level* level_create(const char* background, const char* tileSet, Uint32 width, U
 		);
 	}
 
-	level->tileMap = gfc_allocate_array(sizeof(Uint8), height * width);
-	level->width = width;
-	level->height = height;
-	level->tileWidth = tileWidth;
-	level->tileHeight = tileHeight;
+	room->tileMap = gfc_allocate_array(sizeof(Uint8), height * width);
+	room->width = width;
+	room->height = height;
+	room->tileWidth = tileWidth;
+	room->tileHeight = tileHeight;
 
-	return level;
+	return room;
 }
 
-int level_get_tile_index(Level* level,Uint32 x,Uint32 y) {
-	if (!level || !level->tileMap) return -1;
-	if (x >= level->width) return -1;
-	if (y >= level->height)return -1;
-	return (y * level->width) + x;
+int room_get_tile_index(Room* room,Uint32 x,Uint32 y) {
+	if (!room || !room->tileMap) return -1;
+	if (x >= room->width) return -1;
+	if (y >= room->height)return -1;
+	return (y * room->width) + x;
 }
 
-void level_add_border(Level* level, Uint8 tile) {
-	int i, j;
-	int index;
-	if (!level || !level->tileMap) return;
-
-	for (j = 0; j < level->height; j++) {
-		index = level_get_tile_index(level, 0, j);
-		if (index >= 0)level->tileMap[index] = tile;
-		index = level_get_tile_index(level, level->width - 1, j);
-		if (index >= 0)level->tileMap[index] = tile;
-	}
-	for (i = 0; i < level->height; i++) {
-		index = level_get_tile_index(level, 0, i);
-		if (index >= 0)level->tileMap[index] = tile;
-		index = level_get_tile_index(level, level->height - 1,i);
-		if (index >= 0)level->tileMap[index] = tile;
-	}
-
+void room_free(Room* room) {
+	if (!room)return;
+	activeRoom = NULL;
+	gf2d_sprite_free(room->background);
+	gf2d_sprite_free(room->tileSet);
+	if (room->tileMap)free(room->tileMap);
+	gf2d_sprite_free(room->tileLayer);
+	if (room->tileLogic)free(room->tileLogic);
+	free(room);
 }
 
-
-void level_free(Level* level) {
-	if (!level)return;
-	activeLevel = NULL;
-	gf2d_sprite_free(level->background);
-	gf2d_sprite_free(level->tileSet);
-	if (level->tileMap)free(level->tileMap);
-	gf2d_sprite_free(level->tileLayer);
-	free(level);
-}
-
-void level_draw(Level* level) {
+void room_draw(Room* room) {
 	GFC_Vector2D offset = camera_get_offset();
 	
-	if (!level) {
+	if (!room) {
 		slog("no valid world to draw");
 		return;
 	}
 
-	if (level->background){
-		gf2d_sprite_draw_image(level->background, offset);
+	if (room->background){
+		gf2d_sprite_draw_image(room->background, offset);
 	}
-	if (level->tileSet) {
-		gf2d_sprite_draw_image(level->tileLayer, offset);
+	if (room->tileSet) {
+		gf2d_sprite_draw_image(room->tileLayer, offset);
 	}
 	
+}
+
+int room_get_tile_type(Room* room, int index) {
+	int totalTiles = room->uniqueTiles;
+	if (index > totalTiles || index < 0) {
+		slog("tile type lookup out of bounds");
+		return -1;
+	}
+	return room->tileLogic[index];
+}
+
+
+/*
+* ==========================
+*
+* STAGE FUNCTIONS
+*
+* ==========================
+*/
+
+Stage* stage_new() {
+	Stage* stage;
+
+	stage = gfc_allocate_array(sizeof(Stage), 1);
+	if (!stage) {
+		slog("failed to allocate a new stage");
+		return NULL;
+	}
+
+	return stage;
+}
+
+Stage* stage_create(Floor* floor, Room* room, GFC_Vector2I gridPos) {
+	Stage* stage = stage_new();
+	if (!stage) return NULL;
+
+	stage->cleared = 0;
+	stage->difficulty = floor->difficulty;
+	stage->gridPos = gridPos;
+	stage->room = room;
+	stage->type = floor_get_room_type(floor,gridPos.x,gridPos.y);
+	stage->visible = 0;
+	stage->visited = 0;
+
+	if (stage->type == START) {
+		stage->cleared = 1;
+		stage->visible = 1;
+		stage->visited = 1;
+	}
+
+	if (floor_get_room_type(floor, gridPos.x, gridPos.y - 1) != EMPTY && floor_get_room_type(floor, gridPos.x, gridPos.y - 1) != SECRET) stage->doors |= DOOR_NORTH;
+	else if (floor_get_room_type(floor, gridPos.x, gridPos.y - 1) == SECRET) stage->doors |= DOOR_NORTH_HIDDEN;
+	if (floor_get_room_type(floor, gridPos.x, gridPos.y + 1) != EMPTY && floor_get_room_type(floor, gridPos.x, gridPos.y + 1) != SECRET) stage->doors |= DOOR_SOUTH;
+	else if (floor_get_room_type(floor, gridPos.x, gridPos.y + 1) == SECRET) stage->doors |= DOOR_SOUTH_HIDDEN;
+	if (floor_get_room_type(floor, gridPos.x + 1, gridPos.y) != EMPTY && floor_get_room_type(floor, gridPos.x + 1, gridPos.y) != SECRET) stage->doors |= DOOR_EAST;
+	else if (floor_get_room_type(floor, gridPos.x + 1, gridPos.y) == SECRET) stage->doors |= DOOR_EAST_HIDDEN;
+	if (floor_get_room_type(floor, gridPos.x - 1, gridPos.y) != EMPTY && floor_get_room_type(floor, gridPos.x - 1, gridPos.y) != SECRET) stage->doors |= DOOR_WEST;
+	else if (floor_get_room_type(floor, gridPos.x - 1, gridPos.y) == SECRET) stage->doors |= DOOR_WEST_HIDDEN;
+
+	return stage;
+}
+
+void stage_free(Stage* stage) {
+	if (!stage) return;
+	if (stage->room) room_free(stage->room);
+	free(stage);
+}
+
+void stage_make_doors(Stage* stage) {
+	int index;
+	if (stage->doors & DOOR_NORTH) {
+		index = room_get_tile_index(stage->room, stage->room->width / 2, 0);
+		stage->room->tileMap[index] = EMPTY;
+	}
+	if (stage->doors & DOOR_SOUTH) {
+		index = room_get_tile_index(stage->room, stage->room->width / 2, stage->room->height - 1);
+		stage->room->tileMap[index] = EMPTY;
+	}
+	if (stage->doors & DOOR_EAST) {
+		index = room_get_tile_index(stage->room, stage->room->width - 1, stage->room->height / 2);
+		stage->room->tileMap[index] = EMPTY;
+	}
+	if (stage->doors & DOOR_WEST) {
+		index = room_get_tile_index(stage->room, 0, stage->room->height / 2);
+		stage->room->tileMap[index] = EMPTY;
+	}
+}
+
+
+/*
+* ==========================
+* 
+* HELPER FUNCTIONS
+* 
+* ==========================
+*/
+
+
+int tile_at(GFC_Vector2D position) {
+	GFC_Vector2I gridPos = world_to_grid(position);
+	int index;
+	if (gridPos.x > activeRoom->width - 1 || gridPos.y > activeRoom->height - 1) {
+		slog("out of bounds tile");
+		return -1;
+	}
+
+	index = (activeRoom->width * gridPos.y) + gridPos.x;
+
+	return activeRoom->tileMap[index];
+}
+
+GFC_Vector2D get_tile_dimensions() {
+	if (!activeRoom) return gfc_vector2d(0, 0);
+
+	return gfc_vector2d(activeRoom->tileWidth, activeRoom->tileHeight);
+}
+
+GFC_Vector2I world_to_grid(GFC_Vector2D position) {
+	GFC_Vector2I gridPos;
+	if (!activeRoom) {
+		gridPos.x = 0;
+		gridPos.y = 0;
+		return gridPos;
+	}
+	Uint8 col = position.x / activeRoom->tileWidth;
+	Uint8 row = position.y / activeRoom->tileHeight;
+	gridPos.x = col;
+	gridPos.y = row;
+	return gridPos;
+}
+
+GFC_Vector2D grid_to_world(GFC_Vector2I position) {
+	GFC_Vector2D worldPos;
+	if (!activeRoom) return worldPos = gfc_vector2d(0, 0);
+	worldPos.x = (position.x * activeRoom->tileWidth) + (activeRoom->tileWidth / 2);
+	worldPos.y = (position.y * activeRoom->tileHeight) + (activeRoom->tileHeight / 2);
+	return worldPos;
 }
 
 /*eol@eof*/

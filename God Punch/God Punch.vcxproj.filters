@@ -25,6 +25,12 @@
     <Filter Include="Header Files\gfc\simple_json">
       <UniqueIdentifier>{d614cf78-fba3-443c-b50a-b78e5679fc80}</UniqueIdentifier>
     </Filter>
+    <Filter Include="maps">
+      <UniqueIdentifier>{7f8edd73-387a-4e8c-a8dc-29e495268a1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="maps\start">
+      <UniqueIdentifier>{3e0c64bc-244f-4b7b-8048-61ce40ae1d46}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\entity.c">
@@ -310,6 +316,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\maps\testworld.map" />
+    <None Include="..\maps\testworld.map">
+      <Filter>maps</Filter>
+    </None>
+    <None Include="..\maps\start\start1.map">
+      <Filter>maps\start</Filter>
+    </None>
   </ItemGroup>
 </Project>
