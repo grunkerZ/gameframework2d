@@ -32,7 +32,6 @@ Floor* floor_create(Uint8 complexity, Uint8 difficulty, Uint8 specialRooms, Uint
 	floor->specialRooms = specialRooms;
 	floor->seed = seed;
 	floor->roomsLeft = complexity;
-	floor->exitGenerated = 0;
 	floor->width = complexity * 2 + 1;
 	floor->height = complexity * 2 + 1;
 	if (specialRooms > 0 && numItemRooms) {
@@ -161,7 +160,7 @@ Uint8* floor_generate(Floor* floor) {
 	for (i = 0; i < floor->width * floor->height; i++) {
 		Stage* stage;
 		GFC_Vector2I gridPos;
-		const char* filename = "";
+		const char* filename = "maps/testworld.map";
 		if (floor->blueprint[i] > 0) {
 			gridPos.y = i / floor->width;
 			gridPos.x = i % floor->width;
@@ -240,12 +239,12 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 	int index;
 
 	for (i = 0; i < floor->width * floor->height; i++) {
-		floor->floorMap[i]->active = 0;
+		if(floor->floorMap[i]) floor->floorMap[i]->active = 0;
 	}
 
 	index = floor_get_room_index(floor, playerX, playerY);
-	if (index > 0 && floor->blueprint[index] > 0 && floor->floorMap[index]->room == NULL) {
-		floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+	if (index >= 0 && floor->blueprint[index] > 0) {
+		if(floor->floorMap[i]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
 		floor->floorMap[index]->active = 1;
 	}
 
@@ -253,16 +252,16 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 	y = playerY - 1;
 	
 	index = floor_get_room_index(floor, x, y);
-	if (index > 0 && floor->blueprint[index] > 0 && floor->floorMap[index]->room == NULL) {
-		floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+	if (index >= 0 && floor->blueprint[index] > 0) {
+		if (floor->floorMap[i]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
 		floor->floorMap[index]->active = 1;
 	}
 
 	y = playerY + 1;
 
 	index = floor_get_room_index(floor, x, y);
-	if (index > 0 && floor->blueprint[index] > 0 && floor->floorMap[index]->room == NULL) {
-		floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+	if (index >= 0 && floor->blueprint[index] > 0) {
+		if (floor->floorMap[i]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
 		floor->floorMap[index]->active = 1;
 	}
 
@@ -270,16 +269,16 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 	y = playerY;
 
 	index = floor_get_room_index(floor, x, y);
-	if (index > 0 && floor->blueprint[index] > 0 && floor->floorMap[index]->room == NULL) {
-		floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+	if (index >= 0 && floor->blueprint[index] > 0) {
+		if (floor->floorMap[i]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
 		floor->floorMap[index]->active = 1;
 	}
 
 	x = playerX - 1;
 
 	index = floor_get_room_index(floor, x, y);
-	if (index > 0 && floor->blueprint[index] > 0 && floor->floorMap[index]->room == NULL) {
-		floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+	if (index >= 0 && floor->blueprint[index] > 0) {
+		if (floor->floorMap[i]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
 		floor->floorMap[index]->active = 1;
 	}
 
@@ -287,7 +286,6 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 		if (floor->floorMap[i]->active) continue;
 		room_free(floor->floorMap[i]->room);
 		floor->floorMap[i]->room = NULL;
-		floor->floorMap[i]->active = 0;
 	}
 }
 

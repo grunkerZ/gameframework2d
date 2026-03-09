@@ -17,21 +17,21 @@ typedef enum {
 typedef struct Entity_S
 {
 	Uint8			_inuse;								//dont touch
-	Uint8			gravity;
-	Uint32			invincibility;
-	Uint32			timeAtDamaged;
-	float			rotation;
-	float			frame;
+	Uint8			gravity;							//1 if the entity is affected by gravity, 0 otherwise
+	Uint32			invincibility;						//the time the entity is invincible for after damage
+	Uint32			timeAtDamaged;						//the time when the entity last took damage
+	float			rotation;							//the rotation of the sprite
+	float			frame;								//the frame of the sprite sheet
 	GFC_TextLine	name;								//name of entity for debug
 	GFC_Vector2D	position;							//position of entity on screen
 	GFC_Vector2D	scale;								//size of entity
-	GFC_Vector2D	flip;
+	GFC_Vector2D	flip;								//mirroring of the sprite (horizontal,vertical)
 	GFC_Vector2D	velocity;							//rate of position change per update
-	GFC_Vector2D	centerPos;
-	GFC_Vector2D	forward;
-	GFC_Shape		collision;
-	EntityType		type;
-	Sprite*			sprite;
+	GFC_Vector2D	centerPos;							//the center position of the entity
+	GFC_Vector2D	forward;							//the forward vector of the entity
+	GFC_Shape		collision;							//the collision box of the entity
+	EntityType		type;								//the type of entity
+	Sprite*			sprite;								//the sprite of the entity
 	void			(*think)(struct Entity_S* self);	//called every frame if defined for entity
 	void			(*update)(struct Entity_S* self);	//execute entity decisions
 	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data
@@ -39,11 +39,11 @@ typedef struct Entity_S
 }Entity;
 
 typedef struct {
-	Uint8	collided;
-	Uint8	top;
-	Uint8	left;
-	Uint8	right;
-	Uint8	bottom;
+	Uint8	collided;									//1 if the entity collides at all, 0 otherwise
+	Uint8	top;										//1 if the entity collides on its top edge, 0 otherwise
+	Uint8	left;										//1 if the entity collides on its left edge, 0 otherwise
+	Uint8	right;										//1 if the entity collides on its right edge, 0 otherwise
+	Uint8	bottom;										//1 if the entity collides on its bottom edge, 0 otherwise
 }CollisionInfo;
 
 /**
@@ -88,6 +88,11 @@ Entity* check_entity_collision(Entity* self);
 */
 CollisionInfo check_map_collision(Entity* self);
 
+/*
+* @brief adds velocity in the opposite direction of the collision to the entities
+* @param self the entity colliding
+* @param collider the entity collided with
+*/
 void collision_bounce(Entity* self, Entity* collider);
 
 /**

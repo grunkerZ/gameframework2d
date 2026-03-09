@@ -36,51 +36,50 @@ typedef enum {
 }Doors;
 
 typedef struct {
-	GFC_Vector2I	gridPos;
-	Uint8			type;
+	GFC_Vector2I	gridPos;			//the position of the spawn location
+	Uint8			type;				//the type of monster spawn, 98 for ground, 99 for flying
 }SpawnPoint;
 
 typedef struct
 {
-	Sprite*			background; //background image for room
-	Sprite*			tileSet;	//Sprite containing tiles for room
-	Uint8			uniqueTiles; //Number of unique tiles on a tileSheet
-	Uint8*			tileMap;	//tiles that make up the world
-	Uint32			height;		//how many tiles tall the room is
-	Uint32			width;		//how many tiles wide the map is
-	Uint32			tileWidth;	//how many pixels wide a tile is
-	Uint32			tileHeight;	//how many pixels tall a tile is
-	Sprite*			tileLayer;	//prerendered tile layer
-	TileType*		tileLogic;
-	SpawnPoint*		spawnPoints;
-	Uint8			numSpawnLocations;
+	Sprite*			background;			//background image for room
+	Sprite*			tileSet;			//Sprite containing tiles for room
+	Uint8			uniqueTiles;		//Number of unique tiles on a tileSheet
+	Uint8*			tileMap;			//tiles that make up the world
+	Uint32			height;				//how many tiles tall the room is
+	Uint32			width;				//how many tiles wide the map is
+	Uint32			tileWidth;			//how many pixels wide a tile is
+	Uint32			tileHeight;			//how many pixels tall a tile is
+	Sprite*			tileLayer;			//prerendered tile layer
+	TileType*		tileLogic;			//contains the tile type for each unique tile
+	SpawnPoint*		spawnPoints;		//contains the spawning point data for each monster
+	Uint8			numSpawnLocations;	//the amount of spawn locations in the room
 }Room;
 
 typedef struct {
-	Uint8			difficulty; //The Monster Budget
-	Uint8			cleared; //1 if cleared 0 if not
-	Uint8			visited; //1 if visited, 0 if not
-	Uint8			visible; //1 if visible on map, 0 if not
-	Uint8			active; //1 if the stage is loaded, 0 if not
-	Uint8			doors; //bitmask for open doors
-	GFC_Vector2I	gridPos; //(x,y) on floor map
-	RoomType		type; //the room type
-	Room*			room; //the loaded json data
-	const char*		filename; //the json data for the room
+	Uint8			difficulty;			//The Monster Budget
+	Uint8			cleared;			//1 if cleared 0 if not
+	Uint8			visited;			//1 if visited, 0 if not
+	Uint8			visible;			//1 if visible on map, 0 if not
+	Uint8			active;				//1 if the stage is loaded, 0 if not
+	Uint8			doors;				//bitmask for open doors
+	GFC_Vector2I	gridPos;			//(x,y) on floor map
+	RoomType		type;				//the room type
+	Room*			room;				//the loaded json data
+	const char*		filename;			//the json data for the room
 }Stage;
 
 typedef struct {
-	Stage**		floorMap;
-	Uint8*		blueprint;
-	Uint8		exitGenerated;
-	Uint8		roomsLeft;
-	Uint8		complexity;
-	Uint8		difficulty;
-	Uint8		specialRooms;
-	Uint8		numItemRooms; //Default 1 on NULL
-	Uint32		seed;
-	Uint32		width;
-	Uint32		height;
+	Stage**			floorMap;			//the map of the stages on the floor
+	Uint8*			blueprint;			//the integer map of room types on the floor
+	Uint8			roomsLeft;			//the amount of rooms left to generate
+	Uint8			complexity;			//the amount of rooms total
+	Uint8			difficulty;			//the monster budget for each stage
+	Uint8			specialRooms;		//the amount of special rooms on a floor
+	Uint8			numItemRooms;		//Default 1 on NULL
+	Uint32			seed;				//the seed for randomness
+	Uint32			width;				//the width of the floor map
+	Uint32			height;				//the height of the floor map
 }Floor;
 
 

@@ -3,6 +3,18 @@
   "WorkspaceRootPath": "C:\\git\\gameframework2d\\God Punch\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\monster.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\m_repenter.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\m_imp.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\game.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\world.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
@@ -16,9 +28,6 @@
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\testworld.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\game.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -28,17 +37,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 3,
               "Title": "game.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\game.c",
               "RelativeDocumentMoniker": "..\\src\\game.c",
               "ToolTip": "C:\\git\\gameframework2d\\src\\game.c",
               "RelativeToolTip": "..\\src\\game.c",
-              "ViewState": "AgIAAGEAAAAAAAAAAAAvwH8AAAAWAAAAAAAAAA==",
+              "ViewState": "AgIAADYAAAAAAAAAAAAcwE4AAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-01-30T14:12:12.61Z",
               "IsPinned": true,
@@ -46,7 +55,46 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
+              "Title": "m_imp.h",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\include\\m_imp.h",
+              "RelativeDocumentMoniker": "..\\include\\m_imp.h",
+              "ToolTip": "C:\\git\\gameframework2d\\include\\m_imp.h",
+              "RelativeToolTip": "..\\include\\m_imp.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-03-09T16:00:05.215Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "m_repenter.h",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\include\\m_repenter.h",
+              "RelativeDocumentMoniker": "..\\include\\m_repenter.h",
+              "ToolTip": "C:\\git\\gameframework2d\\include\\m_repenter.h",
+              "RelativeToolTip": "..\\include\\m_repenter.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-03-09T15:58:58.696Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "monster.h",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\include\\monster.h",
+              "RelativeDocumentMoniker": "..\\include\\monster.h",
+              "ToolTip": "C:\\git\\gameframework2d\\include\\monster.h*",
+              "RelativeToolTip": "..\\include\\monster.h*",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAAACEAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-03-09T15:57:09.079Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "testworld.map",
               "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\testworld.map",
               "RelativeDocumentMoniker": "..\\maps\\testworld.map",
@@ -54,12 +102,11 @@
               "RelativeToolTip": "..\\maps\\testworld.map",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-03-09T10:22:30.977Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-09T10:22:30.977Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 7,
               "Title": "start1.map",
               "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\start\\start1.map",
               "RelativeDocumentMoniker": "..\\maps\\start\\start1.map",
@@ -67,12 +114,11 @@
               "RelativeToolTip": "..\\maps\\start\\start1.map",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-03-09T10:22:08.971Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-09T10:22:08.971Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 6,
               "Title": "standard1.map",
               "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\standard\\standard1.map",
               "RelativeDocumentMoniker": "..\\maps\\standard\\standard1.map",
@@ -80,31 +126,30 @@
               "RelativeToolTip": "..\\maps\\standard\\standard1.map",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-03-09T11:34:20.543Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-09T11:34:20.543Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 4,
               "Title": "world.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\world.c",
               "RelativeDocumentMoniker": "..\\src\\world.c",
-              "ToolTip": "C:\\git\\gameframework2d\\src\\world.c*",
-              "RelativeToolTip": "..\\src\\world.c*",
-              "ViewState": "AgIAAJEAAAAAAAAAAAAcwKMAAAAbAAAAAAAAAA==",
+              "ToolTip": "C:\\git\\gameframework2d\\src\\world.c",
+              "RelativeToolTip": "..\\src\\world.c",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAcwCIAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-03-09T06:35:33.053Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
               "Title": "world.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\world.h",
               "RelativeDocumentMoniker": "..\\include\\world.h",
               "ToolTip": "C:\\git\\gameframework2d\\include\\world.h",
               "RelativeToolTip": "..\\include\\world.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAK0AAAAxAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACcAAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2026-03-09T06:35:34.385Z",
               "EditorCaption": ""

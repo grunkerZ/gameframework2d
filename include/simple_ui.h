@@ -5,29 +5,29 @@
 	#include "gf2d_sprite.h"
 
 	typedef struct {
-		GFC_Shape		bounds;
-		GFC_ShapeTypes	shape;
-		Uint8			clicked;
-		Uint8			hovered;
-		Sprite*			sprite;
-		Sprite*			highlight;
-		GFC_Vector2D	position;
-		Uint32			lastMouseState;
+		GFC_Shape		bounds;				//the bounds of the button
+		GFC_ShapeTypes	shape;				//the shape of the button
+		Uint8			clicked;			//1 if the button was clicked, 0 otherwise
+		Uint8			hovered;			//1 if the mouse is hovering over the button, 0 otherwise
+		Sprite*			sprite;				//the sprite of the button
+		Sprite*			highlight;			//the sprite of the button while hovered
+		GFC_Vector2D	position;			//the position of the button
+		Uint32			lastMouseState;		//the last moust state
 	}Button;
 
 	typedef struct {
-		Button		startButton;
-		Button		exitButton;
+		Button		startButton;			//starts the game
+		Button		exitButton;				//quits the game
 	}MainMenu;
 
 	typedef struct {
-		Button		exitButton;
-		Button		mainMenuButton;
+		Button		exitButton;				//quits the game
+		Button		mainMenuButton;			//return to main menu
 	}DeathMenu;
 
 	typedef struct {
-		Button		exitButton;
-		Button		mainMenuButton;
+		Button		exitButton;				//return to play
+		Button		mainMenuButton;			//return to main menu
 	}PauseMenu;
 
 	typedef enum {
@@ -37,8 +37,8 @@
 	}MenuType;
 
 	typedef struct {
-		MenuType	menuType;
-		Sprite*		background;
+		MenuType	menuType;				//the type of the menu
+		Sprite*		background;				//the background image of the menu
 		union
 		{
 			MainMenu	start;

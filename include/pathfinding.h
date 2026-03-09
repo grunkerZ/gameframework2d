@@ -5,12 +5,12 @@
 
 
 typedef struct PathNode_S {
-	Uint32					distanceTo;
-	Uint32					distanceTraveled;
-	Uint32					totalDistance;
-	GFC_Vector2I			gridPos;
-	struct PathNode_S*		parent;
-	struct PathNode_S*		next;
+	Uint32					distanceTo;				//the distance to the target
+	Uint32					distanceTraveled;		//the distance that has already been traveled from the starting position
+	Uint32					totalDistance;			//the total distance to the target from the starting position
+	GFC_Vector2I			gridPos;				//the grid position of a path node
+	struct PathNode_S*		parent;					//the parent node of a path node
+	struct PathNode_S*		next;					//the next node of a path node
 }PathNode;
 
 

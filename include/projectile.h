@@ -4,17 +4,17 @@
 #include "entity.h"
 
 typedef struct {
-	Uint8			damage;
-	Uint8			speed;
-	Uint8			spawnImmunity;
-	Uint8			explodes;
-	Uint8			exploded;
-	Uint8			explosionTime;
-	Uint32			timeAtSpawn;
-	Uint32			timeAtExplosion;
-	Uint32			range;
-	GFC_Vector2D	origin;
-	Entity*			parent;
+	Uint8			damage;				//the damage of the projectile
+	Uint8			speed;				//the speed of the projectile
+	Uint8			spawnImmunity;		//a short window of spawn immunity of the projectile protecting it from being freed on map collision
+	Uint8			explodes;			//1 if the projectile explodes, 0 otherwise
+	Uint8			exploded;			//1 if the projectile has exploded, 0 otherwise
+	Uint8			explosionTime;		//how long the projectile explodes for
+	Uint32			timeAtSpawn;		//the time when the projectile was spawned
+	Uint32			timeAtExplosion;	//the time when the projectile exploded
+	Uint32			range;				//the range of the projectile before freeing itself
+	GFC_Vector2D	origin;				//the starting position of the projectile
+	Entity*			parent;				//the parent entity of the projectile
 }ProjectileData;
 
 /*

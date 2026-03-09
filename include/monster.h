@@ -14,25 +14,24 @@ typedef enum {
 }MonsterType;
 
 typedef struct {
-	Uint8			health;
-	Uint8			damage;
-	Uint8			sentry;
-	Uint8			touchDamage;
-	Uint8			moveSpeed;
-	Uint8			attacking;
-	Uint32			attackSpeed;
-	Uint32			attackDelay;
-	Uint32			stun;
-	Uint32			attackCooldown;
-	Uint32			stopDistance;
-	Uint32			timeAtStun;
-	Uint32			timeAtPathCalc;
-	Uint32			timeAtAttack;
-	GFC_Vector2I	lastPlayerGridPos;
-	MonsterType		monster;
-	ProjectileData  projectileStats;
-	PathNode*		path;
-	void*			data;
+	Uint8			health;				//the health of the monster
+	Uint8			damage;				//the damage of the monsters attack
+	Uint8			sentry;				//1 if the monster should patrol its platform, 0 otherwise
+	Uint8			touchDamage;		//the damage delt to valid colliding entities
+	Uint8			moveSpeed;			//the speed the monster moves
+	Uint8			attacking;			//1 if the monster is currently attacking, 0 otherwise
+	Uint32			attackSpeed;		
+	Uint32			attackDelay;		//the time it takes for the monster to complete an attack
+	Uint32			stun;				//how long a monster does not move on its own for
+	Uint32			attackCooldown;		//the time it takes for the monster to attack after it completed an attack
+	Uint32			stopDistance;		//the distance that the monster will not move to the player in
+	Uint32			timeAtStun;			//the time when stun is applied to a monster
+	Uint32			timeAtPathCalc;		//the time when the 2d pathfinding path was calculated
+	Uint32			timeAtAttack;		//the time when the monster attacked
+	GFC_Vector2I	lastPlayerGridPos;	//the last time the player was at when the path was calculated
+	MonsterType		monster;			//the type of monster
+	ProjectileData  projectileStats;	//the stats of the monsters projectile
+	PathNode*		path;				//the path to a target position		
 }MonsterData;
 
 /*
