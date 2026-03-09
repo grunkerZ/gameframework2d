@@ -1,5 +1,6 @@
 #include "simple_ui.h"
 #include "simple_logger.h"
+#include "gf2d_draw.h"
 #include "camera.h"
 
 
@@ -105,6 +106,41 @@ GenericMenu* death_menu_init() {
 	return self;
 }
 
+GenericMenu* pause_menu_init() {
+	GenericMenu* self;
+	self = menu_new();
+	if (!self) {
+		slog("failed it init pause menu");
+		return NULL;
+	}
+
+	self->menuType = MT_PAUSE;
+	self->background = NULL;
+	self->Menu.pause.mainMenuButton.shape = ST_RECT;
+	self->Menu.pause.mainMenuButton.sprite = gf2d_sprite_load_image("images/placeholder/mainMenuButton.png");
+	self->Menu.pause.mainMenuButton.position = gfc_vector2d(
+		(1200 / 2) - (self->Menu.pause.mainMenuButton.sprite->frame_w / 2),
+		(720 / 2) - (self->Menu.pause.mainMenuButton.sprite->frame_h / 2));
+	self->Menu.pause.mainMenuButton.bounds.s.r.x = self->Menu.pause.mainMenuButton.position.x;
+	self->Menu.pause.mainMenuButton.bounds.s.r.y = self->Menu.pause.mainMenuButton.position.y;
+	self->Menu.pause.mainMenuButton.bounds.s.r.w = self->Menu.pause.mainMenuButton.sprite->frame_w;
+	self->Menu.pause.mainMenuButton.bounds.s.r.h = self->Menu.pause.mainMenuButton.sprite->frame_h;
+	self->Menu.pause.mainMenuButton.clicked = 0;
+	self->Menu.pause.mainMenuButton.hovered = 0;
+
+	self->Menu.pause.exitButton.position = gfc_vector2d(self->Menu.pause.mainMenuButton.position.x, self->Menu.pause.mainMenuButton.position.y + (self->Menu.pause.mainMenuButton.sprite->frame_h * 2));
+	self->Menu.pause.exitButton.shape = ST_RECT;
+	self->Menu.pause.exitButton.sprite = gf2d_sprite_load_image("images/placeholder/exitButton.png");
+	self->Menu.pause.exitButton.bounds.s.r.x = self->Menu.pause.exitButton.position.x;
+	self->Menu.pause.exitButton.bounds.s.r.y = self->Menu.pause.exitButton.position.y;
+	self->Menu.pause.exitButton.bounds.s.r.w = self->Menu.pause.exitButton.sprite->frame_w;
+	self->Menu.pause.exitButton.bounds.s.r.h = self->Menu.pause.exitButton.sprite->frame_h;
+	self->Menu.pause.exitButton.clicked = 0;
+	self->Menu.pause.exitButton.hovered = 0;
+
+	return self;
+}
+
 void button_draw(Button* button) {
 	if (!button->sprite) {
 		slog("Button Sprite not found");
@@ -136,6 +172,9 @@ void menu_draw(GenericMenu* menu) {
 			NULL,
 			0);
 	}
+	else if (menu->menuType == MT_PAUSE) {
+		gf2d_draw_rect_filled(gfc_rect(0, 0, 1200, 720), gfc_color8(0, 0, 0, 150));
+	}
 	switch (menu->menuType) {
 		case MT_MAIN:
 			button_draw(&menu->Menu.start.startButton);
@@ -146,6 +185,9 @@ void menu_draw(GenericMenu* menu) {
 			button_draw(&menu->Menu.death.mainMenuButton);
 			button_draw(&menu->Menu.death.exitButton);
 			break;
+		case MT_PAUSE:
+			button_draw(&menu->Menu.pause.mainMenuButton);
+			button_draw(&menu->Menu.pause.exitButton);
 	}
 }
 
@@ -158,6 +200,10 @@ void menu_update(GenericMenu* menu) {
 		case MT_DEATH:
 			button_update(&menu->Menu.death.mainMenuButton);
 			button_update(&menu->Menu.death.exitButton);
+			break;
+		case MT_PAUSE:
+			button_update(&menu->Menu.pause.mainMenuButton);
+			button_update(&menu->Menu.pause.exitButton);
 			break;
 	}
 }
@@ -180,8 +226,12 @@ void menu_free(GenericMenu* self) {
 		gf2d_sprite_free(self->Menu.death.mainMenuButton.highlight);
 		gf2d_sprite_free(self->Menu.death.exitButton.sprite);
 		gf2d_sprite_free(self->Menu.death.exitButton.highlight);
+	case MT_PAUSE:
+		gf2d_sprite_free(self->Menu.pause.mainMenuButton.sprite);
+		gf2d_sprite_free(self->Menu.pause.mainMenuButton.highlight);
+		gf2d_sprite_free(self->Menu.pause.exitButton.sprite);
+		gf2d_sprite_free(self->Menu.pause.exitButton.highlight);
 	}
-
 	free(self);
 }
 

@@ -9,9 +9,6 @@ void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity* self);
 
-static Uint32 timeAtShot = 0;
-static Uint32 timeAtStun = 0;
-static Uint32 timeAtHit = 0;
 static Entity* player = NULL;
 
 Entity* player_new() {
@@ -36,24 +33,38 @@ Entity* player_new() {
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
 	self->forward = gfc_vector2d(1, 0);
-	self->gravity = 1;
 	self->invincibility = 500;
 	self->type = PLAYER;
 	
-	stats->baseHealth = 6;
-	stats->maxHealth = 6;
+	stats->baseMaxHealth = 6;
 	stats->baseJumps = 0;
 	stats->baseMoveSpeed = 3;
+	stats->baseHealth = 6;
 	stats->baseTouchDamage = 0;
-	stats->jumps = 0;
-	stats->moveSpeed = 3;
-	stats->health = 5;
-	stats->touchDamage;
+	stats->baseDashCooldown = 5000;
+	stats->baseFireRate = 800;
+	stats->baseRange = 1000;
+	stats->baseShotSpeed = 1;
+	stats->baseDamage = 1;
+	stats->baseGravity = 1;
+	stats->baseDashDuration = 150;
 
-	stats->projectileStats.damage = 1;
-	stats->projectileStats.speed = 1;
-	stats->projectileStats.range = 1000;
-	stats->projectileStats.parent = self;
+	stats->maxHealth = stats->baseMaxHealth;
+	stats->jumps = stats->baseJumps;
+	stats->moveSpeed = stats->baseMoveSpeed;
+	stats->health = stats->baseHealth;
+	stats->touchDamage = stats->baseTouchDamage;
+	stats->dashCooldown = stats->baseDashCooldown;
+	stats->fireRate = stats->baseFireRate;
+	stats->range = stats->baseRange;
+	stats->shotSpeed = stats->baseShotSpeed;
+	stats->damage = stats->baseDamage;
+	self->gravity = stats->baseGravity;
+	stats->dashDuration = stats->baseDashDuration;
+
+	stats->timeAtAttack = 0;
+	stats->timeAtDash = SDL_GetTicks64() - stats->dashCooldown;
+	stats->timeAtStun = 0;
 
 	self->think = player_think;
 	self->update = player_update;
@@ -64,6 +75,7 @@ Entity* player_new() {
 }
 
 void player_think(Entity* self) {
+	int vy;
 	GFC_Vector2D dir = { 0 };
 	GFC_Vector2D projectileDir = { 0 };
 	const Uint8* keys;
@@ -79,26 +91,45 @@ void player_think(Entity* self) {
 	stats = (PlayerData*)self->data;
 
 
-	if (SDL_GetTicks64() - timeAtStun > stats->stun) {
+	if (SDL_GetTicks64() - stats->timeAtStun > stats->stun) {
 		if (keys[SDL_SCANCODE_D]) {
-			dir.x = stats->moveSpeed;
+			dir.x = 1;
 		}
 		if (keys[SDL_SCANCODE_S]) {
-			if (!self->gravity) dir.y = stats->moveSpeed;
+			if (!self->gravity) dir.y = 1;
 		}
 		if (keys[SDL_SCANCODE_A]) {
-			dir.x = -stats->moveSpeed;
+			dir.x = -1;
 		}
+		gfc_vector2d_normalize(&dir);
+
+		dir.x *= stats->moveSpeed;
 		if (keys[SDL_SCANCODE_W]) {
 			if (stats->grounded) dir.y = -7;
-			if (!self->gravity) dir.y = -stats->moveSpeed;
+			if (!self->gravity) dir.y = -1;
 			else if (stats->jumps > 0) {
 				dir.y = -7;
 				stats->jumps -= 1;
 			}
 		}
-		self->velocity.x = dir.x;
-		self->velocity.y += dir.y;
+		if(SDL_GetTicks64() - stats->timeAtDash > stats->dashDuration) self->velocity.x = dir.x;
+
+		if (!self->gravity) self->velocity.y = dir.y;
+		if (self->gravity) self->velocity.y += dir.y;
+
+		if (keys[SDL_SCANCODE_LSHIFT]) {
+			//slog("LSHIFT PRESSED");
+			//slog("COOLDOWN: %llu | TIMEATDASH %llu | NOW-THEN %llu", stats->dashCooldown, stats->timeAtDash, SDL_GetTicks64() - stats->timeAtDash);
+			if (SDL_GetTicks64() - stats->timeAtDash > stats->dashCooldown) {
+				//slog("Check Passed, before velocity: (%f,%f)", self->velocity.x, self->velocity.y);
+				self->velocity.x += self->forward.x * 15;
+				//slog("Check Passed, after velocity: (%f,%f)", self->velocity.x, self->velocity.y);
+				stats->timeAtDash = SDL_GetTicks64();
+				//slog("New time set");
+			}
+
+		}
+
 	}
 
 	collider = check_entity_collision(self);
@@ -106,7 +137,7 @@ void player_think(Entity* self) {
 		if (collider->type == MONSTER) {
 			((MonsterData*)collider->data)->stun = 300;
 			stats->stun = 300;
-			timeAtStun = SDL_GetTicks64();
+			stats->timeAtStun = SDL_GetTicks64();
 			((MonsterData*)collider->data)->timeAtStun = SDL_GetTicks64();
 			stats->health = apply_damage(self,((MonsterData*)collider->data)->touchDamage,stats->health);
 			((MonsterData*)collider->data)->health = apply_damage(collider, stats->touchDamage, ((MonsterData*)collider->data)->health);
@@ -124,31 +155,36 @@ void player_think(Entity* self) {
 		stats->grounded = 0;
 	}
 
+	stats->projectileStats.damage = stats->damage;
+	stats->projectileStats.speed = stats->shotSpeed;
+	stats->projectileStats.range = stats->range;
+	stats->projectileStats.parent = self;
+
 	if (keys[SDL_SCANCODE_UP]) {
-		if (SDL_GetTicks64() - timeAtShot >= 800) {
-			timeAtShot = SDL_GetTicks64();
+		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
+			stats->timeAtAttack = SDL_GetTicks64();
 			projectile = projectile_new(self,&stats->projectileStats);
 			projectileDir.y = -stats->projectileStats.speed;
 		}
 		
 	}
 	else if (keys[SDL_SCANCODE_DOWN]) {
-		if (SDL_GetTicks64() - timeAtShot >= 800) {
-			timeAtShot = SDL_GetTicks64();
+		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
+			stats->timeAtAttack = SDL_GetTicks64();
 			projectile = projectile_new(self, &stats->projectileStats);
 			projectileDir.y = stats->projectileStats.speed;
 		}
 	}
 	else if (keys[SDL_SCANCODE_LEFT]) {
-		if (SDL_GetTicks64() - timeAtShot >= 800) {
-			timeAtShot = SDL_GetTicks64();
+		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
+			stats->timeAtAttack = SDL_GetTicks64();
 			projectile = projectile_new(self, &stats->projectileStats);
 			projectileDir.x = -stats->projectileStats.speed;
 		}
 	}
 	else if (keys[SDL_SCANCODE_RIGHT]) {
-		if (SDL_GetTicks64() - timeAtShot >= 800) {
-			timeAtShot = SDL_GetTicks64();
+		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
+			stats->timeAtAttack = SDL_GetTicks64();
 			projectile = projectile_new(self, &stats->projectileStats);
 			projectileDir.x = stats->projectileStats.speed;
 		}
@@ -190,27 +226,42 @@ void player_calculate_stats(Entity* self) {
 	Item* item;
 	int i;
 	//reset to base stats
-	stats->health = stats->baseHealth;
 	stats->maxHealth = stats->baseMaxHealth;
 	stats->jumps = stats->baseJumps;
 	stats->moveSpeed = stats->baseMoveSpeed;
+	stats->health = stats->baseHealth;
 	stats->touchDamage = stats->baseTouchDamage;
-	stats->shotSpeed = stats->baseShotSpeed;
-	stats->range = stats->baseRange;
+	stats->dashCooldown = stats->baseDashCooldown;
 	stats->fireRate = stats->baseFireRate;
+	stats->range = stats->baseRange;
+	stats->shotSpeed = stats->baseShotSpeed;
+	stats->damage = stats->baseDamage;
+	self->gravity = stats->baseGravity;
+	stats->dashDuration = stats->baseDashDuration;
+
+
 
 	//check inventory and add buffs and set flags
 	for (i = 0; i < ITEM_MAX; i++) {
 		if (stats->inventory[i] <= 0) continue;
 		item = get_item(i);
-		stats->health = item->healthMod;
-		stats->maxHealth = item->maxHealthMod;
-		stats->jumps = item->jumpsMod;
-		stats->moveSpeed = item->moveSpeedMod;
-		stats->touchDamage = item->touchDamageMod;
-		stats->shotSpeed = item->shotSpeedMod;
-		stats->range += item->rangeMod;
+
+		//stats
+		stats->maxHealth += item->maxHealthMod;
+		stats->jumps += item->jumpsMod;
+		stats->moveSpeed += item->moveSpeedMod;
+		stats->health += item->healthMod;
+		stats->touchDamage += item->touchDamageMod;
+		stats->dashCooldown += item->dashCooldownMod;
 		stats->fireRate += item->fireRateMod;
+		stats->range += item->rangeMod;
+		stats->shotSpeed += item->shotSpeedMod;
+		stats->damage += item->damageMod;
+		stats->dashDuration += item->dashDurationMod;
+
+		//flags
+		if (!item->gravity) self->gravity = 0;
+		
 	}
 }
 

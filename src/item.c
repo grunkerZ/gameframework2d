@@ -39,6 +39,7 @@ void item_manager_init() {
 	strcpy(itemManager->itemList[ITEM_COMBAT_BOOTS].name, "Combat Boots");
 	strcpy(itemManager->itemList[ITEM_COMBAT_BOOTS].flavor, "Sturdy enough to brave hellfire");
 	itemManager->itemList[ITEM_COMBAT_BOOTS].moveSpeedMod = 1;
+	itemManager->itemList[ITEM_COMBAT_BOOTS].dashCooldownMod = -1000;
 
 	itemManager->itemList[ITEM_COMMANDO_BANDANA].id = ITEM_COMMANDO_BANDANA;
 	strcpy(itemManager->itemList[ITEM_COMMANDO_BANDANA].name, "Commando Bandana");
@@ -71,6 +72,7 @@ void item_manager_init() {
 	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].maxHealthMod = -1;
 	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].damageMod = 2;
 	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].fireRateMod = -250;
+	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].gravity = 0;
 
 
 

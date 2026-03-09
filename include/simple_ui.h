@@ -25,9 +25,15 @@
 		Button		mainMenuButton;
 	}DeathMenu;
 
+	typedef struct {
+		Button		exitButton;
+		Button		mainMenuButton;
+	}PauseMenu;
+
 	typedef enum {
 		MT_MAIN,
-		MT_DEATH
+		MT_DEATH,
+		MT_PAUSE
 	}MenuType;
 
 	typedef struct {
@@ -37,6 +43,7 @@
 		{
 			MainMenu	start;
 			DeathMenu	death;
+			PauseMenu	pause;
 		}Menu;
 	}GenericMenu;
 
@@ -75,6 +82,12 @@
 	* @return NULL on error, otherwise A GenericMenu pointer
 	*/
 	GenericMenu* death_menu_init();
+
+	/*
+	* @brief initializes the Pause menu with data
+	* 
+	*/
+	GenericMenu* pause_menu_init();
 
 	/*
 	* @brief draws a button to the screen

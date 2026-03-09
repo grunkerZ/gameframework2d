@@ -24,6 +24,7 @@ typedef struct {
 	Uint8			_inuse;
 	Uint8			id;
 	Uint8			frame;
+	Uint8			gravity;
 	int				healthMod;
 	int				tempHealthMod;
 	int				maxHealthMod;
@@ -34,6 +35,8 @@ typedef struct {
 	int				touchDamageMod;
 	int				jumpsMod;
 	int				shotSpeedMod;
+	Uint32			dashCooldownMod;
+	Uint32			dashDurationMod;
 	GFC_TextLine	name;
 	GFC_TextLine	flavor;
 	Sprite*			sprite;

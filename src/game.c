@@ -1,6 +1,6 @@
 #include <SDL.h>
 #include "simple_logger.h"
-
+#include "gfc_input.h"
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
 #include "entity.h"
@@ -20,7 +20,8 @@ int main(int argc, char * argv[])
     typedef enum {
         GS_MAINMENU,
         GS_PLAYING,
-        GS_DEATH
+        GS_DEATH,
+        GS_PAUSED
     }GameState;
 
 
@@ -30,6 +31,7 @@ int main(int argc, char * argv[])
     const Uint8 * keys;
     Level* level;
     int mx,my;
+    Uint8 paused=0;
     float mf = 0;
     Sprite *mouse;
     Entity* player;
@@ -42,6 +44,7 @@ int main(int argc, char * argv[])
     GameState state = GS_MAINMENU;
     GenericMenu* mainMenu;
     GenericMenu* deathMenu;
+    GenericMenu* pauseMenu;
     
 
     /*program initializtion*/
@@ -77,6 +80,7 @@ int main(int argc, char * argv[])
     GFC_Vector2D offset = camera_get_offset();
     mainMenu = main_menu_init();
     deathMenu = death_menu_init();
+    pauseMenu = pause_menu_init();
 
     slog("press [escape] to quit");
 
@@ -85,6 +89,7 @@ int main(int argc, char * argv[])
     while(!done)
     {
         SDL_PumpEvents();   // update SDL's internal event structures
+        
         keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
 
         SDL_GetMouseState(&mx, &my);
@@ -129,9 +134,6 @@ int main(int argc, char * argv[])
                 break;
 
             case GS_PLAYING:
-                if (keys[SDL_SCANCODE_F]) {
-                    player->gravity = 0;
-                }
 
                 //updates
                 entity_manager_think_all();
@@ -147,7 +149,10 @@ int main(int argc, char * argv[])
                 if (((PlayerData*)player->data)->health <= 0) {
                     state = GS_DEATH;
                 }
-
+                if (keys[SDL_SCANCODE_P]) {
+                    paused = 1;
+                    state = GS_PAUSED;
+                }
                 break;
 
             case GS_DEATH:
@@ -176,6 +181,34 @@ int main(int argc, char * argv[])
                 }
                 break;
 
+            case GS_PAUSED:
+                menu_update(pauseMenu);
+
+                level_draw(level);
+                entity_manager_draw_all();
+                camera_center_on(gfc_vector2d(player->position.x + (player->sprite->frame_w / 2), player->position.y + (player->sprite->frame_h / 2)));
+                
+                if (paused) menu_draw(pauseMenu);
+
+                gf2d_sprite_draw(
+                    mouse,
+                    gfc_vector2d(mx, my),
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    &mouseGFC_Color,
+                    (int)mf);
+
+                if (pauseMenu->Menu.pause.exitButton.clicked) {
+                    paused = 0;
+                    state = GS_PLAYING;
+                }
+                if (pauseMenu->Menu.pause.mainMenuButton.clicked) {
+                    state = GS_MAINMENU;
+                }
+                break;
+
         }
 
         gf2d_graphics_next_frame();// render current draw frame and skip to the next frame
@@ -185,6 +218,7 @@ int main(int argc, char * argv[])
     }
     menu_free(mainMenu);
     menu_free(deathMenu);
+    menu_free(pauseMenu);
     entity_free(player);
     level_free(level);
     slog("---==== END ====---");
