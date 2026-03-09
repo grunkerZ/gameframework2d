@@ -160,6 +160,7 @@ Entity* check_entity_collision(Entity* self) {
 CollisionInfo check_map_collision(Entity* self) {
 	CollisionInfo info = { 0 };
 	GFC_Vector2D nextPos = { 0 };
+	int index = 0;
 	
 	//CIRCLE VS RECT
 

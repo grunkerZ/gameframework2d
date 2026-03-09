@@ -76,7 +76,7 @@ int main(int argc, char * argv[])
     hellhound = hellhound_new(gfc_vector2d(128, 120));
     fiend = fiend_new(gfc_vector2d(128, 120));
     repenter = repenter_new(gfc_vector2d(128, 120));
-    room = room_load("maps/testworld.map");
+    room = room_load("maps/testworld.map", "START");
     GFC_Vector2D offset = camera_get_offset();
     mainMenu = main_menu_init();
     deathMenu = death_menu_init();
@@ -125,8 +125,8 @@ int main(int argc, char * argv[])
                    // imp = imp_new(gfc_vector2d(128, 100));
                    // hellhound = hellhound_new(gfc_vector2d(128, 120));
                     //fiend = fiend_new(gfc_vector2d(192, 128));
-                    repenter = repenter_new(gfc_vector2d(128, 120));
-                    room = room_load("maps/testworld.map");
+                    //repenter = repenter_new(gfc_vector2d(128, 120));
+                    room = room_load("maps/start/start1.map", "START");
                 }
                 if (mainMenu->Menu.start.exitButton.clicked) {
                     done = 1;

@@ -116,6 +116,7 @@
     <ClInclude Include="..\include\world.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\maps\standard\standard1.map" />
     <None Include="..\maps\start\start1.map" />
     <None Include="..\maps\testworld.map" />
   </ItemGroup>

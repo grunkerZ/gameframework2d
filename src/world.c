@@ -45,8 +45,8 @@ Floor* floor_create(Uint8 complexity, Uint8 difficulty, Uint8 specialRooms, Uint
 		floor->numItemRooms = 0;
 	}
 
-	floor->floorMap = gfc_allocate_array(sizeof(Uint8), floor->width * floor->height);
-	
+	floor->blueprint = gfc_allocate_array(sizeof(Uint8), floor->width * floor->height);
+	floor->floorMap = gfc_allocate_array(sizeof(Stage*), floor->width * floor->height);
 
 
 
@@ -72,7 +72,7 @@ Uint8* floor_generate(Floor* floor) {
 	startX = floor->width / 2;
 	startY = floor->height - 1;
 	minY = startY;
-	floor->floorMap[floor_get_room_index(floor,startX,startY)] = START;
+	floor->blueprint[floor_get_room_index(floor,startX,startY)] = START;
 	floor->roomsLeft--;
 
 	validSpot.x = startX;
@@ -89,7 +89,7 @@ Uint8* floor_generate(Floor* floor) {
 		GFC_Vector2I pos = candidates[index];
 
 		if(floor_count_neighbors(floor,pos.x,pos.y)==1){
-			floor->floorMap[floor_get_room_index(floor, pos.x, pos.y)] = STANDARD;
+			floor->blueprint[floor_get_room_index(floor, pos.x, pos.y)] = STANDARD;
 			floor->roomsLeft--;
 
 			if (pos.y < minY) minY = pos.y;
@@ -120,7 +120,7 @@ Uint8* floor_generate(Floor* floor) {
 
 	if (topCount > 0) {
 		GFC_Vector2I exit = topRooms[rand() % topCount];
-		floor->floorMap[floor_get_room_index(floor, exit.x, exit.y)] = EXIT;
+		floor->blueprint[floor_get_room_index(floor, exit.x, exit.y)] = EXIT;
 	}
 
 	//PLACE SPECIAL ROOMS
@@ -149,12 +149,29 @@ Uint8* floor_generate(Floor* floor) {
 		int index = rand() % itemCandidates;
 		GFC_Vector2I pos = itemSpots[index];
 
-		floor->floorMap[floor_get_room_index(floor, pos.x, pos.y)] = ITEM;
+		floor->blueprint[floor_get_room_index(floor, pos.x, pos.y)] = ITEM;
 		floor->numItemRooms--;
 
 		itemSpots[index] = itemSpots[itemCandidates - 1];
 		itemCandidates--;
 	}
+
+	//CREATE FLOOR STAGES
+
+	for (i = 0; i < floor->width * floor->height; i++) {
+		Stage* stage;
+		GFC_Vector2I gridPos;
+		const char* filename = "";
+		if (floor->blueprint[i] > 0) {
+			gridPos.y = i / floor->width;
+			gridPos.x = i % floor->width;
+			if (floor->blueprint[i] == START) filename = "maps/start/start1.map";
+			else if (floor->blueprint[i] == STANDARD) filename = "maps/standard/standard1.map";
+			stage = stage_create(floor, NULL, gridPos, filename);
+			floor->floorMap[i] = stage;
+		}
+	}
+
 	return floor->floorMap;
 }
 
@@ -162,6 +179,7 @@ Uint8* floor_generate(Floor* floor) {
 void floor_free(Floor* floor) {
 	if (!floor)return;
 	if (floor->floorMap)free(floor->floorMap);
+	if (floor->blueprint)free(floor->blueprint);
 	free(floor);
 }
 
@@ -172,7 +190,7 @@ void print_floor(Floor* floor) {
 	printf("{");
 	for (j = 0; j < floor->height; j++) {
 		for (i = 0; i < floor->width; i++) {
-			printf("%d ",floor->floorMap[(j * floor->width) + i]);
+			printf("%d ",floor->blueprint[(j * floor->width) + i]);
 		}
 		printf("\n");
 	}
@@ -192,7 +210,7 @@ int floor_get_room_index(Floor* floor, int x, int y) {
 
 int floor_get_room_type(Floor* floor, int x, int y) {
 	int type;
-	type=floor->floorMap[floor_get_room_index(floor, x, y)];
+	type = floor->blueprint[floor_get_room_index(floor, x, y)];
 	return type;
 }
 
@@ -205,6 +223,73 @@ int floor_count_neighbors(Floor* floor, int x, int y) {
 	return count;
 }
 
+const char* get_room_type_string(Uint8 type) {
+	switch (type) {
+	case START: return "START";
+	case STANDARD: return "STANDARD";
+	case EXIT: return "EXIT";
+	case ITEM: return "ITEM";
+	case EMPTY: return "EMPTY";
+	case SECRET: return "SECRET";
+	case SHOP: return "SHOP";
+	}
+}
+
+void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
+	int x, y, i;
+	int index;
+
+	for (i = 0; i < floor->width * floor->height; i++) {
+		floor->floorMap[i]->active = 0;
+	}
+
+	index = floor_get_room_index(floor, playerX, playerY);
+	if (index > 0 && floor->blueprint[index] > 0 && floor->floorMap[index]->room == NULL) {
+		floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+		floor->floorMap[index]->active = 1;
+	}
+
+	x = playerX;
+	y = playerY - 1;
+	
+	index = floor_get_room_index(floor, x, y);
+	if (index > 0 && floor->blueprint[index] > 0 && floor->floorMap[index]->room == NULL) {
+		floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+		floor->floorMap[index]->active = 1;
+	}
+
+	y = playerY + 1;
+
+	index = floor_get_room_index(floor, x, y);
+	if (index > 0 && floor->blueprint[index] > 0 && floor->floorMap[index]->room == NULL) {
+		floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+		floor->floorMap[index]->active = 1;
+	}
+
+	x = playerX + 1;
+	y = playerY;
+
+	index = floor_get_room_index(floor, x, y);
+	if (index > 0 && floor->blueprint[index] > 0 && floor->floorMap[index]->room == NULL) {
+		floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+		floor->floorMap[index]->active = 1;
+	}
+
+	x = playerX - 1;
+
+	index = floor_get_room_index(floor, x, y);
+	if (index > 0 && floor->blueprint[index] > 0 && floor->floorMap[index]->room == NULL) {
+		floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+		floor->floorMap[index]->active = 1;
+	}
+
+	for (i = 0; i < floor->width * floor->height; i++) {
+		if (floor->floorMap[i]->active) continue;
+		room_free(floor->floorMap[i]->room);
+		floor->floorMap[i]->room = NULL;
+		floor->floorMap[i]->active = 0;
+	}
+}
 
 /*
 * =====================
@@ -263,16 +348,18 @@ void room_tile_layer_build(Room* room) {
 	}
 }
 
-Room* room_load(const char* filename) {
-
+Room* room_load(const char* filename, const char* roomType) {
 	Room* room = NULL;
 	SJson* json = NULL;
 	SJson* wjson = NULL;
 	SJson* vertical, * horizontal;
 	SJson* item;
-	int tileWidth, tileHeight, framesPerLine;
+	SJson* logicArray;
+	SpawnPoint spawnPoint;
+	int tileWidth, tileHeight, framesPerLine, uniqueTiles;
+	int numSpawnLocations = 0;
 	int tile;
-	int w = 0, h = 0;
+	int w = 0, h = 0, spawnCount = 0;
 	int i, j;
 	if (!filename) {
 		slog("no filename provided for room_load");
@@ -285,9 +372,9 @@ Room* room_load(const char* filename) {
 		return NULL;
 	}
 
-	wjson = sj_object_get_value(json, "world");
+	wjson = sj_object_get_value(json, roomType);
 	if (!wjson) {
-		slog("%s missing 'world' object", filename);
+		slog("%s missing '%s' object", filename,roomType);
 		sj_free(json);
 		return NULL;
 	}
@@ -303,16 +390,54 @@ Room* room_load(const char* filename) {
 	horizontal = sj_array_get_nth(vertical, 0);
 	w = sj_array_get_count(horizontal);
 
+	logicArray = sj_object_get_value(wjson, "tileLogic");
+
 	sj_object_get_value_as_int(wjson, "frame_w", &tileWidth);
 	sj_object_get_value_as_int(wjson, "frame_h", &tileHeight);
 	sj_object_get_value_as_int(wjson, "frames_per_line", &framesPerLine);
+	sj_object_get_value_as_int(wjson, "uniqueTiles", &uniqueTiles);
+	sj_object_get_value_as_int(wjson, "numSpawnLocations", &numSpawnLocations);
+	
 
-	room = room_create(sj_object_get_value_as_string(wjson, "background"), sj_object_get_value_as_string(wjson, "tileSet"), w, h, tileWidth, tileHeight, framesPerLine);
+	room = room_create(sj_object_get_value_as_string(wjson, "background"), sj_object_get_value_as_string(wjson, "tileSet"), w, h, tileWidth, tileHeight, framesPerLine,uniqueTiles);
 	if (!room) {
 		slog("failed to create space for a new room for file %s", filename);
 		sj_free(json);
 		return NULL;
 	}
+
+	room->tileLogic = gfc_allocate_array(sizeof(TileType), room->uniqueTiles);
+	for (int i = 0; i < room->uniqueTiles; i++) {
+		const char* typeString;
+
+		item = sj_array_get_nth(logicArray, i);
+		if (!item) continue;
+
+		typeString = sj_get_string_value(item);
+		if (!typeString) continue;
+
+		if (strcmp(typeString, "TT_EMPTY") == 0) {
+			room->tileLogic[i] = TT_EMPTY;
+		}
+		else if (strcmp(typeString, "TT_SOLID") == 0) {
+			room->tileLogic[i] = TT_SOLID;
+		}
+		else if (strcmp(typeString, "TT_DANGEROUS") == 0) {
+			room->tileLogic[i] = TT_DANGEROUS;
+		}
+		else if (strcmp(typeString, "TT_PLATFORM") == 0) {
+			room->tileLogic[i] = TT_PLATFORM;
+		}
+		else if (strcmp(typeString, "TT_BREAKABLE") == 0) {
+			room->tileLogic[i] = TT_BREAKABLE;
+		}
+		else if (strcmp(typeString, "TT_EXPLODEABLE") == 0) {
+			room->tileLogic[i] = TT_EXPLODEABLE;
+		}
+	}
+	
+	room->numSpawnLocations = numSpawnLocations;
+	room->spawnPoints = gfc_allocate_array(sizeof(SpawnPoint), room->numSpawnLocations);
 
 	for (j = 0; j < h; j++) {
 		horizontal = sj_array_get_nth(vertical, j);
@@ -323,6 +448,12 @@ Room* room_load(const char* filename) {
 			tile = 0;
 			sj_get_integer_value(item, &tile);
 			room->tileMap[i + (j * w)] = tile;
+			if (tile == 98 || tile == 99) {
+				spawnPoint.gridPos.x = i;
+				spawnPoint.gridPos.y = j;
+				spawnPoint.type = tile;
+				room->spawnPoints[spawnCount++] = spawnPoint;
+			}
 		}
 	}
 
@@ -346,7 +477,7 @@ Room* room_new() {
 	return room;
 }
 
-Room* room_create(const char* background, const char* tileSet, Uint32 width, Uint32 height, Uint32 tileWidth, Uint32 tileHeight, Uint32 tilesPerLine) {
+Room* room_create(const char* background, const char* tileSet, Uint32 width, Uint32 height, Uint32 tileWidth, Uint32 tileHeight, Uint32 tilesPerLine, Uint8 uniqueTiles) {
 	Room* room;
 
 	room = room_new();
@@ -375,6 +506,7 @@ Room* room_create(const char* background, const char* tileSet, Uint32 width, Uin
 	room->height = height;
 	room->tileWidth = tileWidth;
 	room->tileHeight = tileHeight;
+	room->uniqueTiles = uniqueTiles;
 
 	return room;
 }
@@ -444,7 +576,7 @@ Stage* stage_new() {
 	return stage;
 }
 
-Stage* stage_create(Floor* floor, Room* room, GFC_Vector2I gridPos) {
+Stage* stage_create(Floor* floor, Room* room, GFC_Vector2I gridPos, const char* filename) {
 	Stage* stage = stage_new();
 	if (!stage) return NULL;
 
@@ -455,6 +587,7 @@ Stage* stage_create(Floor* floor, Room* room, GFC_Vector2I gridPos) {
 	stage->type = floor_get_room_type(floor,gridPos.x,gridPos.y);
 	stage->visible = 0;
 	stage->visited = 0;
+	stage->filename = filename;
 
 	if (stage->type == START) {
 		stage->cleared = 1;

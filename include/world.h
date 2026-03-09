@@ -35,6 +35,11 @@ typedef enum {
 	DOOR_WEST_HIDDEN	= 128
 }Doors;
 
+typedef struct {
+	GFC_Vector2I	gridPos;
+	Uint8			type;
+}SpawnPoint;
+
 typedef struct
 {
 	Sprite*			background; //background image for room
@@ -46,12 +51,27 @@ typedef struct
 	Uint32			tileWidth;	//how many pixels wide a tile is
 	Uint32			tileHeight;	//how many pixels tall a tile is
 	Sprite*			tileLayer;	//prerendered tile layer
-	Uint8*			tileLogic;
-	GFC_Vector2I	spawnPoints;
+	TileType*		tileLogic;
+	SpawnPoint*		spawnPoints;
+	Uint8			numSpawnLocations;
 }Room;
 
 typedef struct {
-	Uint8*		floorMap;
+	Uint8			difficulty; //The Monster Budget
+	Uint8			cleared; //1 if cleared 0 if not
+	Uint8			visited; //1 if visited, 0 if not
+	Uint8			visible; //1 if visible on map, 0 if not
+	Uint8			active; //1 if the stage is loaded, 0 if not
+	Uint8			doors; //bitmask for open doors
+	GFC_Vector2I	gridPos; //(x,y) on floor map
+	RoomType		type; //the room type
+	Room*			room; //the loaded json data
+	const char*		filename; //the json data for the room
+}Stage;
+
+typedef struct {
+	Stage**		floorMap;
+	Uint8*		blueprint;
 	Uint8		exitGenerated;
 	Uint8		roomsLeft;
 	Uint8		complexity;
@@ -63,16 +83,6 @@ typedef struct {
 	Uint32		height;
 }Floor;
 
-typedef struct {
-	Uint8			difficulty; //The Monster Budget
-	Uint8			cleared; //1 if cleared 0 if not
-	Uint8			visited; //1 if visited, 0 if not
-	Uint8			visible; //1 if visible on map, 0 if not
-	Uint8			doors; //bitmask for open doors
-	GFC_Vector2I	gridPos; //(x,y) on floor map
-	RoomType		type; //the room type
-	Room*			room; //the loaded json data
-}Stage;
 
 
 /*
@@ -82,6 +92,8 @@ typedef struct {
 * 
 * ============================
 */
+
+
 
 /*
 * @brief allocate and build a new floor from paramaters
@@ -159,7 +171,7 @@ int floor_get_room_type(Floor* floor, int x, int y);
 * @param filename the name of the world file to load
 * @return NULL on error or a usable room otherwise
 */
-Room* room_load(const char* filename);
+Room* room_load(const char* filename, const char* roomType);
 
 
 /**
@@ -179,7 +191,7 @@ Room* room_new();
 * @param height how many tiles tall the room is
 * @return NULL on error or nonsensical parameters, 
 */
-Room* room_create(const char* background, const char* tileSet, Uint32 width, Uint32 height, Uint32 tileWidth, Uint32 tileHeight, Uint32 tilesPerLine);
+Room* room_create(const char* background, const char* tileSet, Uint32 width, Uint32 height, Uint32 tileWidth, Uint32 tileHeight, Uint32 tilesPerLine, Uint8 uniqueTiles);
 
 /**
 * @brief given a room, get the index of the tileMap for a file's coordinates
@@ -216,8 +228,13 @@ Stage* stage_new();
 
 /*
 * @brief allocates and builds a new stage from parameters
+* @param floor the floor the stage exists on
+* @param room the room contained within the stage
+* @param gridPos the position on the floor map of the stage
+* @param filename the json data for the room
+* @return NULL on error, otherwise a Stage pointer
 */
-Stage* stage_create(Floor* floor, Room* room, GFC_Vector2I gridPos);
+Stage* stage_create(Floor* floor, Room* room, GFC_Vector2I gridPos, const char* filename);
 
 /*
 * @brief frees a previously allocated stage
