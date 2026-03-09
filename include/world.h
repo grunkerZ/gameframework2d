@@ -109,7 +109,7 @@ Floor* floor_create(Uint8 complexity, Uint8 difficulty, Uint8 specialRooms, Uint
 * @param floor the floor to generate a map for
 * @return the floor map for the floor
 */
-Uint8* floor_generate(Floor* floor);
+Stage** floor_generate(Floor* floor);
 
 /*
 * @brief allocate a new empty floor
@@ -159,7 +159,7 @@ int floor_get_room_type(Floor* floor, int x, int y);
 /*
 * @brief gets the string version of the room type
 * @param type the room type to convert to a string
-* @return NULL on error, otherwise the room type as a string
+* @return the room type as a string, defaults to EMPTY
 */
 const char* get_room_type_string(Uint8 type);
 

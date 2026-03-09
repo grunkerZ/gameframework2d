@@ -7,45 +7,156 @@
 #include "player.h"
 #include "world.h"
 #include "camera.h"
-#include "monster.h"
 #include "simple_ui.h"
-#include "m_damned.h"
-#include "m_imp.h"
-#include "m_hellhound.h"
-#include "m_fiend.h"
-#include "m_repenter.h"
+
+typedef enum {
+    GS_MAINMENU,
+    GS_PLAYING,
+    GS_DEATH,
+    GS_PAUSED
+}GameState;
+
+typedef struct {
+    int                 mx;                 //the x coordinate of the mouse
+    int                 my;                 //the y coordinate of the mouse
+    float               mf;                 //the mouse frame
+    Uint8               done;               //1 when game quits, 0 otherwise
+    Uint8               paused;             //1 when game is paused, 0 otherwise
+    GameState           state;              //tracks the current game state
+    const Uint8*        keys;               //tracks the keys pressed
+    GenericMenu*        mainMenu;           //the main menu pointer
+    GenericMenu*        deathMenu;          //the death menu pointer
+    GenericMenu*        pauseMenu;          //the pause menu pointer
+    Floor*              floor;              //the current floor
+    Entity*             player;             //the player pointer
+    Sprite*             mouse;              //the mouse pointer
+    Stage*              currentStage;       //the current stage the player is in
+}System;
+
+
+void update_game(System* game) {
+    int i;
+    int x, y;
+
+    switch (game->state) {
+    case GS_MAINMENU:
+        menu_update(game->mainMenu);
+        if (game->mainMenu->Menu.start.exitButton.clicked) game->done = 1;
+        if (game->mainMenu->Menu.start.startButton.clicked) {
+            game->floor = floor_create(10,15,0,0,999);
+            for (i = 0; i < game->floor->width * game->floor->height; i++) {
+                if (game->floor->blueprint[i] == START) {
+                    game->currentStage = game->floor->floorMap[i];
+                    break;
+                }
+            }
+            game->player = player_new();
+            game->player->position = gfc_vector2d(
+                (game->currentStage->room->width / 2) + (game->currentStage->room->tileWidth / 2) - (game->player->sprite->frame_w / 2),
+                (game->currentStage->room->height) - (game->currentStage->room->tileHeight) - game->player->sprite->frame_h);
+            game->state = GS_PLAYING;
+        }
+        break;
+    case GS_DEATH:
+        menu_update(game->deathMenu);
+        if (game->deathMenu->Menu.death.exitButton.clicked) game->done = 1;
+        if (game->deathMenu->Menu.death.mainMenuButton.clicked) game->state = GS_MAINMENU;
+        break;
+    case GS_PAUSED:
+        menu_update(game->pauseMenu);
+        if (game->pauseMenu->Menu.pause.mainMenuButton.clicked) {
+            game->paused = 0;
+            game->state = GS_MAINMENU;
+        }
+        if (game->pauseMenu->Menu.pause.exitButton.clicked) {
+            game->paused = 0;
+            game->state = GS_PLAYING;
+        }
+        break;
+    case GS_PLAYING:
+        
+        entity_manager_think_all();
+        entity_manager_update_all();
+
+        if (((PlayerData*)game->player->data)->health <= 0) {
+            game->state = GS_DEATH;
+        }
+        if (game->keys[SDL_SCANCODE_P]) {
+            game->paused = 1;
+            game->state = GS_PAUSED;
+        }
+        break;
+    }
+}
+
+void draw_game(System* game) {
+    gf2d_graphics_clear_screen();
+
+    GFC_Color mouseGFC_Color = gfc_color8(0, 100, 255, 200);
+
+    switch (game->state) {
+    case GS_MAINMENU:
+        menu_draw(game->mainMenu);
+        gf2d_sprite_draw(
+            game->mouse,
+            gfc_vector2d(game->mx, game->my),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            &mouseGFC_Color,
+            (int)game->mf);
+        break;
+    case GS_DEATH:
+        menu_draw(game->deathMenu);
+        gf2d_sprite_draw(
+            game->mouse,
+            gfc_vector2d(game->mx, game->my),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            &mouseGFC_Color,
+            (int)game->mf);
+        break;
+    case GS_PAUSED:
+        room_draw(game->currentStage->room);
+        entity_manager_draw_all();
+        camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
+        menu_draw(game->pauseMenu);
+        gf2d_sprite_draw(
+            game->mouse,
+            gfc_vector2d(game->mx, game->my),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            &mouseGFC_Color,
+            (int)game->mf);
+        break;
+    case GS_PLAYING:
+        room_draw(game->currentStage->room);
+        entity_manager_draw_all();
+        camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
+        break;
+    }
+
+    gf2d_graphics_next_frame();
+}
+
 
 int main(int argc, char * argv[])
 {
-    typedef enum {
-        GS_MAINMENU,
-        GS_PLAYING,
-        GS_DEATH,
-        GS_PAUSED
-    }GameState;
-
+    System* game = gfc_allocate_array(sizeof(System),1);
 
     /*variable declarations*/
 
-    int done = 0;
-    const Uint8 * keys;
-    Room* room;
-    int mx,my;
-    Uint8 paused=0;
-    float mf = 0;
-    Sprite *mouse;
-    Entity* player;
-    Entity* monster;
-    Entity* imp;
-    Entity* hellhound;
-    Entity* fiend;
-    Entity* repenter;
-    GFC_Color mouseGFC_Color = gfc_color8(0,100,255,200);
-    GameState state = GS_MAINMENU;
-    GenericMenu* mainMenu;
-    GenericMenu* deathMenu;
-    GenericMenu* pauseMenu;
-    
+    game->done = 0;
+    game->paused=0;
+    game->mf = 0;
+    game->state = GS_MAINMENU;
+
+
 
     /*program initializtion*/
 
@@ -69,158 +180,40 @@ int main(int argc, char * argv[])
 
     /*demo setup*/
 
-    mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
-    player = player_new();
-    monster = damned_new(gfc_vector2d(128,120));
-    imp = imp_new(gfc_vector2d(128, 120));
-    hellhound = hellhound_new(gfc_vector2d(128, 120));
-    fiend = fiend_new(gfc_vector2d(128, 120));
-    repenter = repenter_new(gfc_vector2d(128, 120));
-    room = room_load("maps/testworld.map", "START");
+    game->mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
+    game->player = player_new();
     GFC_Vector2D offset = camera_get_offset();
-    mainMenu = main_menu_init();
-    deathMenu = death_menu_init();
-    pauseMenu = pause_menu_init();
+    game->mainMenu = main_menu_init();
+    game->deathMenu = death_menu_init();
+    game->pauseMenu = pause_menu_init();
 
     slog("press [escape] to quit");
 
 
     /*main game loop*/
-    while(!done)
+    while(!game->done)
     {
         SDL_PumpEvents();   // update SDL's internal event structures
         
-        keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
+        game->keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
 
-        SDL_GetMouseState(&mx, &my);
-        mf += 0.1;
-        if (mf >= 16.0)mf = 0;
+        SDL_GetMouseState(&game->mx, &game->my);
+        game->mf += 0.1;
+        if (game->mf >= 16.0)game->mf = 0;
 
-        gf2d_graphics_clear_screen(); //draw after updates
+        update_game(game);
 
-        switch (state) {
-            case GS_MAINMENU:
-                //updates
-                menu_update(mainMenu);
-               
-                //draw
-                menu_draw(mainMenu);
-                gf2d_sprite_draw(
-                    mouse,
-                    gfc_vector2d(mx, my),
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    &mouseGFC_Color,
-                    (int)mf);
-
-                //state change
-                if (mainMenu->Menu.start.startButton.clicked) {
-                    state = GS_PLAYING;
-                    entity_manager_free_all();
-                    room_free(room);
-                    player = player_new();
-                  //  monster = damned_new(gfc_vector2d(128, 100));
-                   // imp = imp_new(gfc_vector2d(128, 100));
-                   // hellhound = hellhound_new(gfc_vector2d(128, 120));
-                    //fiend = fiend_new(gfc_vector2d(192, 128));
-                    //repenter = repenter_new(gfc_vector2d(128, 120));
-                    room = room_load("maps/start/start1.map", "START");
-                }
-                if (mainMenu->Menu.start.exitButton.clicked) {
-                    done = 1;
-                }
-                break;
-
-            case GS_PLAYING:
-
-                //updates
-                entity_manager_think_all();
-                entity_manager_update_all();
-
-
-                //draw
-                room_draw(room);
-                entity_manager_draw_all();
-                camera_center_on(gfc_vector2d(player->position.x + (player->sprite->frame_w / 2), player->position.y + (player->sprite->frame_h / 2)));
-
-                //state change
-                if (((PlayerData*)player->data)->health <= 0) {
-                    state = GS_DEATH;
-                }
-                if (keys[SDL_SCANCODE_P]) {
-                    paused = 1;
-                    state = GS_PAUSED;
-                }
-                break;
-
-            case GS_DEATH:
-                //updates
-                menu_update(deathMenu);
-
-                //draw
-                menu_draw(deathMenu);
-
-                gf2d_sprite_draw(
-                    mouse,
-                    gfc_vector2d(mx, my),
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    &mouseGFC_Color,
-                    (int)mf);
-
-                //state change
-                if (deathMenu->Menu.death.mainMenuButton.clicked) {
-                    state = GS_MAINMENU;
-                }
-                if (deathMenu->Menu.death.exitButton.clicked) {
-                    done = 1;
-                }
-                break;
-
-            case GS_PAUSED:
-                menu_update(pauseMenu);
-
-                room_draw(room);
-                entity_manager_draw_all();
-                camera_center_on(gfc_vector2d(player->position.x + (player->sprite->frame_w / 2), player->position.y + (player->sprite->frame_h / 2)));
-                
-                if (paused) menu_draw(pauseMenu);
-
-                gf2d_sprite_draw(
-                    mouse,
-                    gfc_vector2d(mx, my),
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    &mouseGFC_Color,
-                    (int)mf);
-
-                if (pauseMenu->Menu.pause.exitButton.clicked) {
-                    paused = 0;
-                    state = GS_PLAYING;
-                }
-                if (pauseMenu->Menu.pause.mainMenuButton.clicked) {
-                    state = GS_MAINMENU;
-                }
-                break;
-
-        }
-
-        gf2d_graphics_next_frame();// render current draw frame and skip to the next frame
+        draw_game(game);
         
-        if (keys[SDL_SCANCODE_ESCAPE])done = 1; // exit condition
+        if (game->keys[SDL_SCANCODE_ESCAPE])game->done = 1; // exit condition
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
-    menu_free(mainMenu);
-    menu_free(deathMenu);
-    menu_free(pauseMenu);
-    entity_free(player);
-    room_free(room);
+    menu_free(game->mainMenu);
+    menu_free(game->deathMenu);
+    menu_free(game->pauseMenu);
+    entity_free(game->player);
+    free_world(game->floor);
+    free(game);
     slog("---==== END ====---");
     return 0;
 }

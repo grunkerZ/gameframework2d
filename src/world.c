@@ -47,12 +47,12 @@ Floor* floor_create(Uint8 complexity, Uint8 difficulty, Uint8 specialRooms, Uint
 	floor->blueprint = gfc_allocate_array(sizeof(Uint8), floor->width * floor->height);
 	floor->floorMap = gfc_allocate_array(sizeof(Stage*), floor->width * floor->height);
 
-
+	floor->floorMap = floor_generate(floor);
 
 	return floor;
 }
 
-Uint8* floor_generate(Floor* floor) {
+Stage** floor_generate(Floor* floor) {
 	GFC_Vector2I candidates[256];
 	int numCandidates = 0;
 	int startX, startY, i, j;
@@ -228,11 +228,10 @@ const char* get_room_type_string(Uint8 type) {
 	case STANDARD: return "STANDARD";
 	case EXIT: return "EXIT";
 	case ITEM: return "ITEM";
-	case EMPTY: return "EMPTY";
 	case SECRET: return "SECRET";
 	case SHOP: return "SHOP";
+	default: return "EMPTY";
 	}
-	return NULL;
 }
 
 void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
