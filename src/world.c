@@ -232,6 +232,7 @@ const char* get_room_type_string(Uint8 type) {
 	case SECRET: return "SECRET";
 	case SHOP: return "SHOP";
 	}
+	return NULL;
 }
 
 void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
@@ -524,6 +525,7 @@ void room_free(Room* room) {
 	if (room->tileMap)free(room->tileMap);
 	gf2d_sprite_free(room->tileLayer);
 	if (room->tileLogic)free(room->tileLogic);
+	if (room->spawnPoints)free(room->spawnPoints);
 	free(room);
 }
 
@@ -680,6 +682,20 @@ GFC_Vector2D grid_to_world(GFC_Vector2I position) {
 	worldPos.x = (position.x * activeRoom->tileWidth) + (activeRoom->tileWidth / 2);
 	worldPos.y = (position.y * activeRoom->tileHeight) + (activeRoom->tileHeight / 2);
 	return worldPos;
+}
+
+void free_world(Floor* floor) {
+	int i;
+	if (!floor) return;
+	for (i = 0; i < floor->width * floor->height; i++) {
+		if (floor->floorMap[i]) {
+			if (floor->floorMap[i]->room) {
+				room_free(floor->floorMap[i]->room);
+			}
+			stage_free(floor->floorMap[i]);
+		}
+	}
+	floor_free(floor);
 }
 
 /*eol@eof*/

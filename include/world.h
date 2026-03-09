@@ -156,6 +156,12 @@ int floor_count_neighbors(Floor* floor, int x, int y);
 */
 int floor_get_room_type(Floor* floor, int x, int y);
 
+/*
+* @brief gets the string version of the room type
+* @param type the room type to convert to a string
+* @return NULL on error, otherwise the room type as a string
+*/
+const char* get_room_type_string(Uint8 type);
 
 /*
 * ================================
@@ -295,5 +301,12 @@ void room_free(Room* room);
 * @param room the room to draw
 */
 void room_draw(Room* room);
+
+/*
+* @brief frees the entire floor, stages, and rooms
+* @param floor the floor to free
+*/
+void free_world(Floor* floor);
+
 
 #endif // !__WORLD_H__
