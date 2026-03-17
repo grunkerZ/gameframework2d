@@ -8,6 +8,7 @@
 #include "world.h"
 #include "camera.h"
 #include "simple_ui.h"
+#include "door.h"
 
 typedef enum {
     GS_MAINMENU,
@@ -35,10 +36,11 @@ typedef struct {
 
 
 void update_game(System* game) {
-    int i;
-    int x, y;
-
     switch (game->state) {
+        int i;
+        int x, y;
+        Entity* collider;
+
     case GS_MAINMENU:
         menu_update(game->mainMenu);
         if (game->mainMenu->Menu.start.exitButton.clicked) game->done = 1;
@@ -57,11 +59,13 @@ void update_game(System* game) {
             game->state = GS_PLAYING;
         }
         break;
+
     case GS_DEATH:
         menu_update(game->deathMenu);
         if (game->deathMenu->Menu.death.exitButton.clicked) game->done = 1;
         if (game->deathMenu->Menu.death.mainMenuButton.clicked) game->state = GS_MAINMENU;
         break;
+
     case GS_PAUSED:
         menu_update(game->pauseMenu);
         if (game->pauseMenu->Menu.pause.mainMenuButton.clicked) {
@@ -73,10 +77,19 @@ void update_game(System* game) {
             game->state = GS_PLAYING;
         }
         break;
+
     case GS_PLAYING:
-        
+
         entity_manager_think_all();
         entity_manager_update_all();
+
+        collider = check_entity_collision(game->player);
+        if (collider && collider->type == ET_DOOR) {
+            game->currentStage = game->floor->floorMap[((DoorData*)collider->data)->targetRoom];
+            clear_stage();
+            load_stage(game->currentStage);
+            floor_update_active_rooms(game->floor, game->currentStage->gridPos.x, game->currentStage->gridPos.y);
+        }
 
         if (((PlayerData*)game->player->data)->health <= 0) {
             game->state = GS_DEATH;

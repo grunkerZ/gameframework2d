@@ -6,11 +6,13 @@
 #include "projectile.h"
 
 typedef enum {
-	DAMNED,
-	IMP,
-	HELLHOUND,
-	FIEND,
-	REPENTER
+	MT_NONE,
+	MT_DAMNED,
+	MT_IMP,
+	MT_HELLHOUND,
+	MT_FIEND,
+	MT_REPENTER,
+	MT_END
 }MonsterType;
 
 typedef struct {
@@ -20,6 +22,7 @@ typedef struct {
 	Uint8			touchDamage;		//the damage delt to valid colliding entities
 	Uint8			moveSpeed;			//the speed the monster moves
 	Uint8			attacking;			//1 if the monster is currently attacking, 0 otherwise
+	Uint8			value;				//used for stage population, the higher the more difficult the monster
 	Uint32			attackSpeed;		
 	Uint32			attackDelay;		//the time it takes for the monster to complete an attack
 	Uint32			stun;				//how long a monster does not move on its own for
@@ -78,5 +81,33 @@ void move_to_1d(Entity* self, GFC_Vector2D targetPos);
 */
 void move_to_2d(Entity* self, GFC_Vector2D targetPos);
 
+/*
+* @brief runs a monster's spawn function
+* @param monster the type of monster to spawn
+* @param position the position of the monster
+*/
+void monster_spawn(MonsterType monster, GFC_Vector2D position);
+
+/*
+* @brief gets a random valid monster
+* @param spawnType either 98 or 99, non-flying or flying
+* @param budget, the budget for spawning monsters
+* @returns MT_NONE if no valid monster, otherwise returns a random valid monster
+*/
+MonsterType get_valid_monster(Uint8 spawnType, Uint8 budget);
+
+/*
+* @brief gets a monsters spawn type
+* @param monster the monster type
+* @return 255 on error, 98 if it doesnt fly, 99 if it does fly
+*/
+Uint8 get_monster_spawn_type(MonsterType monster);
+
+/*
+* @brief gets a monsters cost
+* @param monster the monster type
+* @return 255 on error, or the cost of the monster
+*/
+Uint8 get_monster_cost(MonsterType monster);
 
 #endif //__MONSTER_H__

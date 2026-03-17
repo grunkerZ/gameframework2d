@@ -27,6 +27,7 @@ C:\git\gameframework2d\gfc\src\gfc_types.c;C:\git\gameframework2d\God Punch\God 
 C:\git\gameframework2d\gfc\src\gfc_vector.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\gfc_vector.obj
 C:\git\gameframework2d\gfc\src\miniz.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\miniz.obj
 C:\git\gameframework2d\src\camera.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\camera.obj
+C:\git\gameframework2d\src\door.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\door.obj
 C:\git\gameframework2d\src\entity.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\entity.obj
 C:\git\gameframework2d\src\game.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\game.obj
 C:\git\gameframework2d\src\gf2d_draw.c;C:\git\gameframework2d\God Punch\God Punch\x64\Debug\gf2d_draw.obj

@@ -3,6 +3,11 @@
 #include "camera.h"
 #include "player.h"
 #include "world.h"
+#include "m_damned.h"
+#include "m_fiend.h"
+#include "m_hellhound.h"
+#include "m_imp.h"
+#include "m_repenter.h"
 
 void monster_free(Entity* self);
 
@@ -21,7 +26,7 @@ Entity* monster_new() {
 	self->sprite = gf2d_sprite_new();
 	self->free = monster_free;
 	self->collision.type = ST_RECT;
-	self->type = MONSTER;
+	self->type = ET_MONSTER;
 	self->forward = gfc_vector2d(1, 0);
 	self->flip = gfc_vector2d(0,0);
 	self->invincibility = 0;
@@ -260,6 +265,69 @@ void move_to_2d(Entity* self, GFC_Vector2D targetPos) {
 	gfc_vector2d_scale(distance, distance, stats->moveSpeed);
 	self->velocity = distance;
 	return;
+}
+
+void monster_spawn(MonsterType monster, GFC_Vector2D position) {
+	switch (monster) {
+	case MT_DAMNED:
+		damned_new(position);
+		break;
+	case MT_FIEND:
+		fiend_new(position);
+		break;
+	case MT_HELLHOUND:
+		hellhound_new(position);
+		break;
+	case MT_IMP:
+		imp_new(position);
+		break;
+	case MT_REPENTER:
+		repenter_new(position);
+		break;
+	}
+}
+
+Uint8 get_monster_cost(MonsterType monster) {
+	switch (monster) {
+	case MT_DAMNED: return 1;
+	case MT_FIEND: return 2;
+	case MT_HELLHOUND: return 2;
+	case MT_IMP: return 2;
+	case MT_REPENTER: return 2;
+	default: return 255;
+	}
+}
+
+Uint8 get_monster_spawn_type(MonsterType monster) {
+	switch (monster) {
+	case MT_DAMNED: return 98;
+	case MT_FIEND: return 98;
+	case MT_HELLHOUND: return 98;
+	case MT_IMP: return 99;
+	case MT_REPENTER: return 98;
+	default: return 255;
+	}
+}
+
+MonsterType get_valid_monster(Uint8 spawnType, Uint8 budget) {
+	MonsterType candidates[MT_END];
+	int i;
+	int index;
+	int numCandidates = 0;
+
+	for (i = MT_NONE + 1; i < MT_END; i++) {
+		if (get_monster_cost(i) <= budget && get_monster_spawn_type(i) == spawnType) {
+			candidates[numCandidates] = i;
+			numCandidates++;
+		}
+	}
+	if (numCandidates == 0) {
+		return MT_NONE;
+	}
+	else {
+		index = rand() % numCandidates;
+		return candidates[index];
+	}
 }
 
 

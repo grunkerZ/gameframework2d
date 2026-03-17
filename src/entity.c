@@ -53,6 +53,9 @@ Entity* entity_new() {
 		//set defaults
 		entityManager.entityList[i].scale.x = 1;
 		entityManager.entityList[i].scale.y = 1;
+		entityManager.entityList[i].sprite = gf2d_sprite_load_image("images/missing.png");
+		entityManager.entityList[i].width = entityManager.entityList[i].sprite->frame_w;
+		entityManager.entityList[i].height = entityManager.entityList[i].sprite->frame_h;
 		return &entityManager.entityList[i];
 	}
 	slog("no more available entities");
@@ -91,6 +94,8 @@ void entity_update(Entity* self) {
 	}
 
 	if (self->update)self->update(self);
+
+	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
 }
 
 void entity_manager_think_all() {
@@ -164,7 +169,7 @@ CollisionInfo check_map_collision(Entity* self) {
 	
 	//CIRCLE VS RECT
 
-	if (self->type == PROJECTILE) {
+	if (self->type == ET_PROJECTILE) {
 		float tilePos_x, tilePos_y;
 		float closest_x, closest_y;
 		GFC_Vector2I gridPos;
@@ -265,6 +270,24 @@ void collision_bounce(Entity* self, Entity* collider){
 	gfc_vector2d_sub(bounce, selfCenter, colliderCenter);
 	gfc_vector2d_normalize(&bounce);
 	gfc_vector2d_scale(self->velocity, bounce, 3);
+}
+
+void set_center(Entity* self, GFC_Vector2D center) {
+	self->centerPos = center;
+	self->position = gfc_vector2d(self->centerPos.x - (self->width / 2), self->centerPos.y - (self->height / 2));
+	if (self->collision.type == ST_RECT) {
+		self->collision.s.r.x = self->position.x;
+		self->collision.s.r.y = self->position.y;
+	}
+}
+
+void clear_stage() {
+	int i;
+	for (i = 0; i < entityManager.entityMax; i++) {
+		if (!entityManager.entityList[i]._inuse) continue;
+		if (entityManager.entityList[i].type == ET_PLAYER) continue;
+		entity_free(&entityManager.entityList[i]);
+	}
 }
 
 

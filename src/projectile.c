@@ -46,7 +46,7 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	self->collision.s.c.x = self->position.x + (self->sprite->frame_w / 2);
 	self->collision.s.c.y = self->position.y + (self->sprite->frame_h / 2);
 	self->collision.s.c.r = self->sprite->frame_w / 2;
-	self->type = PROJECTILE;
+	self->type = ET_PROJECTILE;
 
 	selfStats->timeAtSpawn = SDL_GetTicks64();
 	selfStats->spawnImmunity = 300;
@@ -78,8 +78,8 @@ void projectile_damage(Entity* self, Entity* collider) {
 			stats->exploded = 1;
 		}
 		switch (collider->type) {
-		case MONSTER:
-			if (collider->type == MONSTER && ((MonsterData*)collider->data)->monster == REPENTER) {
+		case ET_MONSTER:
+			if (collider->type == ET_MONSTER && ((MonsterData*)collider->data)->monster == MT_REPENTER) {
 				GFC_Rect front;
 				if (collider->forward.x == -1) {
 					slog("FACING LEFT");
@@ -98,7 +98,7 @@ void projectile_damage(Entity* self, Entity* collider) {
 			}
 			((MonsterData*)collider->data)->health = apply_damage(collider, stats->damage, ((MonsterData*)collider->data)->health);
 			break;
-		case PLAYER:
+		case ET_PLAYER:
 			((PlayerData*)collider->data)->health = apply_damage(collider, stats->damage, ((PlayerData*)collider->data)->health);
 			break;
 		}
@@ -112,8 +112,8 @@ void projectile_damage(Entity* self, Entity* collider) {
 	}
 	
 	switch (collider->type) {
-	case MONSTER:
-		if (collider->type == MONSTER && ((MonsterData*)collider->data)->monster == REPENTER) {
+	case ET_MONSTER:
+		if (collider->type == ET_MONSTER && ((MonsterData*)collider->data)->monster == MT_REPENTER) {
 			GFC_Rect front;
 			if (collider->forward.x == -1) {
 				slog("FACING LEFT");
@@ -134,7 +134,7 @@ void projectile_damage(Entity* self, Entity* collider) {
 		((MonsterData*)collider->data)->health = apply_damage(collider, stats->damage, ((MonsterData*)collider->data)->health);
 		projectile_free(self);
 		return;
-	case PLAYER:
+	case ET_PLAYER:
 		((PlayerData*)collider->data)->health = apply_damage(collider, stats->damage, ((PlayerData*)collider->data)->health);
 		projectile_free(self);
 		return;

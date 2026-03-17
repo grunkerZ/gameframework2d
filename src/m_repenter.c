@@ -33,7 +33,8 @@ Entity* repenter_new(GFC_Vector2D position) {
 	stats->timeAtAttack = 0;
 	stats->sentry = 1;
 	stats->touchDamage = 1;
-	stats->monster = REPENTER;
+	stats->monster = MT_REPENTER;
+	set_center(self, self->position);
 
 	stats->projectileStats.damage = 1;
 	stats->projectileStats.speed = 1;
@@ -78,7 +79,7 @@ void repenter_think(Entity* self) {
 
 	collider = check_entity_collision(self);
 	if (collider) {
-		if (collider->type == PLAYER) {
+		if (collider->type == ET_PLAYER) {
 			collision_bounce(self, collider);
 		}
 	}

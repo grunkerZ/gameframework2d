@@ -2,6 +2,7 @@
 #define __WORLD_H__
 #include "gf2d_sprite.h"
 
+
 typedef enum {
 	EMPTY,
 	STANDARD,
@@ -23,18 +24,6 @@ typedef enum {
 	TT_END,
 }TileType;
 
-typedef enum {
-	DOOR_NONE			= 0,
-	DOOR_NORTH			= 1,
-	DOOR_EAST			= 2,
-	DOOR_SOUTH			= 4,
-	DOOR_WEST			= 8,
-	DOOR_NORTH_HIDDEN	= 16,
-	DOOR_EAST_HIDDEN	= 32,
-	DOOR_SOUTH_HIDDEN	= 64,
-	DOOR_WEST_HIDDEN	= 128
-}Doors;
-
 typedef struct {
 	GFC_Vector2I	gridPos;			//the position of the spawn location
 	Uint8			type;				//the type of monster spawn, 98 for ground, 99 for flying
@@ -54,6 +43,7 @@ typedef struct
 	TileType*		tileLogic;			//contains the tile type for each unique tile
 	SpawnPoint*		spawnPoints;		//contains the spawning point data for each monster
 	Uint8			numSpawnLocations;	//the amount of spawn locations in the room
+	GFC_Vector2I	doorPosition[4];		//contains the position of the north,south,east, and west doors on the grid
 }Room;
 
 typedef struct {
@@ -63,6 +53,8 @@ typedef struct {
 	Uint8			visible;			//1 if visible on map, 0 if not
 	Uint8			active;				//1 if the stage is loaded, 0 if not
 	Uint8			doors;				//bitmask for open doors
+	Uint32			seed;				//the floor seed
+	Uint32			mapIndex;
 	GFC_Vector2I	gridPos;			//(x,y) on floor map
 	RoomType		type;				//the room type
 	Room*			room;				//the loaded json data
@@ -164,6 +156,14 @@ int floor_get_room_type(Floor* floor, int x, int y);
 const char* get_room_type_string(Uint8 type);
 
 /*
+* @brief loads the data for the current room and neighboring rooms and unloads all other rooms
+* @param floor the floor to reference
+* @param playerX the x position on the grid of the player's room
+* @param playerY the y position on the grid of the player's room
+*/
+void floor_update_active_rooms(Floor* floor, int playerX, int playerY);
+
+/*
 * ================================
 * 
 * ROOM FUNCTIONS
@@ -251,7 +251,13 @@ void stage_free(Stage* stage);
 * @brief modifies the tile map to include the doors in the room
 * @param stage the stage to make the doors in
 */
-void stage_make_doors(Stage* stage);
+void stage_make_doors(Floor* floor, Stage* stage);
+
+/*
+* @brief populates a stage with monsters
+* @param stage the stage to populate
+*/
+void load_stage(Stage* stage);
 
 
 /*

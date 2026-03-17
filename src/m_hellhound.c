@@ -32,7 +32,8 @@ Entity* hellhound_new(GFC_Vector2D position) {
 	stats->attacking = 0;
 	stats->attackCooldown = 500;
 	stats->attackDelay = 500;
-	stats->monster = HELLHOUND;
+	stats->monster = MT_HELLHOUND;
+	set_center(self, self->position);
 
 	self->think = hellhound_think;
 	self->update = hellhound_update;
@@ -53,7 +54,7 @@ void hellhound_think(Entity* self) {
 
 	collider = check_entity_collision(self);
 	if (collider) {
-		if (collider->type == PLAYER) {
+		if (collider->type == ET_PLAYER) {
 			collision_bounce(self, collider);
 		}
 	}

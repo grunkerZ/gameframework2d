@@ -34,7 +34,9 @@ Entity* player_new() {
 	self->collision.s.r.y = self->position.y;
 	self->forward = gfc_vector2d(1, 0);
 	self->invincibility = 500;
-	self->type = PLAYER;
+	self->type = ET_PLAYER;
+	self->width = self->sprite->frame_w;
+	self->height = self->sprite->frame_h;
 	
 	stats->baseMaxHealth = 6;
 	stats->baseJumps = 0;
@@ -134,7 +136,7 @@ void player_think(Entity* self) {
 
 	collider = check_entity_collision(self);
 	if (collider) {
-		if (collider->type == MONSTER) {
+		if (collider->type == ET_MONSTER) {
 			((MonsterData*)collider->data)->stun = 300;
 			stats->stun = 300;
 			stats->timeAtStun = SDL_GetTicks64();

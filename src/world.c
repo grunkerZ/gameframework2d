@@ -2,6 +2,8 @@
 #include "simple_logger.h"
 #include "gf2d_graphics.h"
 #include "camera.h"
+#include "monster.h"
+#include "door.h"
 
 /*
 * ===================
@@ -244,7 +246,7 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 
 	index = floor_get_room_index(floor, playerX, playerY);
 	if (index >= 0 && floor->blueprint[index] > 0) {
-		if(floor->floorMap[i]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+		if(floor->floorMap[index]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
 		floor->floorMap[index]->active = 1;
 	}
 
@@ -253,7 +255,7 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 	
 	index = floor_get_room_index(floor, x, y);
 	if (index >= 0 && floor->blueprint[index] > 0) {
-		if (floor->floorMap[i]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+		if (floor->floorMap[index]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
 		floor->floorMap[index]->active = 1;
 	}
 
@@ -261,7 +263,7 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 
 	index = floor_get_room_index(floor, x, y);
 	if (index >= 0 && floor->blueprint[index] > 0) {
-		if (floor->floorMap[i]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+		if (floor->floorMap[index]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
 		floor->floorMap[index]->active = 1;
 	}
 
@@ -270,7 +272,7 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 
 	index = floor_get_room_index(floor, x, y);
 	if (index >= 0 && floor->blueprint[index] > 0) {
-		if (floor->floorMap[i]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+		if (floor->floorMap[index]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
 		floor->floorMap[index]->active = 1;
 	}
 
@@ -278,7 +280,7 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 
 	index = floor_get_room_index(floor, x, y);
 	if (index >= 0 && floor->blueprint[index] > 0) {
-		if (floor->floorMap[i]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
+		if (floor->floorMap[index]->room == NULL) floor->floorMap[index]->room = room_load(floor->floorMap[index]->filename, get_room_type_string(floor->floorMap[index]->type));
 		floor->floorMap[index]->active = 1;
 	}
 
@@ -353,6 +355,7 @@ Room* room_load(const char* filename, const char* roomType) {
 	SJson* vertical, * horizontal;
 	SJson* item;
 	SJson* logicArray;
+	SJson* doorObj;
 	SpawnPoint spawnPoint;
 	int tileWidth, tileHeight, framesPerLine, uniqueTiles;
 	int numSpawnLocations = 0;
@@ -404,6 +407,54 @@ Room* room_load(const char* filename, const char* roomType) {
 		return NULL;
 	}
 
+	doorObj = sj_object_get_value(wjson, "doorLocations");
+	if (doorObj) {
+		SJson* side;
+		side = sj_object_get_value(doorObj, "NORTH");
+		if (side) {
+			sj_get_integer_value(sj_array_get_nth(side, 0), &room->doorPosition[0].x);
+			sj_get_integer_value(sj_array_get_nth(side, 1), &room->doorPosition[0].y);
+		}
+		side = sj_object_get_value(doorObj, "SOUTH");
+		if (side) {
+			sj_get_integer_value(sj_array_get_nth(side, 0), &room->doorPosition[1].x);
+			sj_get_integer_value(sj_array_get_nth(side, 1), &room->doorPosition[1].y);
+		}
+		side = sj_object_get_value(doorObj, "EAST");
+		if (side) {
+			sj_get_integer_value(sj_array_get_nth(side, 0), &room->doorPosition[2].x);
+			sj_get_integer_value(sj_array_get_nth(side, 1), &room->doorPosition[2].y);
+		}
+		side = sj_object_get_value(doorObj, "WEST");
+		if (side) {
+			sj_get_integer_value(sj_array_get_nth(side, 0), &room->doorPosition[3].x);
+			sj_get_integer_value(sj_array_get_nth(side, 1), &room->doorPosition[3].y);
+		}
+	}
+	
+	room->numSpawnLocations = numSpawnLocations;
+	room->spawnPoints = gfc_allocate_array(sizeof(SpawnPoint), room->numSpawnLocations);
+
+	for (j = 0; j < h; j++) {
+		horizontal = sj_array_get_nth(vertical, j);
+		if (!horizontal)continue;
+		for (i = 0; i < w; i++) {
+			item = sj_array_get_nth(horizontal, i);
+			if (!item)continue;
+			tile = 0;
+			sj_get_integer_value(item, &tile);
+			room->tileMap[i + (j * w)] = tile;
+			if (tile == 98 || tile == 99) {
+				spawnPoint.gridPos.x = i;
+				spawnPoint.gridPos.y = j;
+				spawnPoint.type = tile;
+				room->spawnPoints[spawnCount++] = spawnPoint;
+
+				room->tileMap[i + (j * w)] = 0;
+			}
+		}
+	}
+
 	room->tileLogic = gfc_allocate_array(sizeof(TileType), room->uniqueTiles);
 	for (int i = 0; i < room->uniqueTiles; i++) {
 		const char* typeString;
@@ -431,27 +482,6 @@ Room* room_load(const char* filename, const char* roomType) {
 		}
 		else if (strcmp(typeString, "TT_EXPLODEABLE") == 0) {
 			room->tileLogic[i] = TT_EXPLODEABLE;
-		}
-	}
-	
-	room->numSpawnLocations = numSpawnLocations;
-	room->spawnPoints = gfc_allocate_array(sizeof(SpawnPoint), room->numSpawnLocations);
-
-	for (j = 0; j < h; j++) {
-		horizontal = sj_array_get_nth(vertical, j);
-		if (!horizontal)continue;
-		for (i = 0; i < w; i++) {
-			item = sj_array_get_nth(horizontal, i);
-			if (!item)continue;
-			tile = 0;
-			sj_get_integer_value(item, &tile);
-			room->tileMap[i + (j * w)] = tile;
-			if (tile == 98 || tile == 99) {
-				spawnPoint.gridPos.x = i;
-				spawnPoint.gridPos.y = j;
-				spawnPoint.type = tile;
-				room->spawnPoints[spawnCount++] = spawnPoint;
-			}
 		}
 	}
 
@@ -587,6 +617,8 @@ Stage* stage_create(Floor* floor, Room* room, GFC_Vector2I gridPos, const char* 
 	stage->visible = 0;
 	stage->visited = 0;
 	stage->filename = filename;
+	stage->seed = floor->seed;
+	stage->mapIndex = floor_get_room_index(floor, stage->gridPos.x, stage->gridPos.y);
 
 	if (stage->type == START) {
 		stage->cleared = 1;
@@ -612,24 +644,66 @@ void stage_free(Stage* stage) {
 	free(stage);
 }
 
-void stage_make_doors(Stage* stage) {
+void stage_make_doors(Floor* floor, Stage* stage) {
 	int index;
+	int targetIndex;
 	if (stage->doors & DOOR_NORTH) {
-		index = room_get_tile_index(stage->room, stage->room->width / 2, 0);
+		index = room_get_tile_index(stage->room,stage->room->doorPosition[0].x, stage->room->doorPosition[0].y);
 		stage->room->tileMap[index] = EMPTY;
+		targetIndex = floor_get_room_index(floor, stage->gridPos.x, stage->gridPos.y - 1);
+		door_new(DOOR_NORTH, targetIndex, grid_to_world(stage->room->doorPosition[0]));
 	}
 	if (stage->doors & DOOR_SOUTH) {
-		index = room_get_tile_index(stage->room, stage->room->width / 2, stage->room->height - 1);
+		index = room_get_tile_index(stage->room, stage->room->doorPosition[1].x, stage->room->doorPosition[1].y);
 		stage->room->tileMap[index] = EMPTY;
+		targetIndex = floor_get_room_index(floor, stage->gridPos.x, stage->gridPos.y + 1);
+		door_new(DOOR_SOUTH, targetIndex, grid_to_world(stage->room->doorPosition[1]));
 	}
 	if (stage->doors & DOOR_EAST) {
-		index = room_get_tile_index(stage->room, stage->room->width - 1, stage->room->height / 2);
+		index = room_get_tile_index(stage->room, stage->room->doorPosition[2].x, stage->room->doorPosition[2].y);
 		stage->room->tileMap[index] = EMPTY;
+		targetIndex = floor_get_room_index(floor, stage->gridPos.x + 1, stage->gridPos.y);
+		door_new(DOOR_EAST, targetIndex, grid_to_world(stage->room->doorPosition[2]));
 	}
 	if (stage->doors & DOOR_WEST) {
-		index = room_get_tile_index(stage->room, 0, stage->room->height / 2);
+		index = room_get_tile_index(stage->room, stage->room->doorPosition[3].x, stage->room->doorPosition[3].y);
 		stage->room->tileMap[index] = EMPTY;
+		targetIndex = floor_get_room_index(floor, stage->gridPos.x - 1, stage->gridPos.y);
+		door_new(DOOR_WEST, targetIndex, grid_to_world(stage->room->doorPosition[3]));
 	}
+	return;
+}
+
+void load_stage(Stage* stage) {
+	SpawnPoint chosen;
+	MonsterType monster;
+	Uint8 budget;
+	Uint8 numSpawnLocations;
+	Uint8 cheapest;
+	int randomIndex;
+
+	if (!stage || stage->cleared) return;
+
+	stage_make_doors(floor,stage);
+
+	stage->visited = 1;
+	
+	budget = stage->difficulty * 5;
+	numSpawnLocations = stage->room->numSpawnLocations;
+	srand(stage->seed + stage->mapIndex);
+
+	while (budget > 0 && numSpawnLocations > 0) {
+		randomIndex = rand() % numSpawnLocations;
+		chosen = stage->room->spawnPoints[randomIndex];
+		monster = get_valid_monster(chosen.type, budget);
+		if (monster != MT_NONE){
+			monster_spawn(monster, grid_to_world(chosen.gridPos));
+			budget -= get_monster_cost(monster);
+		}
+		stage->room->spawnPoints[randomIndex] = stage->room->spawnPoints[numSpawnLocations - 1];
+		numSpawnLocations--;
+	}
+	return;
 }
 
 
@@ -695,6 +769,45 @@ void free_world(Floor* floor) {
 		}
 	}
 	floor_free(floor);
+}
+
+GFC_Vector2I get_door_position(Room* room, Doors side) {
+	GFC_Vector2I error = {-1, -1};
+	if (!room) return error;
+
+	switch (side) {
+	case DOOR_NORTH:
+		return room->doorPosition[0];
+	case DOOR_SOUTH:
+		return room->doorPosition[1];
+	case DOOR_EAST:
+		return room->doorPosition[2];
+	case DOOR_WEST:
+		return room->doorPosition[3];
+	default:
+		return error;
+	}
+}
+
+void spawn_at_door_exit(Entity* player, Room* room, Doors exitSide) {
+	GFC_Vector2I exitPos = get_door_position(room, exitSide);
+	
+	switch (exitSide) {
+	case DOOR_NORTH:
+		exitPos.y += 1;
+		break;
+	case DOOR_SOUTH:
+		exitPos.y -= 1;
+		break;
+	case DOOR_EAST:
+		exitPos.x -= 1;
+		break;
+	case DOOR_WEST:
+		exitPos.x += 1;
+		break;
+	}
+
+	set_center(player, grid_to_world(exitPos));
 }
 
 /*eol@eof*/

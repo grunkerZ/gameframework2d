@@ -29,7 +29,8 @@ Entity* imp_new(GFC_Vector2D position) {
 	stats->attackSpeed = 1000;
 	stats->timeAtAttack = 0;
 	stats->projectileStats.damage = 1;
-	stats->monster = IMP;
+	stats->monster = MT_IMP;
+	set_center(self, self->position);
 
 	self->think = imp_think;
 	self->update = imp_update;
@@ -48,7 +49,7 @@ void imp_think(Entity* self) {
 
 	collider = check_entity_collision(self);
 	if (collider) {
-		if (collider->type == PLAYER) {
+		if (collider->type == ET_PLAYER) {
 			collision_bounce(self, collider);
 		}
 	}

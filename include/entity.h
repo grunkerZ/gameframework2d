@@ -9,9 +9,12 @@
 
 
 typedef enum {
-	MONSTER,
-	PLAYER,
-	PROJECTILE
+	ET_NONE,
+	ET_MONSTER,
+	ET_PLAYER,
+	ET_PROJECTILE,
+	ET_DOOR,
+	ET_END
 }EntityType;
 
 typedef struct Entity_S
@@ -32,6 +35,8 @@ typedef struct Entity_S
 	GFC_Shape		collision;							//the collision box of the entity
 	EntityType		type;								//the type of entity
 	Sprite*			sprite;								//the sprite of the entity
+	Uint32			width;								//how wide the entity is in pixels
+	Uint32			height;								//how tall the entity is in pixels
 	void			(*think)(struct Entity_S* self);	//called every frame if defined for entity
 	void			(*update)(struct Entity_S* self);	//execute entity decisions
 	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data
@@ -115,5 +120,17 @@ void entity_manager_free_all();
 * @return the value of health after damage is subtracted
 */
 Uint8 apply_damage(Entity* target, Uint8 damage, Uint8 health);
+
+/*
+* @brief sets the entity's center position
+* @param self the entity to use
+* @param center the position to set the center to
+*/
+void set_center(Entity* self, GFC_Vector2D center);
+
+/*
+* @brief frees all entities in a stage other than the player
+*/
+void clear_stage();
 
 #endif // !__ENTITY_H__

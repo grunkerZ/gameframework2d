@@ -28,7 +28,8 @@ Entity* fiend_new(GFC_Vector2D position) {
 	stats->stopDistance = 500;
 	stats->attackSpeed = 1000;
 	stats->timeAtAttack = 0;
-	stats->monster = DAMNED;
+	stats->monster = MT_DAMNED;
+	set_center(self, self->position);
 
 	self->think = fiend_think;
 	self->update = fiend_update;
@@ -64,7 +65,7 @@ void fiend_think(Entity* self) {
 
 	collider = check_entity_collision(self);
 	if (collider) {
-		if (collider->type == PLAYER) {
+		if (collider->type == ET_PLAYER) {
 			collision_bounce(self, collider);
 		}
 	}

@@ -23,6 +23,7 @@ Entity* damned_new(GFC_Vector2D position) {
 	self->collision.s.r.y = self->position.y;
 	self->collision.s.r.w = self->sprite->frame_w;
 	self->collision.s.r.h = self->sprite->frame_h;
+	set_center(self, self->position);
 
 	self->think = damned_think;
 	self->update = damned_update;
@@ -41,7 +42,7 @@ void damned_think(Entity* self) {
 
 	collider = check_entity_collision(self);
 	if (collider) {
-		if (collider->type == PLAYER) {
+		if (collider->type == ET_PLAYER) {
 			collision_bounce(self, collider);
 		}
 	}
