@@ -3,7 +3,6 @@
 #include "gf2d_graphics.h"
 #include "camera.h"
 #include "monster.h"
-#include "door.h"
 
 /*
 * ===================
@@ -169,15 +168,30 @@ Stage** floor_generate(Floor* floor) {
 	for (i = 0; i < floor->width * floor->height; i++) {
 		Stage* stage;
 		GFC_Vector2I gridPos;
-		const char* filename = "maps/testworld.map";
+		const char* filename = "maps/standard/standard1.map";
 		if (floor->blueprint[i] > 0) {
 			slog("Assigning stages to rooms...");
 			gridPos.y = i / floor->width;
 			gridPos.x = i % floor->width;
+
 			if (floor->blueprint[i] == START) filename = "maps/start/start1.map";
 			else if (floor->blueprint[i] == STANDARD) filename = "maps/standard/standard1.map";
+			else if (floor->blueprint[i] == EXIT) filename = "maps/exit/exit1.map";
 			stage = stage_create(floor, NULL, gridPos, filename);
 			floor->floorMap[i] = stage;
+
+			if (gridPos.y > 0 && floor->blueprint[floor_get_room_index(floor, gridPos.x, gridPos.y - 1)] > 0) {
+				floor->floorMap[i]->doors |= DOOR_NORTH;
+			}
+			if (gridPos.y < floor->height - 1 && floor->blueprint[floor_get_room_index(floor, gridPos.x, gridPos.y + 1)] > 0) {
+				floor->floorMap[i]->doors |= DOOR_SOUTH;
+			}
+			if (gridPos.x < floor->width - 1 && floor->blueprint[floor_get_room_index(floor, gridPos.x + 1, gridPos.y)] > 0) {
+				floor->floorMap[i]->doors |= DOOR_EAST;
+			}
+			if (gridPos.x > 0 && floor->blueprint[floor_get_room_index(floor, gridPos.x - 1, gridPos.y)] > 0) {
+				floor->floorMap[i]->doors |= DOOR_WEST;
+			}
 		}
 	}
 	slog("Floor Generation Done");
@@ -223,7 +237,7 @@ int floor_get_room_type(Floor* floor, int x, int y) {
 	if (index == -1) {
 		return EMPTY;
 	}
-	slog("Getting Room type for index: %d", index);
+	//slog("Getting Room type for index: %d", index);
 	type = floor->blueprint[index];
 	return type;
 }
@@ -446,8 +460,9 @@ Room* room_load(const char* filename, const char* roomType) {
 	}
 	
 	room->numSpawnLocations = numSpawnLocations;
-	room->spawnPoints = gfc_allocate_array(sizeof(SpawnPoint), room->numSpawnLocations);
-
+	if (numSpawnLocations > 0) {
+		room->spawnPoints = gfc_allocate_array(sizeof(SpawnPoint), room->numSpawnLocations);
+	}
 	for (j = 0; j < h; j++) {
 		horizontal = sj_array_get_nth(vertical, j);
 		if (!horizontal)continue;
@@ -462,7 +477,6 @@ Room* room_load(const char* filename, const char* roomType) {
 				spawnPoint.gridPos.y = j;
 				spawnPoint.type = tile;
 				room->spawnPoints[spawnCount++] = spawnPoint;
-
 				room->tileMap[i + (j * w)] = 0;
 			}
 		}
@@ -660,34 +674,48 @@ void stage_free(Stage* stage) {
 void stage_make_doors(Floor* floor, Stage* stage) {
 	int index;
 	int targetIndex;
+	Entity* door;
+
+	slog("Bitmask value of doors: %d", stage->doors);
+
 	if (stage->doors & DOOR_NORTH) {
+		slog("Attempting to carve north door");
 		index = room_get_tile_index(stage->room,stage->room->doorPosition[0].x, stage->room->doorPosition[0].y);
+		slog("North Door Position: (%i, %i)",stage->room->doorPosition[0].x, stage->room->doorPosition[0].y);
+		slog("North Index: %i", index);
 		stage->room->tileMap[index] = EMPTY;
+		slog("tilemap carved successfully");
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x, stage->gridPos.y - 1);
-		door_new(DOOR_NORTH, targetIndex, grid_to_world(stage->room->doorPosition[0]));
+		slog("target index: %i", targetIndex);
+		door = door_new(DOOR_NORTH, targetIndex, grid_to_world(stage->room->doorPosition[0]));
+		slog("new door successfully made");
 	}
 	if (stage->doors & DOOR_SOUTH) {
+		slog("Attempting to carve south door");
 		index = room_get_tile_index(stage->room, stage->room->doorPosition[1].x, stage->room->doorPosition[1].y);
 		stage->room->tileMap[index] = EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x, stage->gridPos.y + 1);
 		door_new(DOOR_SOUTH, targetIndex, grid_to_world(stage->room->doorPosition[1]));
 	}
 	if (stage->doors & DOOR_EAST) {
+		slog("Attempting to carve east door");
 		index = room_get_tile_index(stage->room, stage->room->doorPosition[2].x, stage->room->doorPosition[2].y);
 		stage->room->tileMap[index] = EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x + 1, stage->gridPos.y);
 		door_new(DOOR_EAST, targetIndex, grid_to_world(stage->room->doorPosition[2]));
 	}
 	if (stage->doors & DOOR_WEST) {
+		slog("Attempting to carve west door");
 		index = room_get_tile_index(stage->room, stage->room->doorPosition[3].x, stage->room->doorPosition[3].y);
 		stage->room->tileMap[index] = EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x - 1, stage->gridPos.y);
 		door_new(DOOR_WEST, targetIndex, grid_to_world(stage->room->doorPosition[3]));
 	}
+	room_tile_layer_build(stage->room);
 	return;
 }
 
-void load_stage(Stage* stage) {
+void load_stage(Floor* floor, Stage* stage) {
 	SpawnPoint chosen;
 	MonsterType monster;
 	Uint8 budget;
@@ -695,26 +723,28 @@ void load_stage(Stage* stage) {
 	Uint8 cheapest;
 	int randomIndex;
 
-	if (!stage || stage->cleared) return;
+	if (!stage) return;
 
 	stage_make_doors(floor,stage);
 
 	stage->visited = 1;
 	
-	budget = stage->difficulty * 5;
-	numSpawnLocations = stage->room->numSpawnLocations;
-	srand(stage->seed + stage->mapIndex);
+	if(!stage->cleared){
+		budget = stage->difficulty * 5;
+		numSpawnLocations = stage->room->numSpawnLocations;
+		srand(stage->seed + stage->mapIndex);
 
-	while (budget > 0 && numSpawnLocations > 0) {
-		randomIndex = rand() % numSpawnLocations;
-		chosen = stage->room->spawnPoints[randomIndex];
-		monster = get_valid_monster(chosen.type, budget);
-		if (monster != MT_NONE){
-			monster_spawn(monster, grid_to_world(chosen.gridPos));
-			budget -= get_monster_cost(monster);
+		while (budget > 0 && numSpawnLocations > 0) {
+			randomIndex = rand() % numSpawnLocations;
+			chosen = stage->room->spawnPoints[randomIndex];
+			monster = get_valid_monster(chosen.type, budget);
+			if (monster != MT_NONE) {
+				monster_spawn(monster, grid_to_world(chosen.gridPos));
+				budget -= get_monster_cost(monster);
+			}
+			stage->room->spawnPoints[randomIndex] = stage->room->spawnPoints[numSpawnLocations - 1];
+			numSpawnLocations--;
 		}
-		stage->room->spawnPoints[randomIndex] = stage->room->spawnPoints[numSpawnLocations - 1];
-		numSpawnLocations--;
 	}
 	return;
 }

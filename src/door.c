@@ -10,24 +10,26 @@ Entity* door_new(Doors side, Uint8 targetRoom, GFC_Vector2D position) {
 		slog("failed to create a new door");
 		return NULL;
 	}
-	DoorData* stats = gfc_allocate_array(sizeof(DoorData), 1);
-	stats = door->data;
+	door->data = gfc_allocate_array(sizeof(DoorData), 1);
+	DoorData* stats = (DoorData*)door->data;
 
 	stats->targetRoom = targetRoom;
 	stats->locked = 0;
 	stats->side = side;
 	
-	door->position = position;
 	door->gravity = 0;
 	door->sprite = gf2d_sprite_load_image("images/placeholder/door.png");
+	set_center(door, position);
 	door->type = ET_DOOR;
 
 	door->think = door_think;
 	door->free = door_free;
+
+	return door;
 }
 
 void door_think(Entity* door) {
-
+	return;
 }
 
 void door_free(Entity* door) {

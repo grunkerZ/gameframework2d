@@ -8,7 +8,6 @@
 #include "world.h"
 #include "camera.h"
 #include "simple_ui.h"
-#include "door.h"
 
 typedef enum {
     GS_MAINMENU,
@@ -41,13 +40,14 @@ void update_game(System* game) {
         int x, y;
         Entity* collider;
         Doors exitSide;
+        GFC_Vector2I gridPos;
 
     case GS_MAINMENU:
         menu_update(game->mainMenu);
         if (game->mainMenu->Menu.start.exitButton.clicked) game->done = 1;
         if (game->mainMenu->Menu.start.startButton.clicked) {
             slog("GAME START! Attempting floor generation");
-            game->floor = floor_create(10,15,0,0,999);
+            game->floor = floor_create(10,2,0,0,999);
             if (!game->floor) {
                 slog("ERROR: Floor Generation Failed");
             }
@@ -59,17 +59,18 @@ void update_game(System* game) {
                     slog("Starting room found: Index: %i",i);
                     game->currentStage = game->floor->floorMap[i];
                     game->currentStage->room = room_load(game->currentStage->filename,get_room_type_string(game->currentStage->type));
+                    set_active_room(game->currentStage->room);
+                    load_stage(game->floor, game->currentStage);
                     break;
                 }
             }
             if (!game->currentStage->room){
                 slog("ERROR: current room is NULL. RIP, enjoy the segfault");
             }
-            set_active_room(game->currentStage->room);
             game->player = player_new();
-            game->player->position = gfc_vector2d(
-                (game->currentStage->room->width / 2) + (game->currentStage->room->tileWidth / 2) - (game->player->sprite->frame_w / 2),
-                (game->currentStage->room->height) - (game->currentStage->room->tileHeight) - game->player->sprite->frame_h);
+            gridPos.x = game->currentStage->room->width / 2;
+            gridPos.y = game->currentStage->room->height - 2;
+            set_center(game->player, grid_to_world(gridPos));
             game->state = GS_PLAYING;
         }
         break;
@@ -99,11 +100,12 @@ void update_game(System* game) {
 
         collider = check_entity_collision(game->player);
         if (collider && collider->type == ET_DOOR) {
+            slog("player collided with a door");
             exitSide = get_opposite_side(((DoorData*)collider->data)->side);
             game->currentStage = game->floor->floorMap[((DoorData*)collider->data)->targetRoom];
             set_active_room(game->currentStage->room);
             clear_stage();
-            load_stage(game->currentStage);
+            load_stage(game->floor,game->currentStage);
             floor_update_active_rooms(game->floor, game->currentStage->gridPos.x, game->currentStage->gridPos.y);
             spawn_at_door_exit(game->player, game->currentStage->room, exitSide);
         }
@@ -211,7 +213,6 @@ int main(int argc, char * argv[])
     /*demo setup*/
 
     game->mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
-    game->player = player_new();
     GFC_Vector2D offset = camera_get_offset();
     game->mainMenu = main_menu_init();
     game->deathMenu = death_menu_init();

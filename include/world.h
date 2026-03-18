@@ -257,9 +257,10 @@ void stage_make_doors(Floor* floor, Stage* stage);
 
 /*
 * @brief populates a stage with monsters
+* @param floor the floor the stage is on
 * @param stage the stage to populate
 */
-void load_stage(Stage* stage);
+void load_stage(Floor* floor, Stage* stage);
 
 
 /*
