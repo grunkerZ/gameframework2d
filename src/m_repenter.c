@@ -17,10 +17,12 @@ Entity* repenter_new(GFC_Vector2D position) {
 	self->gravity = 1;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/repenter.png");
+	self->width = self->sprite->frame_w;
+	self->height = self->sprite->frame_h;
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
-	self->collision.s.r.w = self->sprite->frame_w;
-	self->collision.s.r.h = self->sprite->frame_h;
+	self->collision.s.r.w = self->width;
+	self->collision.s.r.h = self->height;
 	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
 
 	stats->touchDamage = 1;

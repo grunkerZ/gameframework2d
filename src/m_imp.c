@@ -17,10 +17,12 @@ Entity* imp_new(GFC_Vector2D position) {
 	self->gravity = 0;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/imp.png");
+	self->width = self->sprite->frame_w;
+	self->height = self->sprite->frame_h;
 	self->collision.s.r.x = self->position.x+3;
 	self->collision.s.r.y = self->position.y+3;
-	self->collision.s.r.w = self->sprite->frame_w-6;
-	self->collision.s.r.h = self->sprite->frame_h-6;
+	self->collision.s.r.w = self->width-6;
+	self->collision.s.r.h = self->height-6;
 
 	stats->touchDamage = 1;
 	stats->moveSpeed = 2.5;

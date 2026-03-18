@@ -65,11 +65,12 @@ Stage** floor_generate(Floor* floor) {
 	GFC_Vector2I itemSpots[256];
 	int topCount = 0;
 	int itemCandidates = 0;
-	
+	int index;
+	slog("Beginning Floor Generation...");
 	srand(floor->seed);
 
 	//GENERATE STANDARD ROOMS
-
+	
 	startX = floor->width / 2;
 	startY = floor->height - 1;
 	minY = startY;
@@ -90,11 +91,14 @@ Stage** floor_generate(Floor* floor) {
 		GFC_Vector2I pos = candidates[index];
 
 		if(floor_count_neighbors(floor,pos.x,pos.y)==1){
-			floor->blueprint[floor_get_room_index(floor, pos.x, pos.y)] = STANDARD;
-			floor->roomsLeft--;
-
-			if (pos.y < minY) minY = pos.y;
-
+			slog("Generating standard rooms...");
+			index = floor_get_room_index(floor, pos.x, pos.y);
+			if (index != -1) {
+				floor->blueprint[index] = STANDARD;
+				floor->roomsLeft--;
+				if (pos.y < minY) minY = pos.y;
+			}
+			
 			validSpot.x = pos.x;
 			validSpot.y = pos.y - 1;
 			candidates[numCandidates++] = validSpot;
@@ -122,10 +126,11 @@ Stage** floor_generate(Floor* floor) {
 	if (topCount > 0) {
 		GFC_Vector2I exit = topRooms[rand() % topCount];
 		floor->blueprint[floor_get_room_index(floor, exit.x, exit.y)] = EXIT;
+		slog("Placing the exit...");
 	}
 
 	//PLACE SPECIAL ROOMS
-	
+
 	for (i = 0; i < floor->height; i++) {
 		for (j = 0; j < floor->width; j++) {
 			if (floor_get_room_type(floor, j, i) == EMPTY) {
@@ -150,6 +155,8 @@ Stage** floor_generate(Floor* floor) {
 		int index = rand() % itemCandidates;
 		GFC_Vector2I pos = itemSpots[index];
 
+		slog("Placing Special Rooms...");
+
 		floor->blueprint[floor_get_room_index(floor, pos.x, pos.y)] = ITEM;
 		floor->numItemRooms--;
 
@@ -158,12 +165,13 @@ Stage** floor_generate(Floor* floor) {
 	}
 
 	//CREATE FLOOR STAGES
-
+	
 	for (i = 0; i < floor->width * floor->height; i++) {
 		Stage* stage;
 		GFC_Vector2I gridPos;
 		const char* filename = "maps/testworld.map";
 		if (floor->blueprint[i] > 0) {
+			slog("Assigning stages to rooms...");
 			gridPos.y = i / floor->width;
 			gridPos.x = i % floor->width;
 			if (floor->blueprint[i] == START) filename = "maps/start/start1.map";
@@ -172,7 +180,7 @@ Stage** floor_generate(Floor* floor) {
 			floor->floorMap[i] = stage;
 		}
 	}
-
+	slog("Floor Generation Done");
 	return floor->floorMap;
 }
 
@@ -202,7 +210,7 @@ void print_floor(Floor* floor) {
 int floor_get_room_index(Floor* floor, int x, int y) {
 	int index;
 	if (x<0 || y<0 || x>=floor->width || y>=floor->height) {
-		slog("Room Index Out of Bounds");
+		slog("Room Index Out of Bounds: (%d,%d)",x,y);
 		return -1;
 	}
 	index = (floor->width * y) + x;
@@ -211,7 +219,12 @@ int floor_get_room_index(Floor* floor, int x, int y) {
 
 int floor_get_room_type(Floor* floor, int x, int y) {
 	int type;
-	type = floor->blueprint[floor_get_room_index(floor, x, y)];
+	int index = floor_get_room_index(floor, x, y);
+	if (index == -1) {
+		return EMPTY;
+	}
+	slog("Getting Room type for index: %d", index);
+	type = floor->blueprint[index];
 	return type;
 }
 
@@ -487,7 +500,6 @@ Room* room_load(const char* filename, const char* roomType) {
 
 	room_tile_layer_build(room);
 
-	activeRoom = room;
 	sj_free(json);
 	return room;
 }
@@ -530,6 +542,7 @@ Room* room_create(const char* background, const char* tileSet, Uint32 width, Uin
 	}
 
 	room->tileMap = gfc_allocate_array(sizeof(Uint8), height * width);
+	room->entityGrid = gfc_allocate_array(sizeof(GFC_List*), width * height);
 	room->width = width;
 	room->height = height;
 	room->tileWidth = tileWidth;
@@ -548,7 +561,7 @@ int room_get_tile_index(Room* room,Uint32 x,Uint32 y) {
 
 void room_free(Room* room) {
 	if (!room)return;
-	activeRoom = NULL;
+	if (activeRoom == room) activeRoom = NULL;
 	gf2d_sprite_free(room->background);
 	gf2d_sprite_free(room->tileSet);
 	if (room->tileMap)free(room->tileMap);
@@ -808,6 +821,47 @@ void spawn_at_door_exit(Entity* player, Room* room, Doors exitSide) {
 	}
 
 	set_center(player, grid_to_world(exitPos));
+}
+
+void update_entity_position_on_map(Room* room, Entity* entity) {
+	int i, index;
+
+	if (!room || !entity) return;
+
+	if (entity->currentTiles) {
+		for (i = 0; i < entity->currentTiles->count; i++) {
+			index = (int)(intptr_t)gfc_list_get_nth(entity->currentTiles, i);
+
+			if (room->entityGrid[index]) {
+				gfc_list_delete_data(room->entityGrid[index], entity);
+			}
+		}
+		gfc_list_delete(entity->currentTiles);
+		entity->currentTiles = gfc_list_new();
+	}
+	else {
+		entity->currentTiles = gfc_list_new();
+	}
+
+	get_tiles_entity_is_in(room, entity);
+
+	for (i = 0; i < entity->currentTiles->count; i++) {
+		index = (int)(intptr_t)gfc_list_get_nth(entity->currentTiles, i);
+		if (!room->entityGrid[index]) {
+			room->entityGrid[index] = gfc_list_new();
+		}
+		gfc_list_append(room->entityGrid[index], entity);
+	}
+	return;
+}
+
+void set_active_room(Room* room) {
+	activeRoom = room;
+	return;
+}
+
+Room* get_active_room() {
+	return activeRoom;	
 }
 
 /*eol@eof*/

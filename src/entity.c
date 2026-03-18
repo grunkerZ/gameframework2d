@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "entity.h"
 #include "camera.h"
+#include "world.h"
 
 #define CLAMP(x,min,max) ((x)<(min) ? (min) : ((x)> (max) ? (max) : (x)))
 
@@ -53,9 +54,6 @@ Entity* entity_new() {
 		//set defaults
 		entityManager.entityList[i].scale.x = 1;
 		entityManager.entityList[i].scale.y = 1;
-		entityManager.entityList[i].sprite = gf2d_sprite_load_image("images/missing.png");
-		entityManager.entityList[i].width = entityManager.entityList[i].sprite->frame_w;
-		entityManager.entityList[i].height = entityManager.entityList[i].sprite->frame_h;
 		return &entityManager.entityList[i];
 	}
 	slog("no more available entities");
@@ -95,7 +93,7 @@ void entity_update(Entity* self) {
 
 	if (self->update)self->update(self);
 
-	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
+	self->centerPos = gfc_vector2d(self->position.x + (self->width / 2), self->position.y + (self->height / 2));
 }
 
 void entity_manager_think_all() {
@@ -111,6 +109,7 @@ void entity_manager_update_all() {
 	for (i = 0; i < entityManager.entityMax; i++) {
 		if (!entityManager.entityList[i]._inuse) continue;
 		entity_update(&entityManager.entityList[i]);
+		update_entity_position_on_map(get_active_room(), &entityManager.entityList[i]);
 	}
 }
 
@@ -149,16 +148,29 @@ void entity_manager_draw_all() {
 }
 
 Entity* check_entity_collision(Entity* self) {
-	int i;
-	for (i = 0; i < entityManager.entityMax; i++) {
-		if (!entityManager.entityList[i]._inuse) continue;
-		if (self == &entityManager.entityList[i])continue;
-		if (self->type == entityManager.entityList[i].type) continue;
-		if (gfc_shape_overlap(self->collision, entityManager.entityList[i].collision)) {
-			//slog("Collision Detected:\n   Type: %d\n   ColBox (%f, %f)\n   Position (%f, %f)",entityManager.entityList[i].type, self->collision.s.r.x,self->collision.s.r.y, self->position.x,self->position.y);
-			return &entityManager.entityList[i];
+	Room* room = get_active_room();
+	int i,j;
+	int index;
+	GFC_List* nearbyEntities;
+	Entity* other;
+
+	if (!self || !room || !self->currentTiles) return NULL;
+
+	for (i = 0; i < self->currentTiles->count; i++) {
+		index = (int)(intptr_t)gfc_list_get_nth(self->currentTiles, i);
+		nearbyEntities = room->entityGrid[index];
+
+		if (!nearbyEntities) continue;
+
+		for (j = 0; j < nearbyEntities->count; j++) {
+			other = (Entity*)gfc_list_get_nth(nearbyEntities, j);
+			if (other == self) continue;
+			if (gfc_shape_overlap(self->collision, other->collision)) {
+				return other;
+			}
 		}
 	}
+
 	return NULL;
 }
 
@@ -290,6 +302,21 @@ void clear_stage() {
 	}
 }
 
+void get_tiles_entity_is_in(Room* room, Entity* entity) {
+	GFC_Vector2I topLeft, bottomRight;
+	int i,j;
+	int index;
+	
+	topLeft = world_to_grid(entity->position);
+	bottomRight = world_to_grid(gfc_vector2d(entity->collision.s.r.x + entity->collision.s.r.w, entity->collision.s.r.y + entity->collision.s.r.h));
 
+	for (i = topLeft.x; i <= bottomRight.x; i++) {
+		for (j = topLeft.y; j <= bottomRight.y; j++) {
+			index = i + (j * room->width);
+			gfc_list_append(entity->currentTiles, (void*)(intptr_t)index);
+		}
+	}
+	return;
+}
 
 /*eol@eof*/

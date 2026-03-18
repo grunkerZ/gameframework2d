@@ -33,6 +33,8 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	self->scale = gfc_vector2d(1, 1);
 	self->flip = gfc_vector2d(0, 0);
 	self->sprite = gf2d_sprite_load_image("images/placeholder/projectile.png");
+	self->width = self->sprite->frame_w;
+	self->height = self->sprite->frame_h;
 
 	selfStats->origin = gfc_vector2d(owner->position.x, owner->position.y + (owner->sprite->frame_h / 2));
 	self->position = selfStats->origin;

@@ -1,6 +1,7 @@
 #ifndef __WORLD_H__
 #define __WORLD_H__
 #include "gf2d_sprite.h"
+#include "door.h"
 
 
 typedef enum {
@@ -29,7 +30,7 @@ typedef struct {
 	Uint8			type;				//the type of monster spawn, 98 for ground, 99 for flying
 }SpawnPoint;
 
-typedef struct
+typedef struct Room_S
 {
 	Sprite*			background;			//background image for room
 	Sprite*			tileSet;			//Sprite containing tiles for room
@@ -43,10 +44,11 @@ typedef struct
 	TileType*		tileLogic;			//contains the tile type for each unique tile
 	SpawnPoint*		spawnPoints;		//contains the spawning point data for each monster
 	Uint8			numSpawnLocations;	//the amount of spawn locations in the room
-	GFC_Vector2I	doorPosition[4];		//contains the position of the north,south,east, and west doors on the grid
+	GFC_Vector2I	doorPosition[4];	//contains the position of the north,south,east, and west doors on the grid
+	GFC_List**		entityGrid;			//holds which tiles the entities in the room exist on
 }Room;
 
-typedef struct {
+typedef struct Stage_S{
 	Uint8			difficulty;			//The Monster Budget
 	Uint8			cleared;			//1 if cleared 0 if not
 	Uint8			visited;			//1 if visited, 0 if not
@@ -61,7 +63,7 @@ typedef struct {
 	const char*		filename;			//the json data for the room
 }Stage;
 
-typedef struct {
+typedef struct Floor_S{
 	Stage**			floorMap;			//the map of the stages on the floor
 	Uint8*			blueprint;			//the integer map of room types on the floor
 	Uint8			roomsLeft;			//the amount of rooms left to generate
@@ -314,5 +316,39 @@ void room_draw(Room* room);
 */
 void free_world(Floor* floor);
 
+/*
+* @brief gets the grid position of a door in a room
+* @param room the room the door is in
+* @param side the side of the room the door is on
+* @return the grid position of the door, or 0,0 otherwise
+*/
+GFC_Vector2I get_door_position(Room* room, Doors side);
+
+/*
+* @brief spawns an entity at the exit of a door. Used after entering a door
+* @param player the player entity to modify the position of
+* @param room the room the door the entity exits is in
+* @param exitSide the side of the room the door the entity exits is on
+*/
+void spawn_at_door_exit(Entity* player, Room* room, Doors exitSide);
+
+/*
+* @brief updates an entitys positions on the rooms entity map
+* @param room the room the entity is in
+* @param entity the entity to update
+*/
+void update_entity_position_on_map(Room* room, Entity* entity);
+
+/*
+* @brief sets the active room
+* @param room the room to set the active room to
+*/
+void set_active_room(Room* room);
+
+/*
+* @brief gets the active room
+* @return the active room
+*/
+Room* get_active_room();
 
 #endif // !__WORLD_H__

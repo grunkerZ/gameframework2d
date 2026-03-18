@@ -17,10 +17,12 @@ Entity* fiend_new(GFC_Vector2D position) {
 	self->gravity = 1;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/fiend.png");
+	self->width = self->sprite->frame_w;
+	self->height = self->sprite->frame_h;
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
-	self->collision.s.r.w = self->sprite->frame_w;
-	self->collision.s.r.h = self->sprite->frame_h;
+	self->collision.s.r.w = self->width;
+	self->collision.s.r.h = self->height;
 
 	stats->touchDamage = 1;
 	stats->moveSpeed = 1;

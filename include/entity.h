@@ -5,8 +5,8 @@
 #include "gfc_text.h"
 #include "gfc_shape.h"
 #include "gf2d_sprite.h"
-#include "world.h"
 
+typedef struct Room_S Room;
 
 typedef enum {
 	ET_NONE,
@@ -37,6 +37,7 @@ typedef struct Entity_S
 	Sprite*			sprite;								//the sprite of the entity
 	Uint32			width;								//how wide the entity is in pixels
 	Uint32			height;								//how tall the entity is in pixels
+	GFC_List*		 currentTiles;						//holds the tiles that the entity exists in
 	void			(*think)(struct Entity_S* self);	//called every frame if defined for entity
 	void			(*update)(struct Entity_S* self);	//execute entity decisions
 	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data
@@ -132,5 +133,12 @@ void set_center(Entity* self, GFC_Vector2D center);
 * @brief frees all entities in a stage other than the player
 */
 void clear_stage();
+
+/*
+* @brief appends the tile the entity exists in to the currentTiles list
+* @param entity the entity to check
+*/
+void get_tiles_entity_is_in(Room* room, Entity* entity);
+
 
 #endif // !__ENTITY_H__

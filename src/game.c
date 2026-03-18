@@ -40,18 +40,32 @@ void update_game(System* game) {
         int i;
         int x, y;
         Entity* collider;
+        Doors exitSide;
 
     case GS_MAINMENU:
         menu_update(game->mainMenu);
         if (game->mainMenu->Menu.start.exitButton.clicked) game->done = 1;
         if (game->mainMenu->Menu.start.startButton.clicked) {
+            slog("GAME START! Attempting floor generation");
             game->floor = floor_create(10,15,0,0,999);
+            if (!game->floor) {
+                slog("ERROR: Floor Generation Failed");
+            }
+            else {
+                slog("Floor Generated, finding starting room...");
+            }
             for (i = 0; i < game->floor->width * game->floor->height; i++) {
                 if (game->floor->blueprint[i] == START) {
+                    slog("Starting room found: Index: %i",i);
                     game->currentStage = game->floor->floorMap[i];
+                    game->currentStage->room = room_load(game->currentStage->filename,get_room_type_string(game->currentStage->type));
                     break;
                 }
             }
+            if (!game->currentStage->room){
+                slog("ERROR: current room is NULL. RIP, enjoy the segfault");
+            }
+            set_active_room(game->currentStage->room);
             game->player = player_new();
             game->player->position = gfc_vector2d(
                 (game->currentStage->room->width / 2) + (game->currentStage->room->tileWidth / 2) - (game->player->sprite->frame_w / 2),
@@ -85,10 +99,13 @@ void update_game(System* game) {
 
         collider = check_entity_collision(game->player);
         if (collider && collider->type == ET_DOOR) {
+            exitSide = get_opposite_side(((DoorData*)collider->data)->side);
             game->currentStage = game->floor->floorMap[((DoorData*)collider->data)->targetRoom];
+            set_active_room(game->currentStage->room);
             clear_stage();
             load_stage(game->currentStage);
             floor_update_active_rooms(game->floor, game->currentStage->gridPos.x, game->currentStage->gridPos.y);
+            spawn_at_door_exit(game->player, game->currentStage->room, exitSide);
         }
 
         if (((PlayerData*)game->player->data)->health <= 0) {

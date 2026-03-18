@@ -8,6 +8,13 @@
 		"frames_per_line":1,
 		"uniqueTiles":11,
 		"tileLogic":["TT_EMPTY","TT_SOLID","TT_DANGEROUS","TT_SOLID","TT_SOLID","TT_PLATFORM","TT_EXPLODEABLE","TT_BREAKABLE","TT_SOLID","TT_DANGEROUS","TT_SOLID"],
+		"doorLocations": {
+			"NORTH":[0,11],
+			"SOUTH":[7,20],
+			"EAST":[6,20],
+			"WEST":[6,0]
+		}
+		"numSpawnLocations":0,
 		"tileMap":
 		[
 			[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
