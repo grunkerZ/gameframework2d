@@ -53,6 +53,7 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	selfStats->timeAtSpawn = SDL_GetTicks64();
 	selfStats->spawnImmunity = 300;
 	selfStats->exploded = 0;
+	selfStats->team = selfStats->parent->type;
 
 	self->think = projectile_think;
 	self->update = projectile_update;
@@ -70,7 +71,7 @@ void projectile_damage(Entity* self, Entity* collider) {
 	ProjectileData* stats = self->data;
 
 	if (collider == stats->parent) return;
-	if (collider->type == stats->parent->type) return;
+	if (collider->type == stats->team) return;
 
 	if (stats->explodes) {
 		self->velocity = gfc_vector2d(0, 0);

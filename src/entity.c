@@ -2,6 +2,7 @@
 #include "entity.h"
 #include "camera.h"
 #include "world.h"
+#include "projectile.h"
 
 #define CLAMP(x,min,max) ((x)<(min) ? (min) : ((x)> (max) ? (max) : (x)))
 
@@ -62,7 +63,22 @@ Entity* entity_new() {
 
 
 void entity_free(Entity* self) {
+	int i;
+	ProjectileData* projectile;
 	if (!self) return;
+
+	for (i = 0; i < entityManager.entityMax; i++) {
+		if (!entityManager.entityList[i]._inuse) continue;
+		if (&entityManager.entityList[i] == self) continue;
+
+		if (entityManager.entityList[i].type == ET_PROJECTILE) {
+			projectile = (ProjectileData*)entityManager.entityList[i].data;
+			if (projectile && projectile->parent == self) {
+				projectile->parent = NULL;
+			}
+		}
+	}
+
 	if (self->sprite) gf2d_sprite_free(self->sprite);
 	memset(self, 0, sizeof(Entity));
 }

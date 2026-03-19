@@ -212,7 +212,6 @@ void player_free(Entity* self) {
 	player = NULL;
 	if (!self) return;
 	free(self->data);
-	entity_free(self);
 }
 
 GFC_Vector2D player_get_position() {

@@ -16,7 +16,7 @@ typedef enum {
 }Doors;
 
 typedef struct {
-	Uint8			targetRoom; //the index of the room the door leads too
+	Uint32			targetRoom; //the index of the room the door leads too
 	Uint8			locked; //1 if the door is locked and needs to be opened, 0 otherwise
 	Doors			side;
 }DoorData;
@@ -28,7 +28,7 @@ typedef struct {
 * @param position the position of the door in the room
 * @returns NULL on error, otherwise a new door pointer
 */
-Entity* door_new(Doors side, Uint8 targetRoom, GFC_Vector2D position);
+Entity* door_new(Doors side, Uint32 targetRoom, GFC_Vector2D position);
 
 /*
 * @brief gets the side opposide of the provided side

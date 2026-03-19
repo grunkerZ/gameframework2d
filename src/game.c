@@ -53,6 +53,7 @@ void update_game(System* game) {
             }
             else {
                 slog("Floor Generated, finding starting room...");
+                print_floor(game->floor);
             }
             for (i = 0; i < game->floor->width * game->floor->height; i++) {
                 if (game->floor->blueprint[i] == START) {
@@ -76,6 +77,18 @@ void update_game(System* game) {
         break;
 
     case GS_DEATH:
+        if (game->player) {
+            entity_free(game->player);
+            game->player = NULL;
+        }
+        if (game->floor) {
+            free_world(game->floor);
+            game->floor = NULL;
+        }
+        if (game->currentStage) {
+            game->currentStage = NULL;
+        }
+
         menu_update(game->deathMenu);
         if (game->deathMenu->Menu.death.exitButton.clicked) game->done = 1;
         if (game->deathMenu->Menu.death.mainMenuButton.clicked) game->state = GS_MAINMENU;
@@ -84,6 +97,17 @@ void update_game(System* game) {
     case GS_PAUSED:
         menu_update(game->pauseMenu);
         if (game->pauseMenu->Menu.pause.mainMenuButton.clicked) {
+            if (game->player) {
+                entity_free(game->player);
+                game->player = NULL;
+            }
+            if (game->floor) {
+                free_world(game->floor);
+                game->floor = NULL;
+            }
+            if (game->currentStage) {
+                game->currentStage = NULL;
+            }
             game->paused = 0;
             game->state = GS_MAINMENU;
         }
@@ -102,15 +126,28 @@ void update_game(System* game) {
         if (collider && collider->type == ET_DOOR) {
             slog("player collided with a door");
             exitSide = get_opposite_side(((DoorData*)collider->data)->side);
+            slog("Player exits on side: %i", exitSide);
+            slog("Target Room Index: %i", ((DoorData*)collider->data)->targetRoom);
             game->currentStage = game->floor->floorMap[((DoorData*)collider->data)->targetRoom];
-            set_active_room(game->currentStage->room);
+            slog("current stage set to door target room");
             clear_stage();
-            load_stage(game->floor,game->currentStage);
+            if (game->player->currentTiles) {
+                gfc_list_delete(game->player->currentTiles);
+                game->player->currentTiles = NULL;
+            }
+            slog("stage cleared of entities");
             floor_update_active_rooms(game->floor, game->currentStage->gridPos.x, game->currentStage->gridPos.y);
+            slog("active rooms updated");
+            load_stage(game->floor, game->currentStage);
+            slog("stage loaded");
+            set_active_room(game->currentStage->room);
+            slog("active room set to current stage room");
             spawn_at_door_exit(game->player, game->currentStage->room, exitSide);
+            slog("player spawned at exit");
         }
 
         if (((PlayerData*)game->player->data)->health <= 0) {
+            clear_stage();
             game->state = GS_DEATH;
         }
         if (game->keys[SDL_SCANCODE_P]) {
@@ -239,11 +276,21 @@ int main(int argc, char * argv[])
         if (game->keys[SDL_SCANCODE_ESCAPE])game->done = 1; // exit condition
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
+    if (game->player) {
+        entity_free(game->player);
+        game->player = NULL;
+    }
+    entity_manager_free_all();
+    if (game->floor) {
+        free_world(game->floor);
+        game->floor = NULL;
+    }
+    if (game->currentStage) {
+        game->currentStage = NULL;
+    }
     menu_free(game->mainMenu);
     menu_free(game->deathMenu);
     menu_free(game->pauseMenu);
-    entity_free(game->player);
-    free_world(game->floor);
     free(game);
     slog("---==== END ====---");
     return 0;

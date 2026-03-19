@@ -13,7 +13,7 @@
 			"SOUTH":[1,10],
 			"EAST":[20,9],
 			"WEST":[0,9]
-		}
+		},
 		"numSpawnLocations":0,
 		"tileMap":
 		[

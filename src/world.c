@@ -312,6 +312,7 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 	}
 
 	for (i = 0; i < floor->width * floor->height; i++) {
+		if (!floor->floorMap[i]) continue;
 		if (floor->floorMap[i]->active) continue;
 		room_free(floor->floorMap[i]->room);
 		floor->floorMap[i]->room = NULL;
@@ -730,14 +731,18 @@ void load_stage(Floor* floor, Stage* stage) {
 	stage->visited = 1;
 	
 	if(!stage->cleared){
+		slog("stage not cleared, starting monster spawns");
 		budget = stage->difficulty * 5;
 		numSpawnLocations = stage->room->numSpawnLocations;
+		slog("Budget: %u | Spawn Locations: %u", budget, numSpawnLocations);
 		srand(stage->seed + stage->mapIndex);
 
 		while (budget > 0 && numSpawnLocations > 0) {
 			randomIndex = rand() % numSpawnLocations;
+			slog("random spawn index: %i", randomIndex);
 			chosen = stage->room->spawnPoints[randomIndex];
 			monster = get_valid_monster(chosen.type, budget);
+			slog("Monster Type: %d", monster);
 			if (monster != MT_NONE) {
 				monster_spawn(monster, grid_to_world(chosen.gridPos));
 				budget -= get_monster_cost(monster);
