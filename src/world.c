@@ -899,4 +899,23 @@ Room* get_active_room() {
 	return activeRoom;	
 }
 
+void room_remove_entity(Room* room, Entity* entity) {
+	int i, index;
+
+	if (!room || !entity || !entity->currentTiles) return;
+
+	for (i = 0; i < entity->currentTiles->count; i++) {
+		index = (int)(intptr_t)gfc_list_get_nth(entity->currentTiles, i);
+
+		if (index >= 0 && index < (room->width * room->height)) {
+			if (room->entityGrid[index]) {
+				gfc_list_delete_data(room->entityGrid[index], entity);
+			}
+		}
+	}
+
+	gfc_list_delete(entity->currentTiles);
+	entity->currentTiles = NULL;
+}
+
 /*eol@eof*/

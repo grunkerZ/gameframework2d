@@ -352,4 +352,11 @@ void set_active_room(Room* room);
 */
 Room* get_active_room();
 
+/*
+* @brief removes an entity from the entity grid
+* @param room the room to remove from
+* @param entity the entity to remove
+*/
+void room_remove_entity(Room* room, Entity* entity);
+
 #endif // !__WORLD_H__

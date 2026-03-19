@@ -79,6 +79,14 @@ void entity_free(Entity* self) {
 		}
 	}
 
+	if (get_active_room()) {
+		room_remove_entity(get_active_room(), self);
+	}
+	else if (self->currentTiles) {
+		gfc_list_delete(self->currentTiles);
+		self->currentTiles = NULL;
+	}
+
 	if (self->sprite) gf2d_sprite_free(self->sprite);
 	memset(self, 0, sizeof(Entity));
 }
