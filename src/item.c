@@ -176,17 +176,18 @@ void item_free(Item* self) {
 
 void item_manager_think_all() {
 	int i;
-	for (i = 0; i < ITEM_MAX; i++) {
-		if (!itemManager->itemList[i]._inuse) continue;
-		item_think(&itemManager->itemList[i]);
+	for (i = 0; i < itemManager->maxItems; i++) {
+		if (!itemManager->activeItems[i]._inuse) continue;
+		item_think(&itemManager->activeItems[i]);
 	}
 }
 
 void item_manager_free_all() {
 	int i;
-	for (i = 0; i < ITEM_MAX; i++) {
-		if (!itemManager->itemList[i]._inuse) continue;
-		item_free(&itemManager->itemList[i]);
+	for (i = 0; i < itemManager->maxItems; i++) {
+		if (!itemManager->activeItems[i]._inuse) continue;
+		itemManager->activeItems[i]._inuse = 0;
+		item_free(&itemManager->activeItems[i]);
 	}
 }
 
