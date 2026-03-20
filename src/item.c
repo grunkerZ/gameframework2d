@@ -99,7 +99,7 @@ void item_manager_close() {
 	slog("closed item system");
 }
 
-Item* item_new(ItemID id) {
+Item* item_new() {
 	int i;
 	if (!itemManager->activeItems || !itemManager->itemList) {
 		slog("item system has not been initialized");
@@ -107,7 +107,6 @@ Item* item_new(ItemID id) {
 	}
 	for (i = 0; i < itemManager->maxItems; i++) {
 		if (itemManager->activeItems[i]._inuse) continue;
-		itemManager->activeItems[i] = itemManager->itemList[id];
 		itemManager->activeItems[i]._inuse = 1;
 		//set defaults here
 
@@ -115,6 +114,52 @@ Item* item_new(ItemID id) {
 	}
 	slog("no more available items");
 	return NULL;
+}
+
+Item* item_create(ItemID id) {
+	Item* self = item_new();
+	if (!self) return NULL;
+
+	*self = itemManager->itemList[id];
+	self->_inuse = 1;
+
+	switch (id) {
+	case PICKUP_SHIELD_HALF:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/shield_half.png");
+		break;
+	case PICKUP_SHIELD:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/shield.png");
+		break;
+	case PICKUP_LIFE_HALF:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/life_half.png");
+		break;
+	case PICKUP_LIFE:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/life.png");
+		break;
+	case ITEM_HAIR_TRIGGER:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/hair_trigger.png");
+		break;
+	case ITEM_COMBAT_BOOTS:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/combat_boots.png");
+		break;
+	case ITEM_COMMANDO_BANDANA:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/bandana.png");
+		break;
+	case ITEM_REINFORCED_RIBCAGE:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/ribcage.png");
+		break;
+	case ITEM_SULFUR_TIPPED_ROUNDS:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/sulfur_tipped.png");
+		break;
+	case ITEM_LEAD_HALO:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/lead_halo.png");
+		break;
+	case ITEM_FORBIDDEN_KNOWLEDGE:
+		self->sprite = gf2d_sprite_load_image("images/placeholder/forbidden_knowledge.png");
+		break;
+	}
+
+	return self;
 }
 
 void item_think(Item* self) {
@@ -163,6 +208,14 @@ void item_draw(Item* self) {
 	}
 }
 
+void item_manager_draw_all() {
+	int i;
+	for (i = 0; i < itemManager->maxItems; i++) {
+		if (!itemManager->activeItems[i]._inuse) continue;
+		item_draw(&itemManager->activeItems[i]);
+	}
+}
+
 Item* get_item(ItemID id) {
 	Item* mods;
 	if (id <= ITEM_NONE || id >= ITEM_MAX) {
@@ -178,11 +231,9 @@ ItemID get_random_item_id(ItemID type) {
 	switch (type) {
 	case (PICKUP):
 		return (rand() % (PICKUP_END - PICKUP - 1)) + (PICKUP + 1);
-		break;
-
 	case (ITEM):
 		return (rand() % (ITEM_END - ITEM - 1)) + (ITEM + 1);
-		break;
+	default: return ITEM_NONE;
 	}
 }
 

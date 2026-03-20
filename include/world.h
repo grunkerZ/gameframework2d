@@ -40,11 +40,13 @@ typedef struct Room_S
 	Uint32			width;				//how many tiles wide the map is
 	Uint32			tileWidth;			//how many pixels wide a tile is
 	Uint32			tileHeight;			//how many pixels tall a tile is
+	Uint32			numItems;
 	Sprite*			tileLayer;			//prerendered tile layer
 	TileType*		tileLogic;			//contains the tile type for each unique tile
 	SpawnPoint*		spawnPoints;		//contains the spawning point data for each monster
 	Uint8			numSpawnLocations;	//the amount of spawn locations in the room
 	GFC_Vector2I	doorPosition[4];	//contains the position of the north,south,east, and west doors on the grid
+	GFC_Vector2I*	itemPos;			//contains the position of items in a room
 	GFC_List**		entityGrid;			//holds which tiles the entities in the room exist on
 }Room;
 

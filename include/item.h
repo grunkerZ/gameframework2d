@@ -89,7 +89,14 @@ void item_manager_free_all();
 /*
 * @brief allocates data for a new empty item
 */
-Item* item_new(ItemID id);
+Item* item_new();
+
+/*
+* @brief creates a new item
+* @param id the id of the item to create
+* @returns NULL on error, otherwise an item pointer
+*/
+Item* item_create(ItemID id);
 
 /*
 * @brief draws an item to the screen
@@ -98,10 +105,22 @@ Item* item_new(ItemID id);
 void item_draw(Item* self);
 
 /*
+* @brief draws all active items
+*/
+void item_manager_draw_all();
+
+/*
 * @brief gets an item
 * @param id the id of the item to get
 * @return NULL on error, otherwise a pointer to the item
 */
 Item* get_item(ItemID id);
+
+/*
+* @brief gets a random item id
+* @param type the item type you want
+* @returns ITEM_NONE if type is invalid, otherwise a random itemID
+*/
+ItemID get_random_item_id(ItemID type);
 
 #endif //__ITEM_H__

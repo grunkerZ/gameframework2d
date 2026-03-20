@@ -3,6 +3,7 @@
 #include "gf2d_graphics.h"
 #include "camera.h"
 #include "monster.h"
+#include "item.h"
 
 /*
 * ===================
@@ -177,6 +178,7 @@ Stage** floor_generate(Floor* floor) {
 			if (floor->blueprint[i] == RT_START) filename = "maps/start/start1.map";
 			else if (floor->blueprint[i] == RT_STANDARD) filename = "maps/standard/standard1.map";
 			else if (floor->blueprint[i] == RT_EXIT) filename = "maps/exit/exit1.map";
+			else if (floor->blueprint[i] == RT_ITEM) filename = "maps/item/item1.map";
 			stage = stage_create(floor, NULL, gridPos, filename);
 			floor->floorMap[i] = stage;
 
@@ -384,9 +386,12 @@ Room* room_load(const char* filename, const char* roomType) {
 	SJson* item;
 	SJson* logicArray;
 	SJson* doorObj;
+	SJson* itemArray;
+	SJson* itemPos;
 	SpawnPoint spawnPoint;
 	int tileWidth, tileHeight, framesPerLine, uniqueTiles;
 	int numSpawnLocations = 0;
+	int numItems = 0;
 	int tile;
 	int w = 0, h = 0, spawnCount = 0;
 	int i, j;
@@ -426,6 +431,7 @@ Room* room_load(const char* filename, const char* roomType) {
 	sj_object_get_value_as_int(wjson, "frames_per_line", &framesPerLine);
 	sj_object_get_value_as_int(wjson, "uniqueTiles", &uniqueTiles);
 	sj_object_get_value_as_int(wjson, "numSpawnLocations", &numSpawnLocations);
+	sj_object_get_value_as_int(wjson, "numItems", &numItems);
 	
 
 	room = room_create(sj_object_get_value_as_string(wjson, "background"), sj_object_get_value_as_string(wjson, "tileSet"), w, h, tileWidth, tileHeight, framesPerLine,uniqueTiles);
@@ -480,6 +486,17 @@ Room* room_load(const char* filename, const char* roomType) {
 				room->spawnPoints[spawnCount++] = spawnPoint;
 				room->tileMap[i + (j * w)] = 0;
 			}
+		}
+	}
+
+	if (numItems > 0) {
+		room->numItems = numItems;
+		room->itemPos = gfc_allocate_array(sizeof(GFC_Vector2I), numItems);
+		itemArray = sj_object_get_value(wjson, "itemSpawn");
+		for (i = 0; i < numItems; i++) {
+			itemPos = sj_array_get_nth(itemArray, i);
+			sj_get_integer_value(sj_array_get_nth(itemPos, 0), &room->itemPos[i].x);
+			sj_get_integer_value(sj_array_get_nth(itemPos, 1), &room->itemPos[i].y);
 		}
 	}
 
@@ -675,6 +692,9 @@ Stage* stage_create(Floor* floor, Room* room, GFC_Vector2I gridPos, const char* 
 		stage->visible = 1;
 		stage->visited = 1;
 	}
+	if (stage->type == RT_ITEM) {
+		stage->cleared = 1;
+	}
 
 	if (floor_get_room_type(floor, gridPos.x, gridPos.y - 1) != RT_EMPTY && floor_get_room_type(floor, gridPos.x, gridPos.y - 1) != RT_SECRET) stage->doors |= DOOR_NORTH;
 	else if (floor_get_room_type(floor, gridPos.x, gridPos.y - 1) == RT_SECRET) stage->doors |= DOOR_NORTH_HIDDEN;
@@ -744,13 +764,13 @@ void load_stage(Floor* floor, Stage* stage) {
 	Uint8 budget;
 	Uint8 numSpawnLocations;
 	Uint8 cheapest;
-	int randomIndex;
+	ItemID id;
+	Item* item;
+	int randomIndex, i;
 
 	if (!stage) return;
 
 	stage_make_doors(floor,stage);
-
-	stage->visited = 1;
 	
 	if(!stage->cleared){
 		slog("stage not cleared, starting monster spawns");
@@ -773,6 +793,19 @@ void load_stage(Floor* floor, Stage* stage) {
 			numSpawnLocations--;
 		}
 	}
+	
+	if (stage->cleared && !stage->visited) {
+		if (stage->room->itemPos) {
+			for (i = 0; i < stage->room->numItems; i++) {
+				id = get_random_item_id(ITEM);
+				item = item_create(id);
+				item->position = grid_to_world(stage->room->itemPos[i]);
+			}
+		}
+	}
+
+	stage->visited = 1;
+
 	return;
 }
 

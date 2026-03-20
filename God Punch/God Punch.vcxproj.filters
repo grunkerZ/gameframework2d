@@ -37,6 +37,9 @@
     <Filter Include="maps\exit">
       <UniqueIdentifier>{515ff7ac-53ce-4af6-8c68-e1a83f7cfe51}</UniqueIdentifier>
     </Filter>
+    <Filter Include="maps\item">
+      <UniqueIdentifier>{b6d4798b-2a89-449a-8933-93ee7186e928}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\entity.c">
@@ -339,6 +342,9 @@
     </None>
     <None Include="..\maps\exit\exit1.map">
       <Filter>maps\exit</Filter>
+    </None>
+    <None Include="..\maps\item\item1.map">
+      <Filter>maps\item</Filter>
     </None>
   </ItemGroup>
 </Project>

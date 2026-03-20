@@ -8,6 +8,7 @@
 #include "world.h"
 #include "camera.h"
 #include "simple_ui.h"
+#include "item.h"
 
 typedef enum {
     GS_MAINMENU,
@@ -47,7 +48,7 @@ void update_game(System* game) {
         if (game->mainMenu->Menu.start.exitButton.clicked) game->done = 1;
         if (game->mainMenu->Menu.start.startButton.clicked) {
             slog("GAME START! Attempting floor generation");
-            game->floor = floor_create(10,2,0,0,999);
+            game->floor = floor_create(10,2,1,1,999);
             if (!game->floor) {
                 slog("ERROR: Floor Generation Failed");
             }
@@ -131,6 +132,7 @@ void update_game(System* game) {
             game->currentStage = game->floor->floorMap[((DoorData*)collider->data)->targetRoom];
             slog("current stage set to door target room");
             clear_stage();
+            item_manager_free_all();
             if (game->player->currentTiles) {
                 gfc_list_delete(game->player->currentTiles);
                 game->player->currentTiles = NULL;
@@ -205,6 +207,7 @@ void draw_game(System* game) {
         break;
     case GS_PLAYING:
         room_draw(game->currentStage->room);
+        item_manager_draw_all();
         entity_manager_draw_all();
         camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
         break;
@@ -279,6 +282,7 @@ int main(int argc, char * argv[])
 
     //FREE EVERYTHING
 
+    item_manager_free_all();
     if (game->player) {
         entity_free(game->player);
         game->player = NULL;
