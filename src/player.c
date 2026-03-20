@@ -26,12 +26,9 @@ Entity* player_new() {
 
 	self->sprite = gf2d_sprite_load_image("images/placeholder/player.png");
 	//self->frame=0;
-	self->position = gfc_vector2d(1024,64);
-	self->collision.type = ST_RECT;
-	self->collision.s.r.w = self->sprite->frame_w;
-	self->collision.s.r.h = self->sprite->frame_h;
-	self->collision.s.r.x = self->position.x;
-	self->collision.s.r.y = self->position.y;
+	self->position = gfc_vector2d(0,0);
+	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
+	entity_setup_collision_box(self, ST_RECT, 0.25);
 	self->forward = gfc_vector2d(1, 0);
 	self->invincibility = 500;
 	self->type = ET_PLAYER;
@@ -204,18 +201,18 @@ void player_update(Entity* self) {
 	//self->frame += 0.1;
 	//if (self->frame >= 16) self->frame = 0;
 	gfc_vector2d_add(self->position, self->position, self->velocity);
-	self->collision.s.r.x = self->position.x;
-	self->collision.s.r.y = self->position.y;
+	set_center(self, self->centerPos);
 }
 
 void player_free(Entity* self) {
-	player = NULL;
 	if (!self) return;
+	player = NULL;
 	free(self->data);
+	self->data = NULL;
 }
 
 GFC_Vector2D player_get_position() {
-	if (!player) {
+	if (!player || !player->_inuse) {
 		slog("Failed to get position. Current player is NULL");
 		return gfc_vector2d(0,0);
 	}

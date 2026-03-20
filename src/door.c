@@ -35,7 +35,8 @@ void door_think(Entity* door) {
 
 void door_free(Entity* door) {
 	if (!door) return;
-	entity_free(door);
+	if(door->data) free(door->data);
+	door->data = NULL;
 }
 
 Doors get_opposite_side(Doors side) {

@@ -63,8 +63,12 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 
 void projectile_free(Entity* self) {
 	if (!self) return;
+	if (self->data) {
+		free(self->data);
+		self->data = NULL;
+	}
 	slog("Projectile Vanquished");
-	entity_free(self);
+	
 }
 
 void projectile_damage(Entity* self, Entity* collider) {
@@ -107,7 +111,7 @@ void projectile_damage(Entity* self, Entity* collider) {
 		}
 	
 		if (SDL_GetTicks64() - stats->timeAtExplosion > stats->explosionTime) {
-			projectile_free(self);
+			entity_free(self);
 			return;
 		}
 
@@ -130,16 +134,16 @@ void projectile_damage(Entity* self, Entity* collider) {
 			front.w = collider->collision.s.r.w / 2;
 			front.h = collider->collision.s.r.h;
 			if (!gfc_circle_rect_overlap(self->collision.s.c, front)) {
-				projectile_free(self);
+				entity_free(self);
 				return;
 			}
 		}
 		((MonsterData*)collider->data)->health = apply_damage(collider, stats->damage, ((MonsterData*)collider->data)->health);
-		projectile_free(self);
+		entity_free(self);
 		return;
 	case ET_PLAYER:
 		((PlayerData*)collider->data)->health = apply_damage(collider, stats->damage, ((PlayerData*)collider->data)->health);
-		projectile_free(self);
+		entity_free(self);
 		return;
 	}
 }
@@ -151,6 +155,7 @@ void projectile_think(Entity* self) {
 	collider = check_entity_collision(self);
 	if (collider) {
 		projectile_damage(self, collider);
+		if (!self->_inuse) return;
 	}
 	info = check_map_collision(self);
 	if(SDL_GetTicks64() - stats->timeAtSpawn > stats->spawnImmunity){
@@ -164,12 +169,12 @@ void projectile_think(Entity* self) {
 				}
 			}
 			else {
-				projectile_free(self);
+				entity_free(self);
 				return;
 			}
 		}
 		if (SDL_GetTicks64() - stats->timeAtExplosion > stats->explosionTime && stats->exploded) {
-			projectile_free(self);
+			entity_free(self);
 			return;
 		}
 	}
@@ -180,7 +185,7 @@ void projectile_update(Entity* self) {
 	GFC_Vector2D offset = camera_get_offset();
 	ProjectileData* stats = self->data;
 	if (gfc_vector2d_distance_between_less_than(self->position, stats->origin, stats->range) == false) {
-		projectile_free(self);
+		entity_free(self);
 		return;
 	}
 	gfc_vector2d_add(self->position, self->position, self->velocity);

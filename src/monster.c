@@ -23,7 +23,6 @@ Entity* monster_new() {
 	stats = self->data;
 	slog("created new monster");
 
-	self->sprite = gf2d_sprite_new();
 	self->free = monster_free;
 	self->collision.type = ST_RECT;
 	self->type = ET_MONSTER;
@@ -61,7 +60,6 @@ void monster_free(Entity* self) {
 		free(temp);
 	}
 	free(self->data);
-	entity_free(self);
 }
 
 Uint8 detect_los(Entity* self, GFC_Vector2D targetPos) {

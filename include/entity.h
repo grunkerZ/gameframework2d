@@ -140,5 +140,18 @@ void clear_stage();
 */
 void get_tiles_entity_is_in(Room* room, Entity* entity);
 
+/*
+* @brief setups an entity's collision box
+* @param self the entity the collision box belongs to
+* @param shape the shape of the collision box
+* @param tolerance the percentage of the collision box to shave off
+*/
+void entity_setup_collision_box(Entity* self, GFC_ShapeTypes shape, float tolerance);
+
+/*
+* @brief draws an entities collision box
+* @param self the entity the collision box belongs to
+*/
+void entity_draw_collision(Entity* self);
 
 #endif // !__ENTITY_H__

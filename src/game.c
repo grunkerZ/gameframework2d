@@ -276,6 +276,9 @@ int main(int argc, char * argv[])
         if (game->keys[SDL_SCANCODE_ESCAPE])game->done = 1; // exit condition
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
+
+    //FREE EVERYTHING
+
     if (game->player) {
         entity_free(game->player);
         game->player = NULL;

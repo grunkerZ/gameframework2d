@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "world.h"
 #include "projectile.h"
+#include "gf2d_draw.h"
 
 #define CLAMP(x,min,max) ((x)<(min) ? (min) : ((x)> (max) ? (max) : (x)))
 
@@ -36,7 +37,7 @@ void entity_manager_close() {
 	int i;
 	if (!entityManager.entityList) return;
 	for (i = 0; i < entityManager.entityMax; i++) {
-		entity_free(&entityManager.entityList[i]);
+		if(entityManager.entityList[i]._inuse) entity_free(&entityManager.entityList[i]);
 	}
 	free(entityManager.entityList);
 	memset(&entityManager, 0, sizeof(EntityManager));
@@ -55,6 +56,7 @@ Entity* entity_new() {
 		//set defaults
 		entityManager.entityList[i].scale.x = 1;
 		entityManager.entityList[i].scale.y = 1;
+		entityManager.entityList[i].sprite = gf2d_sprite_load_image("images/missing.png");
 		return &entityManager.entityList[i];
 	}
 	slog("no more available entities");
@@ -65,7 +67,11 @@ Entity* entity_new() {
 void entity_free(Entity* self) {
 	int i;
 	ProjectileData* projectile;
-	if (!self) return;
+	if (!self || !self->_inuse) return;
+
+	if (self->free) {
+		self->free(self);
+	}
 
 	for (i = 0; i < entityManager.entityMax; i++) {
 		if (!entityManager.entityList[i]._inuse) continue;
@@ -168,6 +174,7 @@ void entity_manager_draw_all() {
 	for (i = 0; i < entityManager.entityMax; i++) {
 		if (!entityManager.entityList[i]._inuse) continue;
 		entity_draw(&entityManager.entityList[i]);
+		entity_draw_collision(&entityManager.entityList[i]);
 	}
 }
 
@@ -235,11 +242,11 @@ CollisionInfo check_map_collision(Entity* self) {
 	//RECT VS RECT
 
 	if (self->velocity.x != 0) {
-		nextPos.x = self->position.x + self->velocity.x;
+		nextPos.x = self->collision.s.r.x + self->velocity.x;
 		float check_x;
 		if (self->velocity.x > 0) {
 			check_x = (nextPos.x + self->collision.s.r.w);
-			if (tile_at(gfc_vector2d(check_x, self->position.y+1)) != 0 || tile_at(gfc_vector2d(check_x, self->position.y + self->collision.s.r.h - 1)) != 0) {
+			if (tile_at(gfc_vector2d(check_x, self->collision.s.r.y+1)) != 0 || tile_at(gfc_vector2d(check_x, self->collision.s.r.y + self->collision.s.r.h - 1)) != 0) {
 				self->velocity.x = 0;
 				info.right = 1;
 				info.collided = 1;
@@ -247,7 +254,7 @@ CollisionInfo check_map_collision(Entity* self) {
 		}
 		else {
 			check_x = nextPos.x;
-			if (tile_at(gfc_vector2d(check_x, self->position.y + 1)) != 0 || tile_at(gfc_vector2d(check_x, self->position.y + self->collision.s.r.h - 1)) != 0) {
+			if (tile_at(gfc_vector2d(check_x, self->collision.s.r.y + 1)) != 0 || tile_at(gfc_vector2d(check_x, self->collision.s.r.y + self->collision.s.r.h - 1)) != 0) {
 				self->velocity.x = 0;
 				info.left = 1;
 				info.collided = 1;
@@ -255,10 +262,10 @@ CollisionInfo check_map_collision(Entity* self) {
 		}	
 	}
 
-	nextPos.x = self->position.x + self->velocity.x;
+	nextPos.x = self->collision.s.r.x + self->velocity.x;
 
 	if (self->velocity.y != 0) {
-		nextPos.y = self->position.y + self->velocity.y;
+		nextPos.y = self->collision.s.r.y + self->velocity.y;
 		float check_y;
 		if (self->velocity.y > 0) {
 			check_y = (nextPos.y + self->collision.s.r.h);
@@ -311,9 +318,15 @@ void collision_bounce(Entity* self, Entity* collider){
 void set_center(Entity* self, GFC_Vector2D center) {
 	self->centerPos = center;
 	self->position = gfc_vector2d(self->centerPos.x - (self->width / 2), self->centerPos.y - (self->height / 2));
-	if (self->collision.type == ST_RECT) {
-		self->collision.s.r.x = self->position.x;
-		self->collision.s.r.y = self->position.y;
+	switch (self->collision.type) {
+	case ST_RECT:
+		self->collision.s.r.x = self->position.x + ((self->width - self->collision.s.r.w) / 2.0);
+		self->collision.s.r.y = self->position.y + ((self->height - self->collision.s.r.h));
+		break;
+	case ST_CIRCLE:
+		self->collision.s.c.x = self->centerPos.x;
+		self->collision.s.c.y = self->centerPos.y;
+		break;
 	}
 }
 
@@ -331,7 +344,7 @@ void get_tiles_entity_is_in(Room* room, Entity* entity) {
 	int i,j;
 	int index;
 	
-	topLeft = world_to_grid(entity->position);
+	topLeft = world_to_grid(gfc_vector2d(entity->collision.s.r.x,entity->collision.s.r.y));
 	bottomRight = world_to_grid(gfc_vector2d(entity->collision.s.r.x + entity->collision.s.r.w, entity->collision.s.r.y + entity->collision.s.r.h));
 
 	for (i = topLeft.x; i <= bottomRight.x; i++) {
@@ -341,6 +354,42 @@ void get_tiles_entity_is_in(Room* room, Entity* entity) {
 		}
 	}
 	return;
+}
+
+void entity_setup_collision_box(Entity* self, GFC_ShapeTypes shape, float tolerance) {
+	if (!self || !self->sprite) return;
+
+	self->width = self->sprite->frame_w;
+	self->height = self->sprite->frame_h;
+	self->collision.type = shape;
+
+	switch (shape) {
+	case ST_RECT:
+		self->collision.s.r.w = self->width * (1.0f - tolerance);
+		self->collision.s.r.h = self->height * (1.0f - tolerance);
+		break;
+
+	case ST_CIRCLE:
+		self->collision.s.c.r = (self->width / 2.0f) * (1.0f - tolerance);
+		break;
+	}
+
+	set_center(self, self->centerPos);
+}
+
+void entity_draw_collision(Entity* self) {
+	GFC_Color color;
+	GFC_Vector2D offset;
+
+	if (!self) return;
+
+	offset = camera_get_offset();
+
+	if (self->type == ET_PLAYER) color = gfc_color8(0, 255, 0, 255);
+	else if (self->type == ET_MONSTER) color = gfc_color8(255, 0, 0, 255);
+	else color = gfc_color8(255, 255, 0, 255);
+
+	gf2d_draw_shape(self->collision, color, offset);
 }
 
 /*eol@eof*/

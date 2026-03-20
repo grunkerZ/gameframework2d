@@ -575,14 +575,36 @@ int room_get_tile_index(Room* room,Uint32 x,Uint32 y) {
 }
 
 void room_free(Room* room) {
+	int i;
 	if (!room)return;
 	if (activeRoom == room) activeRoom = NULL;
-	gf2d_sprite_free(room->background);
-	gf2d_sprite_free(room->tileSet);
-	if (room->tileMap)free(room->tileMap);
-	gf2d_sprite_free(room->tileLayer);
-	if (room->tileLogic)free(room->tileLogic);
-	if (room->spawnPoints)free(room->spawnPoints);
+
+	if (room->background) {
+		gf2d_sprite_free(room->background);
+	}
+	if (room->tileSet) {
+		gf2d_sprite_free(room->tileSet);
+	}
+	if (room->tileLayer) {
+		gf2d_sprite_free(room->tileLayer);
+	}
+	if (room->tileMap) {
+		free(room->tileMap);
+	}
+	if (room->tileLogic) {
+		free(room->tileLogic);
+	}
+	if (room->spawnPoints) {
+		free(room->spawnPoints);
+	}
+	if (room->entityGrid) {
+		for (i = 0; i < room->width * room->height; i++) {
+			if (room->entityGrid[i]) {
+				gfc_list_delete(room->entityGrid[i]);
+			}
+		}
+		free(room->entityGrid);
+	}
 	free(room);
 }
 
@@ -810,9 +832,6 @@ void free_world(Floor* floor) {
 	if (!floor) return;
 	for (i = 0; i < floor->width * floor->height; i++) {
 		if (floor->floorMap[i]) {
-			if (floor->floorMap[i]->room) {
-				room_free(floor->floorMap[i]->room);
-			}
 			stage_free(floor->floorMap[i]);
 		}
 	}
@@ -867,7 +886,7 @@ void update_entity_position_on_map(Room* room, Entity* entity) {
 		for (i = 0; i < entity->currentTiles->count; i++) {
 			index = (int)(intptr_t)gfc_list_get_nth(entity->currentTiles, i);
 
-			if (room->entityGrid[index]) {
+			if (room->entityGrid[index] && index >= 0 && index < (room->width * room->height)) {
 				gfc_list_delete_data(room->entityGrid[index], entity);
 			}
 		}
@@ -882,10 +901,12 @@ void update_entity_position_on_map(Room* room, Entity* entity) {
 
 	for (i = 0; i < entity->currentTiles->count; i++) {
 		index = (int)(intptr_t)gfc_list_get_nth(entity->currentTiles, i);
-		if (!room->entityGrid[index]) {
-			room->entityGrid[index] = gfc_list_new();
+		if (index >= 0 && index < (room->width * room->height)) {
+			if (!room->entityGrid[index]) {
+				room->entityGrid[index] = gfc_list_new();
+			}
+			gfc_list_append(room->entityGrid[index], entity);
 		}
-		gfc_list_append(room->entityGrid[index], entity);
 	}
 	return;
 }

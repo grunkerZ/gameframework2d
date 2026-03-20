@@ -221,16 +221,19 @@ void menu_free(GenericMenu* self) {
 		gf2d_sprite_free(self->Menu.start.startButton.highlight);
 		gf2d_sprite_free(self->Menu.start.exitButton.sprite);
 		gf2d_sprite_free(self->Menu.start.exitButton.highlight);
+		break;
 	case MT_DEATH:
 		gf2d_sprite_free(self->Menu.death.mainMenuButton.sprite);
 		gf2d_sprite_free(self->Menu.death.mainMenuButton.highlight);
 		gf2d_sprite_free(self->Menu.death.exitButton.sprite);
 		gf2d_sprite_free(self->Menu.death.exitButton.highlight);
+		break;
 	case MT_PAUSE:
 		gf2d_sprite_free(self->Menu.pause.mainMenuButton.sprite);
 		gf2d_sprite_free(self->Menu.pause.mainMenuButton.highlight);
 		gf2d_sprite_free(self->Menu.pause.exitButton.sprite);
 		gf2d_sprite_free(self->Menu.pause.exitButton.highlight);
+		break;
 	}
 	free(self);
 }
