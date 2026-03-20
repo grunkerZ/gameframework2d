@@ -164,9 +164,9 @@
               "Title": "player.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\player.c",
               "RelativeDocumentMoniker": "..\\src\\player.c",
-              "ToolTip": "C:\\git\\gameframework2d\\src\\player.c",
-              "RelativeToolTip": "..\\src\\player.c",
-              "ViewState": "AgIAAK4AAAAAAAAAAAAAAMsAAAAjAAAAAAAAAA==",
+              "ToolTip": "C:\\git\\gameframework2d\\src\\player.c*",
+              "RelativeToolTip": "..\\src\\player.c*",
+              "ViewState": "AgIAALEAAAAAAAAAAAAAAMsAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-03-18T07:44:14.728Z",
               "EditorCaption": ""
@@ -204,7 +204,7 @@
               "RelativeDocumentMoniker": "..\\src\\entity.c",
               "ToolTip": "C:\\git\\gameframework2d\\src\\entity.c",
               "RelativeToolTip": "..\\src\\entity.c",
-              "ViewState": "AgIAALIAAAAAAAAAAADgv9IAAAAPAAAAAAAAAA==",
+              "ViewState": "AgIAAAgBAAAAAAAAAADgvyABAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-03-13T10:21:35.642Z",
               "EditorCaption": ""

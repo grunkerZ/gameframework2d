@@ -201,6 +201,7 @@ void player_update(Entity* self) {
 	//self->frame += 0.1;
 	//if (self->frame >= 16) self->frame = 0;
 	gfc_vector2d_add(self->position, self->position, self->velocity);
+	gfc_vector2d_add(self->centerPos, self->centerPos, self->velocity);
 	set_center(self, self->centerPos);
 }
 

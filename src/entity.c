@@ -208,7 +208,10 @@ Entity* check_entity_collision(Entity* self) {
 CollisionInfo check_map_collision(Entity* self) {
 	CollisionInfo info = { 0 };
 	GFC_Vector2D nextPos = { 0 };
+	GFC_Rect bounds;
 	int index = 0;
+	int buffer;
+	float check_x, check_y;
 	
 	//CIRCLE VS RECT
 
@@ -217,11 +220,14 @@ CollisionInfo check_map_collision(Entity* self) {
 		float closest_x, closest_y;
 		GFC_Vector2I gridPos;
 		GFC_Vector2D tileDim = get_tile_dimensions();
+
 		if (tileDim.x == 0 || tileDim.y == 0) {
 			slog("failed to detect projectile collision");
 			return info;
 		}
-		nextPos = gfc_vector2d(self->position.x + self->velocity.x, self->position.y + self->velocity.y);
+
+		nextPos.x = self->collision.s.c.x + self->velocity.x;
+		nextPos.y = self->collision.s.c.y + self->velocity.y;
 		
 		if (tile_at(nextPos) != 0) {
 			gridPos = world_to_grid(nextPos);
@@ -241,12 +247,15 @@ CollisionInfo check_map_collision(Entity* self) {
 
 	//RECT VS RECT
 
+	bounds = self->collision.s.r;
+	buffer = 2;
+
 	if (self->velocity.x != 0) {
-		nextPos.x = self->collision.s.r.x + self->velocity.x;
-		float check_x;
+		nextPos.x = bounds.x + self->velocity.x;
+		
 		if (self->velocity.x > 0) {
-			check_x = (nextPos.x + self->collision.s.r.w);
-			if (tile_at(gfc_vector2d(check_x, self->collision.s.r.y+1)) != 0 || tile_at(gfc_vector2d(check_x, self->collision.s.r.y + self->collision.s.r.h - 1)) != 0) {
+			check_x = nextPos.x + bounds.w;
+			if (tile_at(gfc_vector2d(check_x, bounds.y+buffer)) != 0 || tile_at(gfc_vector2d(check_x, bounds.y + bounds.h - buffer)) != 0) {
 				self->velocity.x = 0;
 				info.right = 1;
 				info.collided = 1;
@@ -254,7 +263,7 @@ CollisionInfo check_map_collision(Entity* self) {
 		}
 		else {
 			check_x = nextPos.x;
-			if (tile_at(gfc_vector2d(check_x, self->collision.s.r.y + 1)) != 0 || tile_at(gfc_vector2d(check_x, self->collision.s.r.y + self->collision.s.r.h - 1)) != 0) {
+			if (tile_at(gfc_vector2d(check_x, bounds.y + buffer)) != 0 || tile_at(gfc_vector2d(check_x, bounds.y + bounds.h - buffer)) != 0) {
 				self->velocity.x = 0;
 				info.left = 1;
 				info.collided = 1;
@@ -262,14 +271,14 @@ CollisionInfo check_map_collision(Entity* self) {
 		}	
 	}
 
-	nextPos.x = self->collision.s.r.x + self->velocity.x;
+	bounds.x += self->velocity.x;
 
 	if (self->velocity.y != 0) {
-		nextPos.y = self->collision.s.r.y + self->velocity.y;
-		float check_y;
+		nextPos.y = bounds.y + self->velocity.y;
+
 		if (self->velocity.y > 0) {
-			check_y = (nextPos.y + self->collision.s.r.h);
-			if (tile_at(gfc_vector2d(nextPos.x + 1, check_y)) != 0 || tile_at(gfc_vector2d(nextPos.x + self->collision.s.r.w - 1, check_y)) != 0) {
+			check_y = nextPos.y + bounds.h;
+			if (tile_at(gfc_vector2d(bounds.x + buffer, check_y)) != 0 || tile_at(gfc_vector2d(bounds.x + bounds.w - buffer, check_y)) != 0) {
 				self->velocity.y = 0;
 				info.bottom = 1;
 				info.collided = 1;
@@ -277,7 +286,7 @@ CollisionInfo check_map_collision(Entity* self) {
 		}
 		else {
 			check_y = nextPos.y;
-			if (tile_at(gfc_vector2d(nextPos.x + 1, check_y)) != 0 || tile_at(gfc_vector2d(nextPos.x + self->collision.s.r.w - 1, check_y)) != 0) {
+			if (tile_at(gfc_vector2d(bounds.x + buffer, check_y)) != 0 || tile_at(gfc_vector2d(bounds.x + bounds.w - buffer, check_y)) != 0) {
 				self->velocity.y = 0;
 				info.top = 1;
 				info.collided = 1;

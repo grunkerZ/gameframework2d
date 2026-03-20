@@ -54,7 +54,7 @@ void damned_think(Entity* self) {
 void damned_update(Entity* self) {
 	CollisionInfo info;
 	if (((MonsterData*)self->data)->health <= 0) {
-		monster_free(self);
+		entity_free(self);
 		return;
 	}
 	self->collision.s.r.x = self->position.x;
