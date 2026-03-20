@@ -63,7 +63,6 @@ Entity* player_new() {
 
 	stats->timeAtAttack = 0;
 	stats->timeAtDash = SDL_GetTicks64() - stats->dashCooldown;
-	stats->timeAtStun = 0;
 
 	self->think = player_think;
 	self->update = player_update;
@@ -90,7 +89,7 @@ void player_think(Entity* self) {
 	stats = (PlayerData*)self->data;
 
 
-	if (SDL_GetTicks64() - stats->timeAtStun > stats->stun) {
+	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
 		if (keys[SDL_SCANCODE_D]) {
 			dir.x = 1;
 		}
@@ -130,18 +129,16 @@ void player_think(Entity* self) {
 		}
 
 	}
+	else {
+		self->velocity = self->knockback;
+	}
 
-	collider = check_entity_collision(self);
-	if (collider) {
-		if (collider->type == ET_MONSTER) {
-			((MonsterData*)collider->data)->stun = 300;
-			stats->stun = 300;
-			stats->timeAtStun = SDL_GetTicks64();
-			((MonsterData*)collider->data)->timeAtStun = SDL_GetTicks64();
-			stats->health = apply_damage(self,((MonsterData*)collider->data)->touchDamage,stats->health);
-			((MonsterData*)collider->data)->health = apply_damage(collider, stats->touchDamage, ((MonsterData*)collider->data)->health);
-			collision_bounce(self, collider);
-
+	if(stats->touchDamage>0){
+		collider = check_entity_collision(self);
+		if (collider) {
+			if (collider->type == ET_MONSTER) {
+				((MonsterData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((MonsterData*)collider->data)->health);
+			}
 		}
 	}
 	
@@ -202,6 +199,7 @@ void player_update(Entity* self) {
 	//if (self->frame >= 16) self->frame = 0;
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 	gfc_vector2d_add(self->centerPos, self->centerPos, self->velocity);
+
 	set_center(self, self->centerPos);
 }
 

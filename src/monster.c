@@ -30,7 +30,6 @@ Entity* monster_new() {
 	self->flip = gfc_vector2d(0,0);
 	self->invincibility = 0;
 
-	stats->timeAtStun = SDL_GetTicks64();
 	stats->path = pathfind_2d(world_to_grid(self->position), world_to_grid(player_get_position()));
 	stats->lastPlayerGridPos = world_to_grid(player_get_position());
 	stats->timeAtPathCalc = 0;
@@ -131,67 +130,44 @@ Uint8 is_drop_safe(Entity* self){
 }
 
 void move_to_1d(Entity* self, GFC_Vector2D targetPos) {
-	int i;
-	Uint8 lBlocked = 0, rBlocked = 0;
-	Uint8 found = 0;
-	GFC_Vector2I dropSpot;
-	GFC_Vector2D floorPos = gfc_vector2d(self->position.x, self->position.y + (self->sprite->frame_h + (get_tile_dimensions().y / 2)));
 	MonsterData* stats = self->data;
-	CollisionInfo info = check_map_collision(self);
+	float distToPlayer = fabs(targetPos.x - self->position.x);
+	Uint8 chasing = 0;
 
-	if (stats->sentry) {
-		GFC_Vector2D checkNext;
-		checkNext = floorPos;
-		if (self->forward.x==1) checkNext.x += get_tile_dimensions().x;
-		else checkNext.x -= get_tile_dimensions().x;
+	if (!stats->sentry && distToPlayer < stats->aggroRange) {
+		chasing = 1;
+	}
+	else if (stats->sentry && distToPlayer < stats->aggroRange && fabs(targetPos.y - self->position.y) < 200.0) {
+		chasing = 1;
+	}
 
-		if (self->forward.x==1) {
+	if (chasing) {
+		if (targetPos.x < self->position.x) {
+			self->velocity.x = -stats->moveSpeed;
+		}
+		else if (targetPos.x > self->position.x) {
 			self->velocity.x = stats->moveSpeed;
-			if (detect_ledge(self)) {
-				self->velocity.x = -stats->moveSpeed;			
+		}
+		else {
+			self->velocity.x = stats->moveSpeed * self->forward.x;
+		}
+
+	}
+
+	if (detect_ledge(self)) {
+		if (chasing) {
+			if (targetPos.y > self->position.y && is_drop_safe(self) && distToPlayer < stats->aggroRange) {
+				//left blank
+			}
+			else {
+				self->velocity.x = 0;
 			}
 		}
 		else {
-			self->velocity.x = -stats->moveSpeed;
-			if (detect_ledge(self)) {
-				self->velocity.x = stats->moveSpeed;
-			}
+			gfc_vector2d_negate(self->forward, self->forward);
+			self->velocity.x = stats->moveSpeed * self->forward.x;
 		}
 	}
-
-	if (world_to_grid(targetPos).y > world_to_grid((gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)))).y) {
-		if (info.bottom && !found && abs(targetPos.x-self->position.x) < 32) {
-			for (i = 0; i < 10; i++) {
-				GFC_Vector2D checkLeft=floorPos, checkRight=floorPos;
-				checkRight.x += i * get_tile_dimensions().x;
-				if (tile_at(checkRight) != 0) continue;
-				checkLeft.x -= i * get_tile_dimensions().x;
-				if (tile_at(checkLeft) != 0) continue;
-				if (tile_at(checkLeft) > 0) {
-					if (tile_at(gfc_vector2d(floorPos.x + get_tile_dimensions().y, self->position.y)) != 0) lBlocked = 1;
-				}
-				if(tile_at(checkRight) >0){
-					if (tile_at(gfc_vector2d(floorPos.x + get_tile_dimensions().y, self->position.y)) != 0) rBlocked = 1;
-				}
-
-				dropSpot = world_to_grid(floorPos);
-				if (dropSpot.x < world_to_grid(self->position).x && !lBlocked) found = 1;
-				if (dropSpot.x > world_to_grid(self->position).x && !rBlocked) found = 1;
-			}
-		}
-		if(found){
-			if (dropSpot.x < world_to_grid(self->position).x) self->velocity.x = -stats->moveSpeed;
-			else if (dropSpot.x > world_to_grid(self->position).x) self->velocity.x = stats->moveSpeed;
-		}
-		if (detect_ledge(self) && !is_drop_safe(self)) self->velocity.x = 0;
-		return;
-	}
-	if (!stats->sentry) {
-		if (targetPos.x < self->position.x) self->velocity.x = -stats->moveSpeed;
-		if (targetPos.x > self->position.x) self->velocity.x = stats->moveSpeed;
-	}
-	if ((detect_ledge(self))) self->velocity.x = 0;
-
 }
 
 void move_to_2d(Entity* self, GFC_Vector2D targetPos) {

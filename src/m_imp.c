@@ -17,13 +17,10 @@ Entity* imp_new(GFC_Vector2D position) {
 	self->gravity = 0;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/imp.png");
-	self->width = self->sprite->frame_w;
-	self->height = self->sprite->frame_h;
-	self->collision.s.r.x = self->position.x+3;
-	self->collision.s.r.y = self->position.y+3;
-	self->collision.s.r.w = self->width-6;
-	self->collision.s.r.h = self->height-6;
+	set_center(self, self->position);
+	entity_setup_collision_box(self, ST_RECT, 0);
 
+	stats->aggroRange = 800;
 	stats->touchDamage = 1;
 	stats->moveSpeed = 2.5;
 	stats->health = 2;
@@ -32,7 +29,8 @@ Entity* imp_new(GFC_Vector2D position) {
 	stats->timeAtAttack = 0;
 	stats->projectileStats.damage = 1;
 	stats->monster = MT_IMP;
-	set_center(self, self->position);
+	
+	
 
 	self->think = imp_think;
 	self->update = imp_update;
@@ -47,12 +45,17 @@ void imp_think(Entity* self) {
 	MonsterData* stats = ((MonsterData*)self->data);
 
 
-	move_to_2d(self, playerPos);
+	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
+		move_to_2d(self, playerPos);
+	}
+	else {
+		self->velocity = self->knockback;
+	}
 
 	collider = check_entity_collision(self);
 	if (collider) {
 		if (collider->type == ET_PLAYER) {
-			collision_bounce(self, collider);
+			((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((PlayerData*)collider->data)->health);
 		}
 	}
 

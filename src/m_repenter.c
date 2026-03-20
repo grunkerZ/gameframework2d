@@ -17,14 +17,10 @@ Entity* repenter_new(GFC_Vector2D position) {
 	self->gravity = 1;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/repenter.png");
-	self->width = self->sprite->frame_w;
-	self->height = self->sprite->frame_h;
-	self->collision.s.r.x = self->position.x;
-	self->collision.s.r.y = self->position.y;
-	self->collision.s.r.w = self->width;
-	self->collision.s.r.h = self->height;
-	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
+	set_center(self, self->position);
+	entity_setup_collision_box(self, ST_RECT, 0);
 
+	stats->aggroRange = 200;
 	stats->touchDamage = 1;
 	stats->moveSpeed = 1;
 	stats->health = 2;
@@ -36,7 +32,6 @@ Entity* repenter_new(GFC_Vector2D position) {
 	stats->sentry = 1;
 	stats->touchDamage = 1;
 	stats->monster = MT_REPENTER;
-	set_center(self, self->position);
 
 	stats->projectileStats.damage = 1;
 	stats->projectileStats.speed = 1;
@@ -60,29 +55,51 @@ void repenter_think(Entity* self) {
 
 	playerPos = player_get_position();
 
-	move_to_1d(self, playerPos);
+	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
+		move_to_1d(self, playerPos);
 
-	if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {
-		self->velocity.x = 0;
-		if (stats->attacking) {
-			if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackDelay) {
-				Entity* projectile = projectile_new(self, &stats->projectileStats);
-				projectile->gravity = 1;
-				projectile->velocity = gfc_vector2d(stats->projectileStats.speed, -5);
-				stats->attacking = 0;
+		if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {
+			self->velocity.x = 0;
+			if (stats->attacking) {
+				if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackDelay) {
+					Entity* projectile = projectile_new(self, &stats->projectileStats);
+					projectile->gravity = 1;
+					projectile->velocity = gfc_vector2d(stats->projectileStats.speed, -5);
+					stats->attacking = 0;
+				}
 			}
+			if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackCooldown) {
+				stats->attacking = 1;
+				stats->timeAtAttack = SDL_GetTicks64();
+			}
+
 		}
-		if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackCooldown) {
-			stats->attacking = 1;
-			stats->timeAtAttack = SDL_GetTicks64();
-		}
-		
+	}
+	else {
+		self->velocity = self->knockback;
 	}
 
 	collider = check_entity_collision(self);
 	if (collider) {
 		if (collider->type == ET_PLAYER) {
-			collision_bounce(self, collider);
+			((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((PlayerData*)collider->data)->health);
+		}
+	}
+
+	if (self->knockback.x != 0 || self->knockback.y != 0) {
+		self->velocity = self->knockback;
+		gfc_vector2d_scale(self->knockback, self->knockback, 0.8);
+		if (self->knockback.x > 0) {
+			if (self->knockback.x < 0.1) self->knockback.x = 0;
+		}
+		if (self->knockback.y > 0) {
+			if (self->knockback.y < 0.1) self->knockback.y = 0;
+		}
+		if (self->knockback.x < 0) {
+			if (self->knockback.x < -0.1) self->knockback.x = 0;
+		}
+		if (self->knockback.y < 0) {
+			if (self->knockback.y < -0.1) self->knockback.y = 0;
 		}
 	}
 }
@@ -96,6 +113,9 @@ void repenter_update(Entity* self) {
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
 	info = check_map_collision(self);
+	if (info.left || info.right) {
+		gfc_vector2d_negate(self->forward,self->forward);
+	}
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 
 }

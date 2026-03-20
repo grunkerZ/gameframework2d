@@ -112,13 +112,15 @@ void entity_think(Entity* self) {
 void entity_update(Entity* self) {
 	if (!self) return;
 
-	if (self->velocity.x > 0) {
-		self->forward = gfc_vector2d(1, 0);
-		self->flip = gfc_vector2d(0, 0);
-	}
-	if (self->velocity.x < 0) {
-		self->forward = gfc_vector2d(-1, 0);
-		self->flip = gfc_vector2d(1, 0);
+	if(self->knockback.x==0 || self->knockback.y==0){
+		if (self->velocity.x > 0) {
+			self->forward = gfc_vector2d(1, 0);
+			self->flip = gfc_vector2d(0, 0);
+		}
+		if (self->velocity.x < 0) {
+			self->forward = gfc_vector2d(-1, 0);
+			self->flip = gfc_vector2d(1, 0);
+		}
 	}
 
 	if (self->update)self->update(self);
@@ -297,31 +299,33 @@ CollisionInfo check_map_collision(Entity* self) {
 	return info;
 }
 
-Uint8 apply_damage(Entity* target, Uint8 damage, Uint8 health) {
+Uint8 apply_damage(Entity* target, Entity* attacker, Uint8 damage, Uint8 health) {
+	GFC_Vector2D bounce;
+	GFC_Vector2D attackerCenter, targetCenter;
+	
 	if (SDL_GetTicks64() - target->timeAtDamaged < target->invincibility) {
 		slog("Target invincible. Invincible Time: %u Time Since Damage: %llu", target->invincibility, target->timeAtDamaged);
 		slog("Current Health: %d", health);
 		return health;
 	}
+
 	target->timeAtDamaged = SDL_GetTicks64();
-	slog("Time Since Damage updated");
-	slog("Damaging target for %d damage", damage);
-	slog("Health Before: %d | Health After: %d", health, health - damage);
+	
+	if (attacker->type != ET_PROJECTILE) {
+		targetCenter = target->centerPos;
+		attackerCenter = attacker->centerPos;
+
+		gfc_vector2d_sub(bounce, targetCenter, attackerCenter);
+		gfc_vector2d_normalize(&bounce);
+		gfc_vector2d_scale(target->knockback, bounce, 3);
+		gfc_vector2d_negate(attacker->knockback, target->knockback);
+		target->stun = 250;
+		target->timeAtStun = SDL_GetTicks64();
+		attacker->stun = 250;
+		attacker->timeAtStun = SDL_GetTicks64();
+	}
+
 	return health - damage;
-}
-
-void collision_bounce(Entity* self, Entity* collider){
-	GFC_Vector2D bounce;
-	GFC_Vector2D colliderCenter = gfc_vector2d(
-		collider->position.x + (collider->sprite->frame_w / 2),
-		collider->position.y + (collider->sprite->frame_h / 2));
-	GFC_Vector2D selfCenter = gfc_vector2d(
-		self->position.x + (self->sprite->frame_w / 2),
-		self->position.y + (self->sprite->frame_h / 2));
-
-	gfc_vector2d_sub(bounce, selfCenter, colliderCenter);
-	gfc_vector2d_normalize(&bounce);
-	gfc_vector2d_scale(self->velocity, bounce, 3);
 }
 
 void set_center(Entity* self, GFC_Vector2D center) {

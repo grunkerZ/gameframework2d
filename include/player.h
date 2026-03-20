@@ -32,8 +32,6 @@ typedef struct {
 	Uint32				dashDuration;			//the current dash duration of the player
 	Uint32				timeAtDash;				//the time when the player started dashing
 	Uint32				timeAtAttack;			//the time when the player last attacked
-	Uint32				timeAtStun;				//the time when stun was applied
-	Uint32				stun;					//the time stunned
 	ProjectileData		projectileStats;		//the stats of the projectile shot
 	int					inventory[ITEM_MAX];	//the item inventory of the player
 }PlayerData;

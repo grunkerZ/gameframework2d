@@ -13,19 +13,17 @@ Entity* damned_new(GFC_Vector2D position) {
 		return NULL;
 	}
 	stats = ((MonsterData*)self->data);
-	stats->touchDamage = 1;
-	stats->moveSpeed = 2;
-	stats->health = 2;
+
 	self->gravity = 1;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/monster.png");
-	self->width = self->sprite->frame_w;
-	self->height = self->sprite->frame_h;
-	self->collision.s.r.x = self->position.x;
-	self->collision.s.r.y = self->position.y;
-	self->collision.s.r.w = self->width;
-	self->collision.s.r.h = self->height;
 	set_center(self, self->position);
+	entity_setup_collision_box(self, ST_RECT, 0);
+
+	stats->aggroRange = 800;
+	stats->touchDamage = 1;
+	stats->moveSpeed = 2;
+	stats->health = 2;
 
 	self->think = damned_think;
 	self->update = damned_update;
@@ -40,12 +38,17 @@ void damned_think(Entity* self) {
 	if (!self) return;
 	playerPos = player_get_position();
 
-	move_to_1d(self, playerPos);
+	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
+		move_to_1d(self, playerPos);
+	}
+	else {
+		self->velocity = self->knockback;
+	}
 
 	collider = check_entity_collision(self);
 	if (collider) {
 		if (collider->type == ET_PLAYER) {
-			collision_bounce(self, collider);
+			((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((PlayerData*)collider->data)->health);
 		}
 	}
 

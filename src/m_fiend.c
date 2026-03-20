@@ -17,13 +17,10 @@ Entity* fiend_new(GFC_Vector2D position) {
 	self->gravity = 1;
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/fiend.png");
-	self->width = self->sprite->frame_w;
-	self->height = self->sprite->frame_h;
-	self->collision.s.r.x = self->position.x;
-	self->collision.s.r.y = self->position.y;
-	self->collision.s.r.w = self->width;
-	self->collision.s.r.h = self->height;
+	set_center(self, self->position);
+	entity_setup_collision_box(self, ST_RECT, 0);
 
+	stats->aggroRange = 800;
 	stats->touchDamage = 1;
 	stats->moveSpeed = 1;
 	stats->health = 2;
@@ -31,7 +28,6 @@ Entity* fiend_new(GFC_Vector2D position) {
 	stats->attackSpeed = 1000;
 	stats->timeAtAttack = 0;
 	stats->monster = MT_DAMNED;
-	set_center(self, self->position);
 
 	self->think = fiend_think;
 	self->update = fiend_update;
@@ -48,27 +44,32 @@ void fiend_think(Entity* self) {
 
 	playerPos = player_get_position();
 
-	move_to_1d(self, playerPos);
+	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
+		move_to_1d(self, playerPos);
 
-	if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {
-		if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackSpeed) {
-			slog("fired shot, time passed: %llu", SDL_GetTicks64() - stats->timeAtAttack);
-			stats->timeAtAttack = SDL_GetTicks64();
-			Entity* projectile = projectile_new(self, &stats->projectileStats);
-			((ProjectileData*)projectile->data)->parent = self;
-			((ProjectileData*)projectile->data)->origin = self->position;
-			((ProjectileData*)projectile->data)->range = 1000;
-			gfc_vector2d_sub(projectileDir, playerPos, gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)));
-			gfc_vector2d_normalize(&projectileDir);
-			gfc_vector2d_scale(projectileDir, projectileDir, 3);
-			gfc_vector2d_add(projectile->velocity, projectile->velocity, projectileDir);
+		if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {
+			if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackSpeed) {
+				slog("fired shot, time passed: %llu", SDL_GetTicks64() - stats->timeAtAttack);
+				stats->timeAtAttack = SDL_GetTicks64();
+				Entity* projectile = projectile_new(self, &stats->projectileStats);
+				((ProjectileData*)projectile->data)->parent = self;
+				((ProjectileData*)projectile->data)->origin = self->position;
+				((ProjectileData*)projectile->data)->range = 1000;
+				gfc_vector2d_sub(projectileDir, playerPos, gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)));
+				gfc_vector2d_normalize(&projectileDir);
+				gfc_vector2d_scale(projectileDir, projectileDir, 3);
+				gfc_vector2d_add(projectile->velocity, projectile->velocity, projectileDir);
+			}
 		}
+	}
+	else {
+		self->velocity = self->knockback;
 	}
 
 	collider = check_entity_collision(self);
 	if (collider) {
 		if (collider->type == ET_PLAYER) {
-			collision_bounce(self, collider);
+			((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((PlayerData*)collider->data)->health);
 		}
 	}
 

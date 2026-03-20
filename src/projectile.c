@@ -103,10 +103,10 @@ void projectile_damage(Entity* self, Entity* collider) {
 					break;
 				}
 			}
-			((MonsterData*)collider->data)->health = apply_damage(collider, stats->damage, ((MonsterData*)collider->data)->health);
+			((MonsterData*)collider->data)->health = apply_damage(collider, self, stats->damage, ((MonsterData*)collider->data)->health);
 			break;
 		case ET_PLAYER:
-			((PlayerData*)collider->data)->health = apply_damage(collider, stats->damage, ((PlayerData*)collider->data)->health);
+			((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->damage, ((PlayerData*)collider->data)->health);
 			break;
 		}
 	
@@ -138,11 +138,11 @@ void projectile_damage(Entity* self, Entity* collider) {
 				return;
 			}
 		}
-		((MonsterData*)collider->data)->health = apply_damage(collider, stats->damage, ((MonsterData*)collider->data)->health);
+		((MonsterData*)collider->data)->health = apply_damage(collider, self, stats->damage, ((MonsterData*)collider->data)->health);
 		entity_free(self);
 		return;
 	case ET_PLAYER:
-		((PlayerData*)collider->data)->health = apply_damage(collider, stats->damage, ((PlayerData*)collider->data)->health);
+		((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->damage, ((PlayerData*)collider->data)->health);
 		entity_free(self);
 		return;
 	}

@@ -789,7 +789,7 @@ void load_stage(Floor* floor, Stage* stage) {
 int tile_at(GFC_Vector2D position) {
 	GFC_Vector2I gridPos = world_to_grid(position);
 	int index;
-	if (gridPos.x > activeRoom->width - 1 || gridPos.y > activeRoom->height - 1) {
+	if (gridPos.x > activeRoom->width - 1 || gridPos.y > activeRoom->height - 1 || gridPos.x < 0 || gridPos.y < 0) {
 		slog("out of bounds tile");
 		return -1;
 	}

@@ -23,6 +23,8 @@ typedef struct Entity_S
 	Uint8			gravity;							//1 if the entity is affected by gravity, 0 otherwise
 	Uint32			invincibility;						//the time the entity is invincible for after damage
 	Uint32			timeAtDamaged;						//the time when the entity last took damage
+	Uint32			timeAtStun;							//the time when stun is applied to an entity
+	Uint32			stun;								//how long an entity does not move on its own for
 	float			rotation;							//the rotation of the sprite
 	float			frame;								//the frame of the sprite sheet
 	GFC_TextLine	name;								//name of entity for debug
@@ -32,12 +34,13 @@ typedef struct Entity_S
 	GFC_Vector2D	velocity;							//rate of position change per update
 	GFC_Vector2D	centerPos;							//the center position of the entity
 	GFC_Vector2D	forward;							//the forward vector of the entity
+	GFC_Vector2D	knockback;							//a vector containing the knockback velocity
 	GFC_Shape		collision;							//the collision box of the entity
 	EntityType		type;								//the type of entity
 	Sprite*			sprite;								//the sprite of the entity
 	Uint32			width;								//how wide the entity is in pixels
 	Uint32			height;								//how tall the entity is in pixels
-	GFC_List*		 currentTiles;						//holds the tiles that the entity exists in
+	GFC_List*		currentTiles;						//holds the tiles that the entity exists in
 	void			(*think)(struct Entity_S* self);	//called every frame if defined for entity
 	void			(*update)(struct Entity_S* self);	//execute entity decisions
 	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data
@@ -94,13 +97,6 @@ Entity* check_entity_collision(Entity* self);
 */
 CollisionInfo check_map_collision(Entity* self);
 
-/*
-* @brief adds velocity in the opposite direction of the collision to the entities
-* @param self the entity colliding
-* @param collider the entity collided with
-*/
-void collision_bounce(Entity* self, Entity* collider);
-
 /**
 * @brief free an entity
 * @param self the entity to free
@@ -116,11 +112,12 @@ void entity_manager_free_all();
 /*
 * @brief applies damage to a target
 * @param target the entity that is to be damaged
+* @param attacker the entity applying the damage
 * @param damage the damage to be taken
 * @param the target's health
-* @return the value of health after damage is subtracted
+* @return the unmodified health value if the target is invincible, otherwise health - damage
 */
-Uint8 apply_damage(Entity* target, Uint8 damage, Uint8 health);
+Uint8 apply_damage(Entity* target, Entity* attacker, Uint8 damage, Uint8 health);
 
 /*
 * @brief sets the entity's center position
