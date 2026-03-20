@@ -134,6 +134,9 @@ void move_to_1d(Entity* self, GFC_Vector2D targetPos) {
 	float distToPlayer = fabs(targetPos.x - self->position.x);
 	Uint8 chasing = 0;
 
+	if (stats->sentry) {
+		self->velocity.x = stats->moveSpeed;
+	}
 	if (!stats->sentry && distToPlayer < stats->aggroRange) {
 		chasing = 1;
 	}

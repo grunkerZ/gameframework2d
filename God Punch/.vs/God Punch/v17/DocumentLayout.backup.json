@@ -3,19 +3,22 @@
   "WorkspaceRootPath": "C:\\git\\gameframework2d\\God Punch\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\entity.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\monster.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\player.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\m_repenter.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\game.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\monster.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\monster.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\entity.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\m_repenter.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\player.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\m_damned.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
@@ -37,9 +40,6 @@
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\projectile.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\game.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -49,11 +49,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 2,
               "Title": "game.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\game.c",
               "RelativeDocumentMoniker": "..\\src\\game.c",
@@ -67,13 +67,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "monster.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\monster.c",
               "RelativeDocumentMoniker": "..\\src\\monster.c",
-              "ToolTip": "C:\\git\\gameframework2d\\src\\monster.c",
-              "RelativeToolTip": "..\\src\\monster.c",
-              "ViewState": "AgIAAAoAAAAAAAAAAAAiwB8AAAAAAAAAAAAAAA==",
+              "ToolTip": "C:\\git\\gameframework2d\\src\\monster.c*",
+              "RelativeToolTip": "..\\src\\monster.c*",
+              "ViewState": "AgIAAIUAAAAAAAAAAADwv4kAAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-03-10T20:42:58.729Z",
               "IsPinned": true,
@@ -81,7 +81,21 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
+              "Title": "m_repenter.c",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\src\\m_repenter.c",
+              "RelativeDocumentMoniker": "..\\src\\m_repenter.c",
+              "ToolTip": "C:\\git\\gameframework2d\\src\\m_repenter.c",
+              "RelativeToolTip": "..\\src\\m_repenter.c",
+              "ViewState": "AgIAAFAAAAAAAAAAAADwv10AAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2026-03-18T07:46:02.301Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
               "Title": "monster.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\monster.h",
               "RelativeDocumentMoniker": "..\\include\\monster.h",
@@ -94,7 +108,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "entity.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\entity.h",
               "RelativeDocumentMoniker": "..\\include\\entity.h",
@@ -107,7 +121,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "player.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\player.h",
               "RelativeDocumentMoniker": "..\\include\\player.h",
@@ -120,7 +134,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "projectile.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\projectile.c",
               "RelativeDocumentMoniker": "..\\src\\projectile.c",
@@ -133,12 +147,12 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 4,
               "Title": "entity.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\entity.c",
               "RelativeDocumentMoniker": "..\\src\\entity.c",
-              "ToolTip": "C:\\git\\gameframework2d\\src\\entity.c*",
-              "RelativeToolTip": "..\\src\\entity.c*",
+              "ToolTip": "C:\\git\\gameframework2d\\src\\entity.c",
+              "RelativeToolTip": "..\\src\\entity.c",
               "ViewState": "AgIAACMBAAAAAAAAAADwvz8BAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-03-20T03:26:32.405Z",
@@ -146,7 +160,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
               "Title": "player.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\player.c",
               "RelativeDocumentMoniker": "..\\src\\player.c",
@@ -159,7 +173,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "m_imp.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\m_imp.c",
               "RelativeDocumentMoniker": "..\\src\\m_imp.c",
@@ -172,7 +186,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "m_hellhound.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\m_hellhound.c",
               "RelativeDocumentMoniker": "..\\src\\m_hellhound.c",
@@ -185,7 +199,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "m_fiend.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\m_fiend.c",
               "RelativeDocumentMoniker": "..\\src\\m_fiend.c",
@@ -198,7 +212,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "m_damned.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\m_damned.c",
               "RelativeDocumentMoniker": "..\\src\\m_damned.c",
@@ -207,19 +221,6 @@
               "ViewState": "AgIAABUAAAAAAAAAAADwvywAAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-03-19T02:39:23.628Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "m_repenter.c",
-              "DocumentMoniker": "C:\\git\\gameframework2d\\src\\m_repenter.c",
-              "RelativeDocumentMoniker": "..\\src\\m_repenter.c",
-              "ToolTip": "C:\\git\\gameframework2d\\src\\m_repenter.c",
-              "RelativeToolTip": "..\\src\\m_repenter.c",
-              "ViewState": "AgIAACwAAAAAAAAAAADwv04AAAAjAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2026-03-18T07:46:02.301Z",
               "EditorCaption": ""
             }
           ]
