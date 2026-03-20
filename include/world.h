@@ -5,14 +5,14 @@
 
 
 typedef enum {
-	EMPTY,
-	STANDARD,
-	START,
-	EXIT,
-	ITEM,
-	SHOP,
-	SECRET,
-	END
+	RT_EMPTY,
+	RT_STANDARD,
+	RT_START,
+	RT_EXIT,
+	RT_ITEM,
+	RT_SHOP,
+	RT_SECRET,
+	RT_END
 }RoomType;
 
 typedef enum {

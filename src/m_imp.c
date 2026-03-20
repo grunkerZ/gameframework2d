@@ -66,8 +66,8 @@ void imp_think(Entity* self) {
 			Entity* projectile = projectile_new(self, &stats->projectileStats);
 			((ProjectileData*)projectile->data)->parent = self;
 			((ProjectileData*)projectile->data)->origin = self->position;
-			((ProjectileData*)projectile->data)->range = 1000;
-			gfc_vector2d_sub(projectileDir, playerPos, self->position);
+			((ProjectileData*)projectile->data)->range = 800;
+			gfc_vector2d_sub(projectileDir, playerPos, self->centerPos);
 			gfc_vector2d_normalize(&projectileDir);
 			gfc_vector2d_scale(projectileDir, projectileDir, 2);
 			gfc_vector2d_add(projectile->velocity, projectile->velocity, projectileDir);

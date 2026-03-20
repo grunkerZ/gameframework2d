@@ -6,18 +6,25 @@
 
 typedef enum {
 	ITEM_NONE = 0,
-	PICKUP_SHIELD_HALF,
-	PICKUP_SHIELD,
-	PICKUP_LIFE_HALF,
-	PICKUP_LIFE,
-	ITEM_HAIR_TRIGGER,
-	ITEM_COMBAT_BOOTS,
-	ITEM_COMMANDO_BANDANA,
-	ITEM_REINFORCED_RIBCAGE,
-	ITEM_SULFUR_TIPPED_ROUNDS,
-	ITEM_LEAD_HALO,
-	ITEM_FORBIDDEN_KNOWLEDGE,
-	ITEM_MAX
+
+	PICKUP,
+		PICKUP_SHIELD_HALF,
+		PICKUP_SHIELD,
+		PICKUP_LIFE_HALF,
+		PICKUP_LIFE,
+	PICKUP_END,
+
+	ITEM,
+		ITEM_HAIR_TRIGGER,
+		ITEM_COMBAT_BOOTS,
+		ITEM_COMMANDO_BANDANA,
+		ITEM_REINFORCED_RIBCAGE,
+		ITEM_SULFUR_TIPPED_ROUNDS,
+		ITEM_LEAD_HALO,
+		ITEM_FORBIDDEN_KNOWLEDGE,
+	ITEM_END,
+
+	ITEM_MAX,
 }ItemID;
 
 typedef struct {
@@ -55,7 +62,7 @@ void item_manager_close();
 /*
 * @brief initializes the item manager
 */
-void item_manager_init();
+void item_manager_init(Uint32 maxItems);
 
 /*
 * @brief runs the think function for the item
@@ -82,7 +89,7 @@ void item_manager_free_all();
 /*
 * @brief allocates data for a new empty item
 */
-void item_new();
+Item* item_new(ItemID id);
 
 /*
 * @brief draws an item to the screen

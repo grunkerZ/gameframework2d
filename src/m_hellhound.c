@@ -56,7 +56,12 @@ void hellhound_think(Entity* self) {
 
 		// normal movement
 		if (stats->attacking == 0 && !stats->isStunned) {
-			move_to_1d(self, playerPos);
+			if (world_to_grid(playerPos).y > world_to_grid(self->centerPos).y && info.bottom) {
+				move_to_2d(self,playerPos);
+			}
+			else {
+				move_to_1d(self, playerPos);
+			}
 
 			if (info.bottom && gfc_vector2d_distance_between_less_than(playerPos, self->position, stats->stopDistance)) {
 				if (world_to_grid(self->centerPos).y == world_to_grid(playerPos).y) {
@@ -82,7 +87,7 @@ void hellhound_think(Entity* self) {
 		}
 
 		// lunging
-		else if (stats->attacking == 1) {
+		else if (stats->attacking == 2) {
 			if (info.bottom && self->velocity.y >= 0) {
 				stats->attacking = 0;
 				stats->timeAtAttack = SDL_GetTicks64();
@@ -105,6 +110,8 @@ void hellhound_think(Entity* self) {
 			((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((PlayerData*)collider->data)->health);
 		}
 	}
+
+	info = check_map_collision(self);
 
 }
 

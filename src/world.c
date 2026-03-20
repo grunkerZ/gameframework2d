@@ -73,7 +73,7 @@ Stage** floor_generate(Floor* floor) {
 	startX = floor->width / 2;
 	startY = floor->height - 1;
 	minY = startY;
-	floor->blueprint[floor_get_room_index(floor,startX,startY)] = START;
+	floor->blueprint[floor_get_room_index(floor,startX,startY)] = RT_START;
 	floor->roomsLeft--;
 
 	validSpot.x = startX;
@@ -93,7 +93,7 @@ Stage** floor_generate(Floor* floor) {
 			slog("Generating standard rooms...");
 			index = floor_get_room_index(floor, pos.x, pos.y);
 			if (index != -1) {
-				floor->blueprint[index] = STANDARD;
+				floor->blueprint[index] = RT_STANDARD;
 				floor->roomsLeft--;
 				if (pos.y < minY) minY = pos.y;
 			}
@@ -115,7 +115,7 @@ Stage** floor_generate(Floor* floor) {
 	//PLACE EXIT
 
 	for (i = 0; i < floor->width; i++) {
-		if (floor_get_room_type(floor, i, minY) == STANDARD) {
+		if (floor_get_room_type(floor, i, minY) == RT_STANDARD) {
 			validSpot.x = i;
 			validSpot.y = minY;
 			topRooms[topCount++] = validSpot;
@@ -124,7 +124,7 @@ Stage** floor_generate(Floor* floor) {
 
 	if (topCount > 0) {
 		GFC_Vector2I exit = topRooms[rand() % topCount];
-		floor->blueprint[floor_get_room_index(floor, exit.x, exit.y)] = EXIT;
+		floor->blueprint[floor_get_room_index(floor, exit.x, exit.y)] = RT_EXIT;
 		slog("Placing the exit...");
 	}
 
@@ -132,15 +132,15 @@ Stage** floor_generate(Floor* floor) {
 
 	for (i = 0; i < floor->height; i++) {
 		for (j = 0; j < floor->width; j++) {
-			if (floor_get_room_type(floor, j, i) == EMPTY) {
+			if (floor_get_room_type(floor, j, i) == RT_EMPTY) {
 				if (floor_count_neighbors(floor,j,i) == 1) {
-					int neighborType = EMPTY;
-					if (floor_get_room_type(floor, j+1, i) != EMPTY) neighborType = floor_get_room_type(floor, j, i);
-					else if (floor_get_room_type(floor, j-1, i) != EMPTY) neighborType = floor_get_room_type(floor, j, i);
-					else if (floor_get_room_type(floor, j, i+1) != EMPTY) neighborType = floor_get_room_type(floor, j, i);
-					else if (floor_get_room_type(floor, j, i-1) != EMPTY) neighborType = floor_get_room_type(floor, j, i);
+					int neighborType = RT_EMPTY;
+					if (floor_get_room_type(floor, j+1, i) != RT_EMPTY) neighborType = floor_get_room_type(floor, j, i);
+					else if (floor_get_room_type(floor, j-1, i) != RT_EMPTY) neighborType = floor_get_room_type(floor, j, i);
+					else if (floor_get_room_type(floor, j, i+1) != RT_EMPTY) neighborType = floor_get_room_type(floor, j, i);
+					else if (floor_get_room_type(floor, j, i-1) != RT_EMPTY) neighborType = floor_get_room_type(floor, j, i);
 					
-					if(neighborType==STANDARD){
+					if(neighborType== RT_STANDARD){
 						validSpot.x = j;
 						validSpot.y = i;
 						itemSpots[itemCandidates++] = validSpot;
@@ -156,7 +156,7 @@ Stage** floor_generate(Floor* floor) {
 
 		slog("Placing Special Rooms...");
 
-		floor->blueprint[floor_get_room_index(floor, pos.x, pos.y)] = ITEM;
+		floor->blueprint[floor_get_room_index(floor, pos.x, pos.y)] = RT_ITEM;
 		floor->numItemRooms--;
 
 		itemSpots[index] = itemSpots[itemCandidates - 1];
@@ -174,9 +174,9 @@ Stage** floor_generate(Floor* floor) {
 			gridPos.y = i / floor->width;
 			gridPos.x = i % floor->width;
 
-			if (floor->blueprint[i] == START) filename = "maps/start/start1.map";
-			else if (floor->blueprint[i] == STANDARD) filename = "maps/standard/standard1.map";
-			else if (floor->blueprint[i] == EXIT) filename = "maps/exit/exit1.map";
+			if (floor->blueprint[i] == RT_START) filename = "maps/start/start1.map";
+			else if (floor->blueprint[i] == RT_STANDARD) filename = "maps/standard/standard1.map";
+			else if (floor->blueprint[i] == RT_EXIT) filename = "maps/exit/exit1.map";
 			stage = stage_create(floor, NULL, gridPos, filename);
 			floor->floorMap[i] = stage;
 
@@ -235,7 +235,7 @@ int floor_get_room_type(Floor* floor, int x, int y) {
 	int type;
 	int index = floor_get_room_index(floor, x, y);
 	if (index == -1) {
-		return EMPTY;
+		return RT_EMPTY;
 	}
 	//slog("Getting Room type for index: %d", index);
 	type = floor->blueprint[index];
@@ -244,21 +244,21 @@ int floor_get_room_type(Floor* floor, int x, int y) {
 
 int floor_count_neighbors(Floor* floor, int x, int y) {
 	int count = 0;
-	if (floor_get_room_type(floor, x + 1, y) != EMPTY) count++;
-	if (floor_get_room_type(floor, x - 1, y) != EMPTY) count++;
-	if (floor_get_room_type(floor, x, y - 1) != EMPTY) count++;
-	if (floor_get_room_type(floor, x, y + 1) != EMPTY) count++;
+	if (floor_get_room_type(floor, x + 1, y) != RT_EMPTY) count++;
+	if (floor_get_room_type(floor, x - 1, y) != RT_EMPTY) count++;
+	if (floor_get_room_type(floor, x, y - 1) != RT_EMPTY) count++;
+	if (floor_get_room_type(floor, x, y + 1) != RT_EMPTY) count++;
 	return count;
 }
 
 const char* get_room_type_string(Uint8 type) {
 	switch (type) {
-	case START: return "START";
-	case STANDARD: return "STANDARD";
-	case EXIT: return "EXIT";
-	case ITEM: return "ITEM";
-	case SECRET: return "SECRET";
-	case SHOP: return "SHOP";
+	case RT_START: return "START";
+	case RT_STANDARD: return "STANDARD";
+	case RT_EXIT: return "EXIT";
+	case RT_ITEM: return "ITEM";
+	case RT_SECRET: return "SECRET";
+	case RT_SHOP: return "SHOP";
 	default: return "EMPTY";
 	}
 }
@@ -670,20 +670,20 @@ Stage* stage_create(Floor* floor, Room* room, GFC_Vector2I gridPos, const char* 
 	stage->seed = floor->seed;
 	stage->mapIndex = floor_get_room_index(floor, stage->gridPos.x, stage->gridPos.y);
 
-	if (stage->type == START) {
+	if (stage->type == RT_START) {
 		stage->cleared = 1;
 		stage->visible = 1;
 		stage->visited = 1;
 	}
 
-	if (floor_get_room_type(floor, gridPos.x, gridPos.y - 1) != EMPTY && floor_get_room_type(floor, gridPos.x, gridPos.y - 1) != SECRET) stage->doors |= DOOR_NORTH;
-	else if (floor_get_room_type(floor, gridPos.x, gridPos.y - 1) == SECRET) stage->doors |= DOOR_NORTH_HIDDEN;
-	if (floor_get_room_type(floor, gridPos.x, gridPos.y + 1) != EMPTY && floor_get_room_type(floor, gridPos.x, gridPos.y + 1) != SECRET) stage->doors |= DOOR_SOUTH;
-	else if (floor_get_room_type(floor, gridPos.x, gridPos.y + 1) == SECRET) stage->doors |= DOOR_SOUTH_HIDDEN;
-	if (floor_get_room_type(floor, gridPos.x + 1, gridPos.y) != EMPTY && floor_get_room_type(floor, gridPos.x + 1, gridPos.y) != SECRET) stage->doors |= DOOR_EAST;
-	else if (floor_get_room_type(floor, gridPos.x + 1, gridPos.y) == SECRET) stage->doors |= DOOR_EAST_HIDDEN;
-	if (floor_get_room_type(floor, gridPos.x - 1, gridPos.y) != EMPTY && floor_get_room_type(floor, gridPos.x - 1, gridPos.y) != SECRET) stage->doors |= DOOR_WEST;
-	else if (floor_get_room_type(floor, gridPos.x - 1, gridPos.y) == SECRET) stage->doors |= DOOR_WEST_HIDDEN;
+	if (floor_get_room_type(floor, gridPos.x, gridPos.y - 1) != RT_EMPTY && floor_get_room_type(floor, gridPos.x, gridPos.y - 1) != RT_SECRET) stage->doors |= DOOR_NORTH;
+	else if (floor_get_room_type(floor, gridPos.x, gridPos.y - 1) == RT_SECRET) stage->doors |= DOOR_NORTH_HIDDEN;
+	if (floor_get_room_type(floor, gridPos.x, gridPos.y + 1) != RT_EMPTY && floor_get_room_type(floor, gridPos.x, gridPos.y + 1) != RT_SECRET) stage->doors |= DOOR_SOUTH;
+	else if (floor_get_room_type(floor, gridPos.x, gridPos.y + 1) == RT_SECRET) stage->doors |= DOOR_SOUTH_HIDDEN;
+	if (floor_get_room_type(floor, gridPos.x + 1, gridPos.y) != RT_EMPTY && floor_get_room_type(floor, gridPos.x + 1, gridPos.y) != RT_SECRET) stage->doors |= DOOR_EAST;
+	else if (floor_get_room_type(floor, gridPos.x + 1, gridPos.y) == RT_SECRET) stage->doors |= DOOR_EAST_HIDDEN;
+	if (floor_get_room_type(floor, gridPos.x - 1, gridPos.y) != RT_EMPTY && floor_get_room_type(floor, gridPos.x - 1, gridPos.y) != RT_SECRET) stage->doors |= DOOR_WEST;
+	else if (floor_get_room_type(floor, gridPos.x - 1, gridPos.y) == RT_SECRET) stage->doors |= DOOR_WEST_HIDDEN;
 
 	return stage;
 }
@@ -706,7 +706,7 @@ void stage_make_doors(Floor* floor, Stage* stage) {
 		index = room_get_tile_index(stage->room,stage->room->doorPosition[0].x, stage->room->doorPosition[0].y);
 		slog("North Door Position: (%i, %i)",stage->room->doorPosition[0].x, stage->room->doorPosition[0].y);
 		slog("North Index: %i", index);
-		stage->room->tileMap[index] = EMPTY;
+		stage->room->tileMap[index] = RT_EMPTY;
 		slog("tilemap carved successfully");
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x, stage->gridPos.y - 1);
 		slog("target index: %i", targetIndex);
@@ -716,21 +716,21 @@ void stage_make_doors(Floor* floor, Stage* stage) {
 	if (stage->doors & DOOR_SOUTH) {
 		slog("Attempting to carve south door");
 		index = room_get_tile_index(stage->room, stage->room->doorPosition[1].x, stage->room->doorPosition[1].y);
-		stage->room->tileMap[index] = EMPTY;
+		stage->room->tileMap[index] = RT_EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x, stage->gridPos.y + 1);
 		door_new(DOOR_SOUTH, targetIndex, grid_to_world(stage->room->doorPosition[1]));
 	}
 	if (stage->doors & DOOR_EAST) {
 		slog("Attempting to carve east door");
 		index = room_get_tile_index(stage->room, stage->room->doorPosition[2].x, stage->room->doorPosition[2].y);
-		stage->room->tileMap[index] = EMPTY;
+		stage->room->tileMap[index] = RT_EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x + 1, stage->gridPos.y);
 		door_new(DOOR_EAST, targetIndex, grid_to_world(stage->room->doorPosition[2]));
 	}
 	if (stage->doors & DOOR_WEST) {
 		slog("Attempting to carve west door");
 		index = room_get_tile_index(stage->room, stage->room->doorPosition[3].x, stage->room->doorPosition[3].y);
-		stage->room->tileMap[index] = EMPTY;
+		stage->room->tileMap[index] = RT_EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x - 1, stage->gridPos.y);
 		door_new(DOOR_WEST, targetIndex, grid_to_world(stage->room->doorPosition[3]));
 	}

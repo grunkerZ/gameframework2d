@@ -20,7 +20,7 @@ Entity* repenter_new(GFC_Vector2D position) {
 	set_center(self, self->position);
 	entity_setup_collision_box(self, ST_RECT, 0);
 
-	stats->aggroRange = 200;
+	stats->aggroRange = 100;
 	stats->touchDamage = 1;
 	stats->moveSpeed = 1;
 	stats->health = 2;
@@ -32,6 +32,8 @@ Entity* repenter_new(GFC_Vector2D position) {
 	stats->sentry = 1;
 	stats->touchDamage = 1;
 	stats->monster = MT_REPENTER;
+	
+	self->velocity.x = stats->moveSpeed;
 
 	stats->projectileStats.damage = 1;
 	stats->projectileStats.speed = 1;
@@ -61,10 +63,10 @@ void repenter_think(Entity* self) {
 		if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {
 			self->velocity.x = 0;
 			if (stats->attacking) {
-				if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackDelay) {
+				if ((SDL_GetTicks64() - stats->timeAtAttack > stats->attackDelay) && detect_los(self,playerPos)) {
 					Entity* projectile = projectile_new(self, &stats->projectileStats);
 					projectile->gravity = 1;
-					projectile->velocity = gfc_vector2d(stats->projectileStats.speed, -5);
+					projectile->velocity = gfc_vector2d(stats->projectileStats.speed * self->forward.x, -5);
 					stats->attacking = 0;
 				}
 			}

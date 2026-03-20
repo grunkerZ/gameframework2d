@@ -36,7 +36,7 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	self->width = self->sprite->frame_w;
 	self->height = self->sprite->frame_h;
 
-	selfStats->origin = gfc_vector2d(owner->position.x, owner->position.y + (owner->sprite->frame_h / 2));
+	selfStats->origin = owner->centerPos;
 	self->position = selfStats->origin;
 	
 	slog("New Projectile Created at (%f,%f)",self->position.x,self->position.y);
@@ -76,6 +76,10 @@ void projectile_damage(Entity* self, Entity* collider) {
 
 	if (collider == stats->parent) return;
 	if (collider->type == stats->team) return;
+	if (collider->type == ET_DOOR) {
+		entity_free(self);
+		return;
+	}
 
 	if (stats->explodes) {
 		self->velocity = gfc_vector2d(0, 0);

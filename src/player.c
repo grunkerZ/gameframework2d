@@ -215,7 +215,7 @@ GFC_Vector2D player_get_position() {
 		slog("Failed to get position. Current player is NULL");
 		return gfc_vector2d(0,0);
 	}
-	return gfc_vector2d(player->position.x+(player->sprite->frame_w/2), player->position.y + (player->sprite->frame_h/2));
+	return player->centerPos;
 }
 
 void player_calculate_stats(Entity* self) {

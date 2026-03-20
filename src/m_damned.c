@@ -34,12 +34,20 @@ Entity* damned_new(GFC_Vector2D position) {
 void damned_think(Entity* self) {
 	GFC_Vector2D playerPos;
 	Entity* collider;
+	CollisionInfo info;
 	MonsterData* stats = (MonsterData*)self->data;
 	if (!self) return;
 	playerPos = player_get_position();
 
+	info = check_map_collision(self);
+
 	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
-		move_to_1d(self, playerPos);
+		if (world_to_grid(playerPos).y > world_to_grid(self->centerPos).y && info.bottom) {
+			move_to_2d(self, playerPos);
+		}
+		else {
+			move_to_1d(self, playerPos);
+		}
 	}
 	else {
 		self->velocity = self->knockback;

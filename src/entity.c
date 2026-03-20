@@ -112,7 +112,7 @@ void entity_think(Entity* self) {
 void entity_update(Entity* self) {
 	if (!self) return;
 
-	if(self->knockback.x==0 || self->knockback.y==0){
+	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
 		if (self->velocity.x > 0) {
 			self->forward = gfc_vector2d(1, 0);
 			self->flip = gfc_vector2d(0, 0);

@@ -56,7 +56,7 @@ void update_game(System* game) {
                 print_floor(game->floor);
             }
             for (i = 0; i < game->floor->width * game->floor->height; i++) {
-                if (game->floor->blueprint[i] == START) {
+                if (game->floor->blueprint[i] == RT_START) {
                     slog("Starting room found: Index: %i",i);
                     game->currentStage = game->floor->floorMap[i];
                     game->currentStage->room = room_load(game->currentStage->filename,get_room_type_string(game->currentStage->type));

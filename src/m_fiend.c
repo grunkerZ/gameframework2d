@@ -39,13 +39,20 @@ void fiend_think(Entity* self) {
 	GFC_Vector2D playerPos;
 	Entity* collider;
 	GFC_Vector2D projectileDir;
+	CollisionInfo info;
 	MonsterData* stats = (MonsterData*)self->data;
 	if (!self) return;
 
 	playerPos = player_get_position();
+	info = check_map_collision(self);
 
 	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
-		move_to_1d(self, playerPos);
+		if (world_to_grid(playerPos).y > world_to_grid(self->centerPos).y && info.bottom) {
+			move_to_2d(self, playerPos);
+		}
+		else {
+			move_to_1d(self, playerPos);
+		}
 
 		if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {
 			if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackSpeed) {

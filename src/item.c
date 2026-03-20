@@ -4,16 +4,23 @@
 
 typedef struct {
 	Item*		itemList;
+	Item*		activeItems;
+	Uint32		maxItems;
 }ItemManager;
 
 static ItemManager itemManager[ITEM_MAX] = {0};
 
 void item_manager_close();
 
-void item_manager_init() {
+void item_manager_init(Uint32 maxItems) {
 	itemManager->itemList = gfc_allocate_array(sizeof(Item), ITEM_MAX);
 	if (!itemManager->itemList) {
-		slog("failed to allocate %i entities", ITEM_MAX);
+		slog("failed to allocate %i items", ITEM_MAX);
+		return;
+	}
+	itemManager->activeItems = gfc_allocate_array(sizeof(Item), maxItems);
+	if (!itemManager->activeItems) {
+		slog("failed to allocate %i items", maxItems);
 		return;
 	}
 
@@ -92,20 +99,21 @@ void item_manager_close() {
 	slog("closed item system");
 }
 
-void item_new() {
+Item* item_new(ItemID id) {
 	int i;
-	if (!itemManager->itemList) {
+	if (!itemManager->activeItems || !itemManager->itemList) {
 		slog("item system has not been initialized");
 		return NULL;
 	}
-	for (i = 0; i < ITEM_MAX; i++) {
-		if (itemManager->itemList[i]._inuse) continue;
-		itemManager->itemList[i]._inuse = 1;
+	for (i = 0; i < itemManager->maxItems; i++) {
+		if (itemManager->activeItems[i]._inuse) continue;
+		itemManager->activeItems[i] = itemManager->itemList[id];
+		itemManager->activeItems[i]._inuse = 1;
 		//set defaults here
 
-		return &itemManager->itemList[i];
+		return &itemManager->activeItems[i];
 	}
-	slog("no more available entities");
+	slog("no more available items");
 	return NULL;
 }
 
@@ -164,6 +172,18 @@ Item* get_item(ItemID id) {
 
 	mods = &itemManager->itemList[id];
 	return mods;
+}
+
+ItemID get_random_item_id(ItemID type) {
+	switch (type) {
+	case (PICKUP):
+		return (rand() % (PICKUP_END - PICKUP - 1)) + (PICKUP + 1);
+		break;
+
+	case (ITEM):
+		return (rand() % (ITEM_END - ITEM - 1)) + (ITEM + 1);
+		break;
+	}
 }
 
 /*eol@eof*/
