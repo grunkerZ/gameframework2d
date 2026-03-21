@@ -136,10 +136,10 @@ Stage** floor_generate(Floor* floor) {
 			if (floor_get_room_type(floor, j, i) == RT_EMPTY) {
 				if (floor_count_neighbors(floor,j,i) == 1) {
 					int neighborType = RT_EMPTY;
-					if (floor_get_room_type(floor, j+1, i) != RT_EMPTY) neighborType = floor_get_room_type(floor, j, i);
-					else if (floor_get_room_type(floor, j-1, i) != RT_EMPTY) neighborType = floor_get_room_type(floor, j, i);
-					else if (floor_get_room_type(floor, j, i+1) != RT_EMPTY) neighborType = floor_get_room_type(floor, j, i);
-					else if (floor_get_room_type(floor, j, i-1) != RT_EMPTY) neighborType = floor_get_room_type(floor, j, i);
+					if (floor_get_room_type(floor, j+1, i) != RT_EMPTY) neighborType = floor_get_room_type(floor, j+1, i);
+					else if (floor_get_room_type(floor, j-1, i) != RT_EMPTY) neighborType = floor_get_room_type(floor, j-1, i);
+					else if (floor_get_room_type(floor, j, i+1) != RT_EMPTY) neighborType = floor_get_room_type(floor, j, i+1);
+					else if (floor_get_room_type(floor, j, i-1) != RT_EMPTY) neighborType = floor_get_room_type(floor, j, i-1);
 					
 					if(neighborType== RT_STANDARD){
 						validSpot.x = j;
@@ -798,8 +798,10 @@ void load_stage(Floor* floor, Stage* stage) {
 		if (stage->room->itemPos) {
 			for (i = 0; i < stage->room->numItems; i++) {
 				id = get_random_item_id(ITEM);
+				slog("item ID: %i", id);
 				item = item_create(id);
 				item->position = grid_to_world(stage->room->itemPos[i]);
+				slog("item placed at (%f,%f)", item->position.x, item->position.y);
 			}
 		}
 	}

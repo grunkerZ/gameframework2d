@@ -47,6 +47,7 @@ Entity* player_new() {
 	stats->baseDamage = 1;
 	stats->baseGravity = 1;
 	stats->baseDashDuration = 150;
+	stats->baseTempHealth = 0;
 
 	stats->maxHealth = stats->baseMaxHealth;
 	stats->jumps = stats->baseJumps;
@@ -60,6 +61,7 @@ Entity* player_new() {
 	stats->damage = stats->baseDamage;
 	self->gravity = stats->baseGravity;
 	stats->dashDuration = stats->baseDashDuration;
+	stats->tempHealth = stats->baseTempHealth;
 
 	stats->timeAtAttack = 0;
 	stats->timeAtDash = SDL_GetTicks64() - stats->dashCooldown;
@@ -221,12 +223,11 @@ GFC_Vector2D player_get_position() {
 void player_calculate_stats(Entity* self) {
 	PlayerData* stats = self->data;
 	Item* item;
-	int i;
+	int i, j;
 	//reset to base stats
 	stats->maxHealth = stats->baseMaxHealth;
 	stats->jumps = stats->baseJumps;
 	stats->moveSpeed = stats->baseMoveSpeed;
-	stats->health = stats->baseHealth;
 	stats->touchDamage = stats->baseTouchDamage;
 	stats->dashCooldown = stats->baseDashCooldown;
 	stats->fireRate = stats->baseFireRate;
@@ -243,23 +244,32 @@ void player_calculate_stats(Entity* self) {
 		if (stats->inventory[i] <= 0) continue;
 		item = get_item(i);
 
-		//stats
-		stats->maxHealth += item->maxHealthMod;
-		stats->jumps += item->jumpsMod;
-		stats->moveSpeed += item->moveSpeedMod;
-		stats->health += item->healthMod;
-		stats->touchDamage += item->touchDamageMod;
-		stats->dashCooldown += item->dashCooldownMod;
-		stats->fireRate += item->fireRateMod;
-		stats->range += item->rangeMod;
-		stats->shotSpeed += item->shotSpeedMod;
-		stats->damage += item->damageMod;
-		stats->dashDuration += item->dashDurationMod;
+		for (j = 0; j < stats->inventory[i];j++) {
+			//stats
+			stats->maxHealth += item->maxHealthMod;
+			stats->jumps += item->jumpsMod;
+			stats->moveSpeed += item->moveSpeedMod;
+			stats->health += item->healthMod;
+			stats->touchDamage += item->touchDamageMod;
+			stats->dashCooldown += item->dashCooldownMod;
+			stats->fireRate += item->fireRateMod;
+			stats->range += item->rangeMod;
+			stats->shotSpeed += item->shotSpeedMod;
+			stats->damage += item->damageMod;
+			stats->dashDuration += item->dashDurationMod;
+		}
 
 		//flags
 		if (!item->gravity) self->gravity = 0;
 		
 	}
+
+	return;
+}
+
+Entity* get_player_entity() {
+	if (!player) return NULL;
+	return player;
 }
 
 /*eol@eof*/

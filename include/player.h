@@ -22,6 +22,8 @@ typedef struct {
 	Uint8				range;					//the current projectile range of the player
 	Uint8				baseDamage;				//the base attack damage of the player
 	Uint8				damage;					//the current attack damage of the player
+	Uint8				baseTempHealth;			//the base temp health of the player
+	Uint8				tempHealth;				//the current temp health of the player
 	Uint8				grounded;				//1 if the player is currently touching the ground, 0 otherwise
 	Uint8				baseGravity;			//the base gravity flag of the player
 	Uint32				baseFireRate;			//the base fire rate of the player
@@ -53,5 +55,11 @@ GFC_Vector2D player_get_position();
 * @param self the player whos stats are being calculated
 */
 void player_calculate_stats(Entity* self);
+
+/*
+* @brief gets the player entity
+* @return NULL if there is no player entity, otherwise the player entity
+*/
+Entity* get_player_entity();
 
 #endif // !__PLAYER_H__

@@ -4,6 +4,7 @@
 #include "world.h"
 #include "projectile.h"
 #include "gf2d_draw.h"
+#include "player.h"
 
 #define CLAMP(x,min,max) ((x)<(min) ? (min) : ((x)> (max) ? (max) : (x)))
 
@@ -323,6 +324,21 @@ Uint8 apply_damage(Entity* target, Entity* attacker, Uint8 damage, Uint8 health)
 		target->timeAtStun = SDL_GetTicks64();
 		attacker->stun = 250;
 		attacker->timeAtStun = SDL_GetTicks64();
+	}
+
+	if (target->type == ET_PLAYER) {
+		int temp = ((PlayerData*)target->data)->tempHealth;
+		if(temp>0){
+			temp -= damage;
+			if (temp <= 0) {
+				damage = damage - ((PlayerData*)target->data)->tempHealth;
+				((PlayerData*)target->data)->tempHealth = 0;
+			}
+			else {
+				((PlayerData*)target->data)->tempHealth -= damage;
+				return health;
+			}
+		}
 	}
 
 	return health - damage;

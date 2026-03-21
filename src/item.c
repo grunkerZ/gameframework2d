@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "item.h"
 #include "camera.h"
+#include "player.h"
 
 typedef struct {
 	Item*		itemList;
@@ -13,6 +14,9 @@ static ItemManager itemManager[ITEM_MAX] = {0};
 void item_manager_close();
 
 void item_manager_init(Uint32 maxItems) {
+	int i;
+
+	itemManager->maxItems = maxItems;
 	itemManager->itemList = gfc_allocate_array(sizeof(Item), ITEM_MAX);
 	if (!itemManager->itemList) {
 		slog("failed to allocate %i items", ITEM_MAX);
@@ -22,6 +26,13 @@ void item_manager_init(Uint32 maxItems) {
 	if (!itemManager->activeItems) {
 		slog("failed to allocate %i items", maxItems);
 		return;
+	}
+
+	for (i = 0; i < ITEM_MAX; i++) {
+		itemManager->itemList[i]._inuse = 1;
+		itemManager->itemList[i].scale = gfc_vector2d(1, 1);
+		itemManager->itemList[i].frame = 0;
+		itemManager->itemList[i].presenting = 0;
 	}
 
 	itemManager->itemList[PICKUP_SHIELD_HALF].id = PICKUP_SHIELD_HALF;
@@ -108,7 +119,6 @@ Item* item_new() {
 	for (i = 0; i < itemManager->maxItems; i++) {
 		if (itemManager->activeItems[i]._inuse) continue;
 		itemManager->activeItems[i]._inuse = 1;
-		//set defaults here
 
 		return &itemManager->activeItems[i];
 	}
@@ -121,51 +131,111 @@ Item* item_create(ItemID id) {
 	if (!self) return NULL;
 
 	*self = itemManager->itemList[id];
-	self->_inuse = 1;
 
 	switch (id) {
 	case PICKUP_SHIELD_HALF:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/shield_half.png");
+		self->presentTime = 0;
 		break;
 	case PICKUP_SHIELD:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/shield.png");
+		self->presentTime = 0;
 		break;
 	case PICKUP_LIFE_HALF:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/life_half.png");
+		self->presentTime = 0;
 		break;
 	case PICKUP_LIFE:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/life.png");
+		self->presentTime = 0;
 		break;
 	case ITEM_HAIR_TRIGGER:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/hair_trigger.png");
+		self->presentTime = 2000;
 		break;
 	case ITEM_COMBAT_BOOTS:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/combat_boots.png");
+		self->presentTime = 2000;
 		break;
 	case ITEM_COMMANDO_BANDANA:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/bandana.png");
+		self->presentTime = 2000;
 		break;
 	case ITEM_REINFORCED_RIBCAGE:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/ribcage.png");
+		self->presentTime = 2000;
 		break;
 	case ITEM_SULFUR_TIPPED_ROUNDS:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/sulfur_tipped.png");
+		self->presentTime = 2000;
 		break;
 	case ITEM_LEAD_HALO:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/lead_halo.png");
+		self->presentTime = 2000;
 		break;
 	case ITEM_FORBIDDEN_KNOWLEDGE:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/forbidden_knowledge.png");
+		self->presentTime = 2000;
 		break;
 	}
+
+	self->collision.s.r.x = self->position.x;
+	self->collision.s.r.y = self->position.y;
+	self->collision.s.r.w = self->sprite->frame_w;
+	self->collision.s.r.h = self->sprite->frame_h;
 
 	return self;
 }
 
 void item_think(Item* self) {
+	Entity* player;
+	GFC_Vector2D screen;
+	GFC_Vector2D offset;
 	if (!self) return;
 
-	if (self->think)self->think(self);
+	player = get_player_entity();
+	PlayerData* playerStats = player->data;
+
+	if (self->pickedUp) {
+		if(!self->presenting){
+			self->timeAtPickup = SDL_GetTicks64();
+			playerStats->inventory[self->id]++;
+			player_calculate_stats(player);
+			self->scale = gfc_vector2d(4, 4);
+			self->presenting = 1;
+		}
+		if (self->presentTime>0) {
+			if (SDL_GetTicks64() - self->timeAtPickup > self->presentTime) {
+				item_free(self);
+				return;
+			}
+			else {
+				screen = camera_get_bounds();
+				offset = camera_get_offset();
+				self->position = offset;
+				self->position.x += (screen.x / 2);
+				self->position.y += (screen.x * 0.75);
+			}
+		}
+		else {
+			//pickup logic
+			if (self->id == PICKUP_LIFE || self->id == PICKUP_LIFE_HALF) {
+				if (playerStats->maxHealth == playerStats->health) {
+					self->pickedUp = 0;
+					return;
+				}
+				else {
+					playerStats->health += self->healthMod;
+					if (playerStats->health > playerStats->maxHealth) playerStats->health = playerStats->maxHealth;
+				}
+			}
+
+			if (self->id == PICKUP_SHIELD || self->id == PICKUP_SHIELD_HALF) playerStats->tempHealth += self->tempHealthMod;
+			item_free(self);
+			return;
+		}
+	}
+	return;
 }
 
 void item_free(Item* self) {
@@ -205,7 +275,7 @@ void item_draw(Item* self) {
 			NULL,
 			NULL,
 			NULL,
-			(Uint32)self->frame);
+			0);
 	}
 }
 
@@ -215,6 +285,7 @@ void item_manager_draw_all() {
 		if (!itemManager->activeItems[i]._inuse) continue;
 		item_draw(&itemManager->activeItems[i]);
 	}
+	return;
 }
 
 Item* get_item(ItemID id) {

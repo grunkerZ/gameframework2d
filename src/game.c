@@ -122,6 +122,7 @@ void update_game(System* game) {
 
         entity_manager_think_all();
         entity_manager_update_all();
+        item_manager_think_all();
 
         collider = check_entity_collision(game->player);
         if (collider && collider->type == ET_DOOR) {
@@ -207,8 +208,8 @@ void draw_game(System* game) {
         break;
     case GS_PLAYING:
         room_draw(game->currentStage->room);
-        item_manager_draw_all();
         entity_manager_draw_all();
+        item_manager_draw_all();
         camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
         break;
     }
@@ -247,6 +248,7 @@ int main(int argc, char * argv[])
     gf2d_sprite_init(1024);
     entity_manager_init(1024);
     SDL_ShowCursor(SDL_DISABLE);
+    item_manager_init(1024);
 
 
 

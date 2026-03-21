@@ -11,6 +11,10 @@ GFC_Vector2D camera_get_offset() {
 	return gfc_vector2d(-camera.bounds.x, -camera.bounds.y);
 }
 
+GFC_Vector2D camera_get_bounds() {
+	return gfc_vector2d(camera.bounds.w, camera.bounds.h);
+}
+
 void camera_set_position(GFC_Vector2D position) {
 	camera.bounds.x = position.x;
 	camera.bounds.y = position.y;

@@ -30,7 +30,11 @@ typedef enum {
 typedef struct {
 	Uint8			_inuse;								//1 if the item is in use, 0 otherwise
 	Uint8			id;									//the enum id of the item
-	Uint8			frame;								//the frame of the sprite
+	Uint32			frame;								//the frame of the sprite
+	Uint8			pickedUp;							//1 if the item has been picked up by the player, 0 otherwise
+	Uint8			presenting;							//1 if the item is currently presenting, 0 otherwise
+	Uint32			timeAtPickup;						//the time when the item was picked up
+	Uint32			presentTime;						//the amount of time the item shows its name and flavor text for
 	Uint8			gravity;							//the gravity mod of the item
 	int				healthMod;							//the health mod of the item
 	int				tempHealthMod;						//the temp health mod of the item
@@ -50,8 +54,7 @@ typedef struct {
 	GFC_Vector2D	position;							//the in world position of the item
 	GFC_Vector2D	scale;								//the scale of the item
 	GFC_Vector2D	flip;								//mirror of the item (horizontal,vertical)
-	void			(*think)(struct Item_S* self);		//the think function for every item
-	void			(*free)(struct Item_S* self);		//frees the item
+	GFC_Shape		collision;							//the collision box of the item
 }Item;
 
 /*

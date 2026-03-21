@@ -18,6 +18,12 @@ GFC_Vector2D camera_get_position();
 */
 GFC_Vector2D camera_get_offset();
 
+/*
+* @brief get the width and height of the camera
+* @return the (width, height) of the camera
+*/
+GFC_Vector2D camera_get_bounds();
+
 /**
 * @brief set the cameras position in world space
 */
