@@ -39,7 +39,7 @@ typedef struct {
 	int				healthMod;							//the health mod of the item
 	int				tempHealthMod;						//the temp health mod of the item
 	int				maxHealthMod;						//the max health mod of the item
-	int				rangeMod;							//the range mod of the item
+	Uint32			rangeMod;							//the range mod of the item
 	int				damageMod;							//the damage mod of the item
 	int				moveSpeedMod;						//the move speed mod of the item
 	int				fireRateMod;						//the fire rate mod of the item

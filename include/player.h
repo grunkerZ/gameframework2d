@@ -9,7 +9,7 @@ typedef struct {
 	Uint8				baseMaxHealth;			//the base max health of the player
 	Uint8				maxHealth;				//the current max health of the player
 	Uint8				baseHealth;				//the base health of the player
-	Uint8				health;					//the current health of the player
+	int				    health;					//the current health of the player
 	Uint8				baseMoveSpeed;			//the base move speed of the character
 	Uint8				moveSpeed;				//the current move speed of the character
 	Uint8				baseTouchDamage;		//the base contact damage of the player

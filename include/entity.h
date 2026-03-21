@@ -115,9 +115,9 @@ void entity_manager_free_all();
 * @param attacker the entity applying the damage
 * @param damage the damage to be taken
 * @param the target's health
-* @return the unmodified health value if the target is invincible, otherwise health - damage
+* @return the unmodified health value if the target is invincible or if shield absorbs all the damage, otherwise health - damage
 */
-Uint8 apply_damage(Entity* target, Entity* attacker, Uint8 damage, Uint8 health);
+int apply_damage(Entity* target, Entity* attacker, Uint8 damage, int health);
 
 /*
 * @brief sets the entity's center position

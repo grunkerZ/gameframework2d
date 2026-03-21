@@ -16,7 +16,7 @@ typedef enum {
 }MonsterType;
 
 typedef struct {
-	Uint8			health;				//the health of the monster
+	int				health;				//the health of the monster
 	Uint8			damage;				//the damage of the monsters attack
 	Uint8			sentry;				//1 if the monster should patrol its platform, 0 otherwise
 	Uint8			touchDamage;		//the damage delt to valid colliding entities
