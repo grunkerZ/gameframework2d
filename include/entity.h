@@ -151,4 +151,12 @@ void entity_setup_collision_box(Entity* self, GFC_ShapeTypes shape, float tolera
 */
 void entity_draw_collision(Entity* self);
 
+/*
+* @brief gets the entities that collide with a shape
+* @param shape the area to check
+* @param ignored an entity to ignore
+* @return a GFC_List of all entities whos collision box touch the shape
+*/
+GFC_List* get_entities_in_shape(GFC_Shape shape, Entity* ignored);
+
 #endif // !__ENTITY_H__

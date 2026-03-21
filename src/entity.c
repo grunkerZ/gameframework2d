@@ -421,4 +421,21 @@ void entity_draw_collision(Entity* self) {
 	gf2d_draw_shape(self->collision, color, offset);
 }
 
+GFC_List* get_entities_in_shape(GFC_Shape shape, Entity* ignored) {
+	int i;
+	Entity* other;
+	GFC_List* entities = gfc_list_new();
+
+	for (i = 0; i < entityManager.entityMax; i++) {
+		other = &entityManager.entityList[i];
+		if (!other->_inuse || other == ignored) continue;
+
+		if (gfc_shape_overlap(shape, other->collision)) {
+			gfc_list_append(entities, other);
+		}
+	}
+
+	return entities;
+}
+
 /*eol@eof*/

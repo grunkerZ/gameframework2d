@@ -18,14 +18,17 @@ typedef struct {
 	Uint8				jumps;					//the current mid air jumps of the player
 	Uint8				baseShotSpeed;			//the base shot speed of the player
 	Uint8				shotSpeed;				//the current shot speed of the player
-	Uint8				baseRange;				//the base projectile range of the player
-	Uint8				range;					//the current projectile range of the player
+	Uint32				baseRange;				//the base projectile range of the player
+	Uint32				range;					//the current projectile range of the player
 	Uint8				baseDamage;				//the base attack damage of the player
 	Uint8				damage;					//the current attack damage of the player
 	Uint8				baseTempHealth;			//the base temp health of the player
 	Uint8				tempHealth;				//the current temp health of the player
 	Uint8				grounded;				//1 if the player is currently touching the ground, 0 otherwise
 	Uint8				baseGravity;			//the base gravity flag of the player
+	Uint8				slamming;				//1 if the player is actively slamming, 0 otherwise
+	Uint8				baseSlamDamage;			//the base damage of the slam
+	Uint8				slamDamage;				//current the damage of the slam
 	Uint32				baseFireRate;			//the base fire rate of the player
 	Uint32				fireRate;				//the current fire rate of the palyer
 	Uint32				baseDashCooldown;		//the base dash cooldown of the player
@@ -34,6 +37,10 @@ typedef struct {
 	Uint32				dashDuration;			//the current dash duration of the player
 	Uint32				timeAtDash;				//the time when the player started dashing
 	Uint32				timeAtAttack;			//the time when the player last attacked
+	Uint32				timeAtSlam;				//the time when the player last slamed
+	Uint32				slamCooldown;			//the time before the player can slam again
+	Uint32				timeAtShove;			//the time when the player last shoved
+	Uint32				shoveCooldown;			//the time before the player can shove
 	ProjectileData		projectileStats;		//the stats of the projectile shot
 	int					inventory[ITEM_MAX];	//the item inventory of the player
 }PlayerData;

@@ -221,9 +221,8 @@ void item_think(Item* self) {
 			else {
 				screen = camera_get_bounds();
 				offset = camera_get_offset();
-				self->position = offset;
-				self->position.x += (screen.x / 2) - ((self->sprite->frame_w * self->scale.x) / 2);
-				self->position.y += (screen.y * 0.75) - ((self->sprite->frame_h * self->scale.y) / 2);
+				self->position.x = (screen.x / 2) - ((self->sprite->frame_w * self->scale.x) / 2) - offset.x;
+				self->position.y = (screen.y * 0.1) - offset.y;
 			}
 		}
 		else if (self->pickedUp && !self->presenting) {

@@ -48,6 +48,7 @@ Entity* player_new() {
 	stats->baseGravity = 1;
 	stats->baseDashDuration = 150;
 	stats->baseTempHealth = 0;
+	stats->baseSlamDamage = 1;
 
 	stats->maxHealth = stats->baseMaxHealth;
 	stats->jumps = stats->baseJumps;
@@ -62,9 +63,15 @@ Entity* player_new() {
 	self->gravity = stats->baseGravity;
 	stats->dashDuration = stats->baseDashDuration;
 	stats->tempHealth = stats->baseTempHealth;
+	stats->slamDamage = stats->baseSlamDamage;
+
+
 
 	stats->timeAtAttack = 0;
 	stats->timeAtDash = SDL_GetTicks64() - stats->dashCooldown;
+	stats->timeAtSlam = 0;
+	stats->timeAtShove = 0;
+	stats->slamCooldown = 5000;
 
 	self->think = player_think;
 	self->update = player_update;
@@ -102,8 +109,6 @@ void player_think(Entity* self) {
 			dir.x = -1;
 		}
 		gfc_vector2d_normalize(&dir);
-
-		dir.x *= stats->moveSpeed;
 		if (keys[SDL_SCANCODE_W]) {
 			if (stats->grounded) dir.y = -7;
 			if (!self->gravity) dir.y = -1;
@@ -112,6 +117,11 @@ void player_think(Entity* self) {
 				stats->jumps -= 1;
 			}
 		}
+
+		
+		dir.x *= stats->moveSpeed;
+		if (!self->gravity) dir.y *= stats->moveSpeed;
+
 		if(SDL_GetTicks64() - stats->timeAtDash > stats->dashDuration) self->velocity.x = dir.x;
 
 		if (!self->gravity) self->velocity.y = dir.y;
@@ -122,6 +132,7 @@ void player_think(Entity* self) {
 			//slog("COOLDOWN: %llu | TIMEATDASH %llu | NOW-THEN %llu", stats->dashCooldown, stats->timeAtDash, SDL_GetTicks64() - stats->timeAtDash);
 			if (SDL_GetTicks64() - stats->timeAtDash > stats->dashCooldown) {
 				//slog("Check Passed, before velocity: (%f,%f)", self->velocity.x, self->velocity.y);
+				self->timeAtDamaged = SDL_GetTicks64();
 				self->velocity.x += self->forward.x * 15;
 				//slog("Check Passed, after velocity: (%f,%f)", self->velocity.x, self->velocity.y);
 				stats->timeAtDash = SDL_GetTicks64();
@@ -130,19 +141,57 @@ void player_think(Entity* self) {
 
 		}
 
+		if (keys[SDL_SCANCODE_S] && keys[SDL_SCANCODE_SPACE]) {
+			if (SDL_GetTicks64() - stats->timeAtSlam > stats->slamCooldown) {
+				self->timeAtDamaged = SDL_GetTicks64();
+				self->velocity.y = 15;
+				stats->timeAtSlam = SDL_GetTicks64();
+				stats->slamming = 1;
+			}
+		}
+
 	}
 	else {
 		self->velocity = self->knockback;
 	}
 
-	if(stats->touchDamage>0){
-		collider = check_entity_collision(self);
-		if (collider) {
-			if (collider->type == ET_MONSTER) {
+	collider = check_entity_collision(self);
+	if (collider) {
+		if (collider->type == ET_MONSTER) {
+			if (stats->slamming && self->centerPos.y < collider->centerPos.y) {
+				GFC_Shape shockwave;
+				GFC_List* hitList;
+				Entity* hitEntity;
+				int i;
+
+				shockwave.type = ST_RECT;
+				shockwave.s.r.w = self->width + 64;
+				shockwave.s.r.h = 48;
+				shockwave.s.r.x = self->centerPos.x - (shockwave.s.r.w / 2);
+				shockwave.s.r.y = self->centerPos.y;
+
+				hitList = get_entities_in_shape(shockwave, self);
+
+				if (hitList) {
+					for (i = 0; i < hitList->count; i++) {
+						hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
+						if (hitEntity->type == ET_MONSTER) {
+							((MonsterData*)hitEntity->data)->health = apply_damage(hitEntity, self, stats->slamDamage, ((MonsterData*)hitEntity->data)->health);
+							if(hitEntity!=collider) hitEntity->velocity.y = -5;
+						}
+					}
+					gfc_list_delete(hitList);
+				}
+				stats->slamming = 0;
+				self->timeAtDamaged = SDL_GetTicks64();
+			}
+			else if(stats->touchDamage>0){
 				((MonsterData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((MonsterData*)collider->data)->health);
 			}
+			
 		}
 	}
+	
 	
 
 	info = check_map_collision(self);
@@ -191,6 +240,38 @@ void player_think(Entity* self) {
 		gfc_vector2d_normalize(&projectileDir);
 		gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
 	}
+
+	if (stats->slamming) {
+		stats->timeAtSlam = SDL_GetTicks64();
+		if (info.bottom) {
+			GFC_Shape shockwave;
+			GFC_List* hitList;
+			Entity* hitEntity;
+			int i;
+
+			shockwave.type = ST_RECT;
+			shockwave.s.r.w = self->width + 64;
+			shockwave.s.r.h = 48;
+			shockwave.s.r.x = self->centerPos.x - (shockwave.s.r.w / 2);
+			shockwave.s.r.y = self->centerPos.y;
+
+			hitList = get_entities_in_shape(shockwave,self);
+
+			if (hitList) {
+				for (i = 0; i < hitList->count; i++) {
+					hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
+					if (hitEntity->type == ET_MONSTER) {
+						((MonsterData*)hitEntity->data)->health = apply_damage(hitEntity, self, stats->slamDamage, ((MonsterData*)hitEntity->data)->health);
+						hitEntity->velocity.y = -5;
+					}
+				}
+				gfc_list_delete(hitList);
+			}
+
+			stats->slamming = 0;
+		}
+	}
+
 }
 
 void player_update(Entity* self) {
@@ -224,6 +305,20 @@ void player_calculate_stats(Entity* self) {
 	PlayerData* stats = self->data;
 	Item* item;
 	int i, j;
+
+	slog("===PLAYER STATS UPDATED===");
+	slog("PREVIOUS STATS:");
+	slog("Max Health: %u", stats->maxHealth);
+	slog("Mid Air Jumps: %u", stats->jumps);
+	slog("Touch Damage: %u", stats->touchDamage);
+	slog("Dash Cooldown: %lu", stats->dashCooldown);
+	slog("Fire Rate: %lu", stats->fireRate);
+	slog("Range: %lu", stats->range);
+	slog("Shot Speed: %u", stats->shotSpeed);
+	slog("Projectile Damage: %u", stats->damage);
+	slog("Flight: %u", self->gravity);
+	slog("Dash Duration: %lu", stats->dashDuration);
+
 	//reset to base stats
 	stats->maxHealth = stats->baseMaxHealth;
 	stats->jumps = stats->baseJumps;
@@ -264,6 +359,18 @@ void player_calculate_stats(Entity* self) {
 		
 	}
 
+	slog("UPDATED STATS:");
+	slog("Max Health: %u", stats->maxHealth);
+	slog("Mid Air Jumps: %u", stats->jumps);
+	slog("Touch Damage: %u", stats->touchDamage);
+	slog("Dash Cooldown: %lu", stats->dashCooldown);
+	slog("Fire Rate: %lu", stats->fireRate);
+	slog("Range: %u", stats->range);
+	slog("Shot Speed: %u", stats->shotSpeed);
+	slog("Projectile Damage: %u", stats->damage);
+	slog("Flight: %u", self->gravity);
+	slog("Dash Duration: %lu", stats->dashDuration);
+	slog("===END STAT UPDATE===");
 	return;
 }
 
