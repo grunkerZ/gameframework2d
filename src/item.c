@@ -178,7 +178,7 @@ Item* item_create(ItemID id) {
 		self->presentTime = 2000;
 		break;
 	}
-
+	self->collision.type = ST_RECT;
 	self->collision.s.r.x = self->position.x;
 	self->collision.s.r.y = self->position.y;
 	self->collision.s.r.w = self->sprite->frame_w;
@@ -191,12 +191,21 @@ void item_think(Item* self) {
 	Entity* player;
 	GFC_Vector2D screen;
 	GFC_Vector2D offset;
+	int i;
 	if (!self) return;
 
 	player = get_player_entity();
 	PlayerData* playerStats = player->data;
 
-	if (self->pickedUp) {
+	self->collision.s.r.x = self->position.x;
+	self->collision.s.r.y = self->position.y;
+
+	if (gfc_shape_overlap(self->collision, player->collision)) {
+		slog("Player touched an item");
+		if(!self->presenting) self->pickedUp = 1;
+	}
+
+	if (self->pickedUp && self->presentTime > 0) {
 		if(!self->presenting){
 			self->timeAtPickup = SDL_GetTicks64();
 			playerStats->inventory[self->id]++;
@@ -213,11 +222,11 @@ void item_think(Item* self) {
 				screen = camera_get_bounds();
 				offset = camera_get_offset();
 				self->position = offset;
-				self->position.x += (screen.x / 2);
-				self->position.y += (screen.x * 0.75);
+				self->position.x += (screen.x / 2) - ((self->sprite->frame_w * self->scale.x) / 2);
+				self->position.y += (screen.y * 0.75) - ((self->sprite->frame_h * self->scale.y) / 2);
 			}
 		}
-		else {
+		else if (self->pickedUp && !self->presenting) {
 			//pickup logic
 			if (self->id == PICKUP_LIFE || self->id == PICKUP_LIFE_HALF) {
 				if (playerStats->maxHealth == playerStats->health) {
