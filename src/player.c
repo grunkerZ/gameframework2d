@@ -64,13 +64,14 @@ Entity* player_new() {
 	stats->dashDuration = stats->baseDashDuration;
 	stats->tempHealth = stats->baseTempHealth;
 	stats->slamDamage = stats->baseSlamDamage;
-
+	
 
 
 	stats->timeAtAttack = 0;
 	stats->timeAtDash = SDL_GetTicks64() - stats->dashCooldown;
 	stats->timeAtSlam = 0;
 	stats->timeAtShove = 0;
+	stats->shoveCooldown = 3000;
 	stats->slamCooldown = 5000;
 
 	self->think = player_think;
@@ -141,12 +142,52 @@ void player_think(Entity* self) {
 
 		}
 
-		if (keys[SDL_SCANCODE_S] && keys[SDL_SCANCODE_SPACE]) {
+		else if (keys[SDL_SCANCODE_S] && keys[SDL_SCANCODE_SPACE]) {
 			if (SDL_GetTicks64() - stats->timeAtSlam > stats->slamCooldown) {
 				self->timeAtDamaged = SDL_GetTicks64();
 				self->velocity.y = 15;
 				stats->timeAtSlam = SDL_GetTicks64();
 				stats->slamming = 1;
+			}
+		}
+
+		else if (keys[SDL_SCANCODE_SPACE]) {
+			GFC_Shape shoveBox;
+			GFC_List* hitList;
+			Entity* hitEntity;
+			GFC_Vector2D direction;
+			int i;
+			slog("shove key pressed");
+			slog("time difference: %llu | cooldown: %lu", SDL_GetTicks64() - stats->timeAtShove, stats->shoveCooldown);
+
+			if (SDL_GetTicks64() - stats->timeAtShove > stats->shoveCooldown) {
+				slog("time check passed, making box");
+				shoveBox.type = ST_RECT;
+				shoveBox.s.r.w = 96;
+				shoveBox.s.r.h = 128;
+				shoveBox.s.r.x = self->centerPos.x;
+				if (self->forward.x < 0) shoveBox.s.r.x -= 96;
+				shoveBox.s.r.y = self->position.y - 32;
+
+
+				hitList = get_entities_in_shape(shoveBox, self);
+
+				if (hitList) {
+					for (i = 0; i < hitList->count; i++) {
+						hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
+						if (hitEntity->type == ET_MONSTER) {
+							gfc_vector2d_sub(direction, hitEntity->centerPos, self->centerPos);
+							gfc_vector2d_normalize(&direction);
+							gfc_vector2d_scale(hitEntity->knockback, direction, 5);
+
+							hitEntity->stun = 250;
+							hitEntity->timeAtStun = SDL_GetTicks64();
+						}
+					}
+					gfc_list_delete(hitList);
+				}
+
+				stats->timeAtShove = SDL_GetTicks64();
 			}
 		}
 
@@ -177,7 +218,7 @@ void player_think(Entity* self) {
 						hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
 						if (hitEntity->type == ET_MONSTER) {
 							((MonsterData*)hitEntity->data)->health = apply_damage(hitEntity, self, stats->slamDamage, ((MonsterData*)hitEntity->data)->health);
-							if(hitEntity!=collider) hitEntity->velocity.y = -5;
+							if(hitEntity!=collider) hitEntity->knockback.y = -5;
 						}
 					}
 					gfc_list_delete(hitList);
@@ -262,7 +303,8 @@ void player_think(Entity* self) {
 					hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
 					if (hitEntity->type == ET_MONSTER) {
 						((MonsterData*)hitEntity->data)->health = apply_damage(hitEntity, self, stats->slamDamage, ((MonsterData*)hitEntity->data)->health);
-						hitEntity->velocity.y = -5;
+						hitEntity->knockback.y = -5;
+
 					}
 				}
 				gfc_list_delete(hitList);
