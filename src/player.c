@@ -71,8 +71,14 @@ Entity* player_new() {
 	stats->timeAtDash = SDL_GetTicks64() - stats->dashCooldown;
 	stats->timeAtSlam = 0;
 	stats->timeAtShove = 0;
+	stats->timeAtPull = 0;
+	stats->pullDuration = 0;
+	stats->pullCooldown = 1000;
 	stats->shoveCooldown = 3000;
 	stats->slamCooldown = 5000;
+
+	stats->hookState = 0;
+	stats->hookedEntity = NULL;
 
 	self->think = player_think;
 	self->update = player_update;
@@ -188,6 +194,12 @@ void player_think(Entity* self) {
 				}
 
 				stats->timeAtShove = SDL_GetTicks64();
+			}
+		}
+
+		else if (keys[SDL_SCANCODE_F]) {
+			if (SDL_GetTicks64() - stats->timeAtPull > stats->pullCooldown) {
+				stats->hookState = 1;
 			}
 		}
 

@@ -438,4 +438,23 @@ GFC_List* get_entities_in_shape(GFC_Shape shape, Entity* ignored) {
 	return entities;
 }
 
+Entity* get_closest_entity_to(GFC_Vector2D position, EntityType type, float maxRange) {
+	int i;
+	Entity* closest = NULL;
+	for (i = 0; i < entityManager.entityMax; i++) {
+		if (!entityManager.entityList[i]._inuse || entityManager.entityList[i].type != type) continue;
+		if (maxRange) {
+			if (!gfc_vector2d_distance_between_less_than(entityManager.entityList[i].centerPos,position,maxRange)) continue;
+		}
+
+		if (!closest) closest = &entityManager.entityList[i];
+		else if (gfc_vector2d_magnitude_between(entityManager.entityList[i].centerPos, position) < gfc_vector2d_magnitude_between(closest->centerPos, position)) {
+			closest = &entityManager.entityList[i];
+		}
+		
+	}
+
+	return closest;
+}
+
 /*eol@eof*/

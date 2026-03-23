@@ -159,4 +159,13 @@ void entity_draw_collision(Entity* self);
 */
 GFC_List* get_entities_in_shape(GFC_Shape shape, Entity* ignored);
 
+/*
+* @brief get the closest entity of a certain type to a point
+* @param position the point to check distance
+* @param type the type of entity
+* @param maxRange the maximum range to check, NULL if no max range
+* @returns NULL if no valid entity, otherwise the closest entity
+*/
+Entity* get_closest_entity_to(GFC_Vector2D position, EntityType type, float maxRange);
+
 #endif // !__ENTITY_H__
