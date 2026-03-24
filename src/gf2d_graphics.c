@@ -404,4 +404,15 @@ SDL_Surface *gf2d_graphics_screen_convert(SDL_Surface **surface)
     return convert;
 }
 
+void gf2d_graphics_toggle_fullscreen() {
+    Uint32 currentFlags = SDL_GetWindowFlags(gf2d_graphics.main_window);
+
+    if (currentFlags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        SDL_SetWindowFullscreen(gf2d_graphics.main_window, 0);
+    }
+    else {
+        SDL_SetWindowFullscreen(gf2d_graphics.main_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    }
+}
+
 /*eol@eof*/

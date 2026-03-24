@@ -25,6 +25,7 @@ typedef struct {
     float               mf;                 //the mouse frame
     Uint8               done;               //1 when game quits, 0 otherwise
     Uint8               paused;             //1 when game is paused, 0 otherwise
+    Uint8               debug;
     GameState           state;              //tracks the current game state
     const Uint8*        keys;               //tracks the keys pressed
     GenericMenu*        mainMenu;           //the main menu pointer
@@ -195,7 +196,7 @@ void draw_game(System* game) {
         break;
     case GS_PAUSED:
         room_draw(game->currentStage->room);
-        entity_manager_draw_all();
+        entity_manager_draw_all(game->debug);
         camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
         menu_draw(game->pauseMenu);
         gf2d_sprite_draw(
@@ -211,7 +212,7 @@ void draw_game(System* game) {
         break;
     case GS_PLAYING:
         room_draw(game->currentStage->room);
-        entity_manager_draw_all();
+        entity_manager_draw_all(game->debug);
         item_manager_draw_all();
         camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
         console_draw();
@@ -282,6 +283,14 @@ int main(int argc, char * argv[])
 
             if (event.type == SDL_QUIT) {
                 game->done = 1;
+            }
+            if (event.type == SDL_KEYDOWN) {
+                if (event.key.repeat == 0 && event.key.keysym.sym == SDLK_F11) {
+                    gf2d_graphics_toggle_fullscreen();
+                }
+                else if (event.key.repeat == 0 && event.key.keysym.sym == SDLK_F6) {
+                    game->debug = !game->debug;
+                }
             }
         }
 

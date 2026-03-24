@@ -175,12 +175,12 @@ void entity_draw(Entity* self) {
 	if (self->draw)self->draw(self);
 }
 
-void entity_manager_draw_all() {
+void entity_manager_draw_all(Uint8 debug) {
 	int i;
 	for (i = 0; i < entityManager.entityMax; i++) {
 		if (!entityManager.entityList[i]._inuse) continue;
 		entity_draw(&entityManager.entityList[i]);
-		entity_draw_collision(&entityManager.entityList[i]);
+		if (debug) entity_draw_collision(&entityManager.entityList[i]);
 	}
 }
 

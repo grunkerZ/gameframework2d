@@ -425,6 +425,7 @@ void player_think(Entity* self) {
 }
 
 void player_update(Entity* self) {
+	const Uint8* keys = SDL_GetKeyboardState(NULL);
 	if (!self) return;
 	PlayerData* stats = (PlayerData*)self->data;
 	GFC_Vector2D offset = camera_get_offset();
@@ -434,6 +435,15 @@ void player_update(Entity* self) {
 	gfc_vector2d_add(self->centerPos, self->centerPos, self->velocity);
 
 	set_center(self, self->centerPos);
+
+	if (keys[SDL_SCANCODE_LEFT]) {
+		self->forward = gfc_vector2d(-1, 0);
+		self->flip = gfc_vector2d(1, 0);
+	}
+	else if (keys[SDL_SCANCODE_RIGHT]) {
+		self->forward = gfc_vector2d(1, 0);
+		self->flip = gfc_vector2d(0, 0);
+	}
 }
 
 void player_free(Entity* self) {

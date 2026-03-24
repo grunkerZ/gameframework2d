@@ -72,8 +72,9 @@ Entity* entity_new();
 
 /**
 * @brief draw all active entities
+* @param debug a flag for optional debug settings
 */
-void entity_manager_draw_all();
+void entity_manager_draw_all(Uint8 debug);
 
 /**
 * @brief runs think for all entities
