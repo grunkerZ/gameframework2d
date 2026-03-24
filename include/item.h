@@ -35,7 +35,7 @@ typedef struct {
 	Uint8			presenting;							//1 if the item is currently presenting, 0 otherwise
 	Uint32			timeAtPickup;						//the time when the item was picked up
 	Uint32			presentTime;						//the amount of time the item shows its name and flavor text for
-	Uint8			gravity;							//the gravity mod of the item
+	Uint8			flight;								//the gravity mod of the item
 	int				healthMod;							//the health mod of the item
 	int				tempHealthMod;						//the temp health mod of the item
 	int				maxHealthMod;						//the max health mod of the item
@@ -48,8 +48,8 @@ typedef struct {
 	int				shotSpeedMod;						//the shot speed mod of the item
 	Uint32			dashCooldownMod;					//the dash cooldown mod of the item
 	Uint32			dashDurationMod;					//the dash duration mod of the item
-	GFC_TextLine	name;								//the name of the item
-	GFC_TextLine	flavor;								//the flavor text of the item
+	const char*			name;								//the name of the item
+	const char*			flavor;								//the flavor text of the item
 	Sprite*			sprite;								//the sprite of the item
 	GFC_Vector2D	position;							//the in world position of the item
 	GFC_Vector2D	scale;								//the scale of the item

@@ -183,6 +183,12 @@
     <ClCompile Include="..\src\door.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\console.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\simple_font.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\entity.h">
@@ -327,6 +333,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\door.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\simple_font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

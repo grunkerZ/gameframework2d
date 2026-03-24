@@ -9,6 +9,8 @@
 #include "camera.h"
 #include "simple_ui.h"
 #include "item.h"
+#include "simple_font.h"
+#include "console.h"
 
 typedef enum {
     GS_MAINMENU,
@@ -205,14 +207,18 @@ void draw_game(System* game) {
             NULL,
             &mouseGFC_Color,
             (int)game->mf);
+        console_draw();
         break;
     case GS_PLAYING:
         room_draw(game->currentStage->room);
         entity_manager_draw_all();
         item_manager_draw_all();
         camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
+        console_draw();
         break;
     }
+
+    
 
     gf2d_graphics_next_frame();
 }
@@ -242,13 +248,15 @@ int main(int argc, char * argv[])
         1200,
         720,
         gfc_vector4d(0,0,0,255),
-        1);
+        0);
     camera_set_dimension(gfc_vector2d(1200, 720));
     gf2d_graphics_set_frame_delay(16);
     gf2d_sprite_init(1024);
     entity_manager_init(1024);
     SDL_ShowCursor(SDL_DISABLE);
     item_manager_init(1024);
+    simple_font_init();
+    console_init();
 
 
 
@@ -266,8 +274,20 @@ int main(int argc, char * argv[])
     /*main game loop*/
     while(!game->done)
     {
+        SDL_Event event;
+        
+        while (SDL_PollEvent(&event)) {
+            console_pass_event(&event);
+
+            if (event.type == SDL_QUIT) {
+                game->done = 1;
+            }
+        }
+
         SDL_PumpEvents();   // update SDL's internal event structures
         
+
+
         game->keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
 
         SDL_GetMouseState(&game->mx, &game->my);
@@ -301,6 +321,8 @@ int main(int argc, char * argv[])
     menu_free(game->deathMenu);
     menu_free(game->pauseMenu);
     free(game);
+    console_free();
+    simple_font_close();
     slog("---==== END ====---");
     return 0;
 }

@@ -2,11 +2,17 @@
 #include "item.h"
 #include "camera.h"
 #include "player.h"
+#include "simple_font.h"
+#include "gfc_string.h"
 
 typedef struct {
 	Item*		itemList;
 	Item*		activeItems;
 	Uint32		maxItems;
+	Font*		nameFont;
+	Font*		nameBorder;
+	Font*		flavorFont;
+	Font*		flavorBorder;
 }ItemManager;
 
 static ItemManager itemManager[ITEM_MAX] = {0};
@@ -14,6 +20,7 @@ static ItemManager itemManager[ITEM_MAX] = {0};
 void item_manager_close();
 
 void item_manager_init(Uint32 maxItems) {
+	
 	int i;
 
 	itemManager->maxItems = maxItems;
@@ -90,10 +97,12 @@ void item_manager_init(Uint32 maxItems) {
 	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].maxHealthMod = -1;
 	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].damageMod = 2;
 	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].fireRateMod = -250;
-	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].gravity = 0;
+	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].flight = 1;
 
-
-
+	itemManager->nameFont = simple_font_load("fonts/oldEnglish.ttf", 48);
+	itemManager->nameBorder = simple_font_load("fonts/oldEnglish.ttf", 50);
+	itemManager->flavorFont = simple_font_load("fonts/KnightsQuest.ttf", 32);
+	itemManager->flavorBorder = simple_font_load("fonts/KnightsQuest.ttf", 34);
 
 	atexit(item_manager_close);
 	slog("initialized item system");
@@ -271,6 +280,10 @@ void item_manager_free_all() {
 
 void item_draw(Item* self) {
 	GFC_Vector2D offset;
+	GFC_String* title;
+	GFC_String* flavor;
+	SDL_Color textColor = { 255,255,255,255 };
+	SDL_Color borderColor = { 0,0,0,255 };
 	if (!self) return;
 	offset = camera_get_offset();
 	if (self->sprite) {
@@ -284,6 +297,17 @@ void item_draw(Item* self) {
 			NULL,
 			NULL,
 			0);
+	}
+
+	if (self->presenting) {
+	/*	title = gfc_string_new();
+		flavor = gfc_string_new();
+		gfc_string_appendf(title, self->name);
+		gfc_string_appendf(flavor, self->flavor);
+
+		if (itemManager->nameFont) {
+			simple_font_draw(itemManager->nameBorder,title,)
+		}*/
 	}
 }
 

@@ -489,12 +489,12 @@ void player_calculate_stats(Entity* self) {
 	stats->dashDuration = stats->baseDashDuration;
 
 
-
+	slog("current inventory:");
 	//check inventory and add buffs and set flags
 	for (i = 0; i < ITEM_MAX; i++) {
 		if (stats->inventory[i] <= 0) continue;
 		item = get_item(i);
-
+		slog("Item ID: %i | Amount: %i", i, stats->inventory[i]);
 		for (j = 0; j < stats->inventory[i];j++) {
 			//stats
 			stats->maxHealth += item->maxHealthMod;
@@ -511,7 +511,7 @@ void player_calculate_stats(Entity* self) {
 		}
 
 		//flags
-		if (!item->gravity) self->gravity = 0;
+		if (item->flight) self->gravity = 0;
 		
 	}
 
@@ -524,7 +524,7 @@ void player_calculate_stats(Entity* self) {
 	slog("Range: %u", stats->range);
 	slog("Shot Speed: %u", stats->shotSpeed);
 	slog("Projectile Damage: %u", stats->damage);
-	slog("Flight: %u", self->gravity);
+	slog("Flight: %u", !self->gravity);
 	slog("Dash Duration: %lu", stats->dashDuration);
 	slog("===END STAT UPDATE===");
 	return;
