@@ -33,27 +33,27 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	self->scale = gfc_vector2d(1, 1);
 	self->flip = gfc_vector2d(0, 0);
 	self->sprite = gf2d_sprite_load_image("images/placeholder/projectile.png");
-	self->width = self->sprite->frame_w;
-	self->height = self->sprite->frame_h;
+	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
+	entity_setup_collision_box(self, ST_CIRCLE, 0);
+	self->centerAnchor = gfc_vector2d(self->width / 2, self->height / 2);
 
 	selfStats->origin = owner->centerPos;
 	self->position = selfStats->origin;
+	set_center(self, gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)));
 	
 	slog("New Projectile Created at (%f,%f)",self->position.x,self->position.y);
 	slog("Owner Position at (%f,%f)",owner->position.x,owner->position.y);
 	
 	selfStats->parent = owner;
 	
-	self->collision.type = ST_CIRCLE;
-	self->collision.s.c.x = self->position.x + (self->sprite->frame_w / 2);
-	self->collision.s.c.y = self->position.y + (self->sprite->frame_h / 2);
-	self->collision.s.c.r = self->sprite->frame_w / 2;
+	
 	self->type = ET_PROJECTILE;
 
 	selfStats->timeAtSpawn = SDL_GetTicks64();
 	selfStats->spawnImmunity = 300;
 	selfStats->exploded = 0;
 	selfStats->team = selfStats->parent->type;
+	selfStats->maxFrame = 0;
 
 	self->think = projectile_think;
 	self->update = projectile_update;
@@ -186,16 +186,22 @@ void projectile_think(Entity* self) {
 }
 
 void projectile_update(Entity* self) {
+	GFC_Vector2D rotateVector;
 	GFC_Vector2D offset = camera_get_offset();
 	ProjectileData* stats = self->data;
 	if (gfc_vector2d_distance_between_less_than(self->position, stats->origin, stats->range) == false) {
 		entity_free(self);
 		return;
 	}
+	gfc_vector2d_negate(rotateVector, self->velocity);
+	self->rotation = gfc_vector2d_angle(rotateVector);
+	self->rotation *= GFC_RADTODEG;
 	gfc_vector2d_add(self->position, self->position, self->velocity);
-	self->collision.s.c.x = self->position.x + (self->sprite->frame_w / 2);
-	self->collision.s.c.y = self->position.y + (self->sprite->frame_h/2);
+	self->collision.s.c.x = self->position.x + ((self->sprite->frame_w / 2) * self->scale.x);
+	self->collision.s.c.y = self->position.y + ((self->sprite->frame_h / 2) * self->scale.y);
 	//slog("Projectile velocity (%f,%f)", self->velocity.x, self->velocity.y);
+	self->frame += 0.1;
+	if (self->frame >= stats->maxFrame) self->frame = 0;
 }
 
 

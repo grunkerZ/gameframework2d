@@ -242,7 +242,7 @@ int main(int argc, char * argv[])
         1200,
         720,
         gfc_vector4d(0,0,0,255),
-        0);
+        1);
     camera_set_dimension(gfc_vector2d(1200, 720));
     gf2d_graphics_set_frame_delay(16);
     gf2d_sprite_init(1024);

@@ -738,21 +738,21 @@ void stage_make_doors(Floor* floor, Stage* stage) {
 		index = room_get_tile_index(stage->room, stage->room->doorPosition[1].x, stage->room->doorPosition[1].y);
 		stage->room->tileMap[index] = RT_EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x, stage->gridPos.y + 1);
-		door_new(DOOR_SOUTH, targetIndex, grid_to_world(stage->room->doorPosition[1]));
+		door = door_new(DOOR_SOUTH, targetIndex, grid_to_world(stage->room->doorPosition[1]));
 	}
 	if (stage->doors & DOOR_EAST) {
 		slog("Attempting to carve east door");
 		index = room_get_tile_index(stage->room, stage->room->doorPosition[2].x, stage->room->doorPosition[2].y);
 		stage->room->tileMap[index] = RT_EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x + 1, stage->gridPos.y);
-		door_new(DOOR_EAST, targetIndex, grid_to_world(stage->room->doorPosition[2]));
+		door = door_new(DOOR_EAST, targetIndex, grid_to_world(stage->room->doorPosition[2]));
 	}
 	if (stage->doors & DOOR_WEST) {
 		slog("Attempting to carve west door");
 		index = room_get_tile_index(stage->room, stage->room->doorPosition[3].x, stage->room->doorPosition[3].y);
 		stage->room->tileMap[index] = RT_EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x - 1, stage->gridPos.y);
-		door_new(DOOR_WEST, targetIndex, grid_to_world(stage->room->doorPosition[3]));
+		door = door_new(DOOR_WEST, targetIndex, grid_to_world(stage->room->doorPosition[3]));
 	}
 	room_tile_layer_build(stage->room);
 	return;

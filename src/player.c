@@ -25,11 +25,11 @@ Entity* player_new() {
 	self->data = gfc_allocate_array(sizeof(PlayerData), 1);
 	PlayerData* stats = (PlayerData*)self->data;
 
-	self->sprite = gf2d_sprite_load_image("images/placeholder/player.png");
-	//self->frame=0;
+	self->sprite = gf2d_sprite_load_all("images/player.png",64,64,8,false);
+	self->frame=0;
 	self->position = gfc_vector2d(0,0);
 	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
-	entity_setup_collision_box(self, ST_RECT, 0.25);
+	entity_setup_collision_box(self, ST_RECT, 0.15);
 	self->forward = gfc_vector2d(1, 0);
 	self->invincibility = 500;
 	self->type = ET_PLAYER;
@@ -428,8 +428,8 @@ void player_update(Entity* self) {
 	if (!self) return;
 	PlayerData* stats = (PlayerData*)self->data;
 	GFC_Vector2D offset = camera_get_offset();
-	//self->frame += 0.1;
-	//if (self->frame >= 16) self->frame = 0;
+	self->frame += 0.1;
+	if (self->frame >= 8) self->frame = 0;
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 	gfc_vector2d_add(self->centerPos, self->centerPos, self->velocity);
 

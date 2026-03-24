@@ -19,7 +19,9 @@ Entity* door_new(Doors side, Uint32 targetRoom, GFC_Vector2D position) {
 	
 	door->gravity = 0;
 	door->sprite = gf2d_sprite_load_image("images/placeholder/door.png");
+	door->position = gfc_vector2d(0,0);
 	door->centerPos = gfc_vector2d(door->position.x + (door->sprite->frame_w / 2), door->position.y + (door->sprite->frame_h / 2));
+	entity_setup_collision_box(door, ST_RECT, 0);
 	set_center(door, position);
 	door->type = ET_DOOR;
 

@@ -162,10 +162,10 @@ void entity_draw(Entity* self) {
 	if (self->sprite) {
 		gf2d_sprite_render(
 			self->sprite,
-			gfc_vector2d(self->position.x + offset.x, self->position.y + offset.y),
+			gfc_vector2d(self->position.x + offset.x + self->centerAnchor.x, self->position.y + offset.y + self->centerAnchor.y),
 			&self->scale,
-			NULL,
-			NULL,
+			&self->centerAnchor,
+			&self->rotation,
 			&self->flip,
 			NULL,
 			NULL,
@@ -391,8 +391,8 @@ void get_tiles_entity_is_in(Room* room, Entity* entity) {
 void entity_setup_collision_box(Entity* self, GFC_ShapeTypes shape, float tolerance) {
 	if (!self || !self->sprite) return;
 
-	self->width = self->sprite->frame_w;
-	self->height = self->sprite->frame_h;
+	self->width = self->sprite->frame_w * self->scale.x;
+	self->height = self->sprite->frame_h * self->scale.y;
 	self->collision.type = shape;
 
 	switch (shape) {

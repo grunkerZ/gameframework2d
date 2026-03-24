@@ -16,6 +16,7 @@ typedef struct {
 	GFC_Vector2D	origin;				//the starting position of the projectile
 	Entity*			parent;				//the parent entity of the projectile
 	EntityType		team;				//Holds the entity type to not damage
+	float			maxFrame;			//the max frame on the sprite sheet
 }ProjectileData;
 
 /*

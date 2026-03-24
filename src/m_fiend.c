@@ -18,7 +18,7 @@ Entity* fiend_new(GFC_Vector2D position) {
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/fiend.png");
 	set_center(self, self->position);
-	entity_setup_collision_box(self, ST_RECT, 0);
+	entity_setup_collision_box(self, ST_RECT, 0.05);
 
 	stats->aggroRange = 800;
 	stats->touchDamage = 1;
@@ -47,11 +47,13 @@ void fiend_think(Entity* self) {
 	info = check_map_collision(self);
 
 	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
-		if (world_to_grid(playerPos).y > world_to_grid(self->centerPos).y && info.bottom) {
-			move_to_2d(self, playerPos);
-		}
-		else {
-			move_to_1d(self, playerPos);
+		if (info.bottom) {
+			if (world_to_grid(playerPos).y > world_to_grid(self->centerPos).y && info.bottom) {
+				move_to_2d(self, playerPos);
+			}
+			else {
+				move_to_1d(self, playerPos);
+			}
 		}
 
 		if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {

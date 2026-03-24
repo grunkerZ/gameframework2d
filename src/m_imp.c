@@ -16,9 +16,10 @@ Entity* imp_new(GFC_Vector2D position) {
 
 	self->gravity = 0;
 	self->position = position;
-	self->sprite = gf2d_sprite_load_image("images/placeholder/imp.png");
+	self->sprite = gf2d_sprite_load_all("images/imp.png",64,64,11,false);
+	self->frame = 0;
 	set_center(self, self->position);
-	entity_setup_collision_box(self, ST_RECT, 0);
+	entity_setup_collision_box(self, ST_RECT, 0.05);
 
 	stats->aggroRange = 800;
 	stats->touchDamage = 1;
@@ -64,6 +65,11 @@ void imp_think(Entity* self) {
 			slog("fired shot, time passed: %llu", SDL_GetTicks64() - stats->timeAtAttack);
 			stats->timeAtAttack = SDL_GetTicks64();
 			Entity* projectile = projectile_new(self, &stats->projectileStats);
+			projectile->sprite = gf2d_sprite_load_all("images/small_fireball_projectile.png",32,32,11,false);
+			projectile->scale = gfc_vector2d(0.75, 0.75);
+			entity_setup_collision_box(projectile, ST_CIRCLE, 0.0);
+			projectile->centerAnchor = gfc_vector2d((projectile->width / 2) * projectile->scale.x, (projectile->height / 2) * projectile->scale.y);
+			((ProjectileData*)projectile->data)->maxFrame = 11;
 			((ProjectileData*)projectile->data)->parent = self;
 			((ProjectileData*)projectile->data)->origin = self->position;
 			((ProjectileData*)projectile->data)->range = 800;
@@ -86,6 +92,8 @@ void imp_update(Entity* self) {
 	self->collision.s.r.y = self->position.y+3;
 	info = check_map_collision(self);
 	gfc_vector2d_add(self->position, self->position, self->velocity);
+	self->frame += 0.1;
+	if (self->frame >= 11) self->frame = 0;
 }
 
 /*eol@eof*/

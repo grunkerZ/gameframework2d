@@ -35,6 +35,7 @@ typedef struct Entity_S
 	GFC_Vector2D	centerPos;							//the center position of the entity
 	GFC_Vector2D	forward;							//the forward vector of the entity
 	GFC_Vector2D	knockback;							//a vector containing the knockback velocity
+	GFC_Vector2D	centerAnchor;						//the center point for rotation and scaling
 	GFC_Shape		collision;							//the collision box of the entity
 	EntityType		type;								//the type of entity
 	Sprite*			sprite;								//the sprite of the entity

@@ -18,7 +18,7 @@ Entity* repenter_new(GFC_Vector2D position) {
 	self->position = position;
 	self->sprite = gf2d_sprite_load_image("images/placeholder/repenter.png");
 	set_center(self, self->position);
-	entity_setup_collision_box(self, ST_RECT, 0);
+	entity_setup_collision_box(self, ST_RECT, 0.05);
 
 	stats->aggroRange = 100;
 	stats->touchDamage = 1;
