@@ -65,6 +65,9 @@ typedef struct {
 	GFC_Vector2D		hookPos;				//the current position of the hook
 	ProjectileData		projectileStats;		//the stats of the projectile shot
 	int					inventory[ITEM_MAX];	//the item inventory of the player
+	Sprite*				link;					//the sprite for the grapple links
+	Sprite*				grapple;				//the sprite for the grapple head
+
 }PlayerData;
 
 /*

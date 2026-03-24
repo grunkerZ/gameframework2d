@@ -5,6 +5,7 @@
 #include "projectile.h"
 #include "gf2d_draw.h"
 #include "player.h"
+#include "monster.h"
 
 #define CLAMP(x,min,max) ((x)<(min) ? (min) : ((x)> (max) ? (max) : (x)))
 
@@ -170,6 +171,8 @@ void entity_draw(Entity* self) {
 			NULL,
 			(Uint32)self->frame);
 	}
+
+	if (self->draw)self->draw(self);
 }
 
 void entity_manager_draw_all() {
@@ -438,13 +441,16 @@ GFC_List* get_entities_in_shape(GFC_Shape shape, Entity* ignored) {
 	return entities;
 }
 
-Entity* get_closest_entity_to(GFC_Vector2D position, EntityType type, float maxRange) {
+Entity* get_closest_entity_to(GFC_Vector2D position, EntityType type, float maxRange, Uint8 los) {
 	int i;
 	Entity* closest = NULL;
 	for (i = 0; i < entityManager.entityMax; i++) {
 		if (!entityManager.entityList[i]._inuse || entityManager.entityList[i].type != type) continue;
 		if (maxRange) {
 			if (!gfc_vector2d_distance_between_less_than(entityManager.entityList[i].centerPos,position,maxRange)) continue;
+		}
+		if (los) {
+			if (!detect_los(&entityManager.entityList[i], position)) continue;
 		}
 
 		if (!closest) closest = &entityManager.entityList[i];

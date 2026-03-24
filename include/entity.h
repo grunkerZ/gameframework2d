@@ -44,6 +44,7 @@ typedef struct Entity_S
 	void			(*think)(struct Entity_S* self);	//called every frame if defined for entity
 	void			(*update)(struct Entity_S* self);	//execute entity decisions
 	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data
+	void			(*draw)(struct Entity_S* self);		//draw entity
 	void*			data;								//for ad hoc addtion data
 }Entity;
 
@@ -164,8 +165,9 @@ GFC_List* get_entities_in_shape(GFC_Shape shape, Entity* ignored);
 * @param position the point to check distance
 * @param type the type of entity
 * @param maxRange the maximum range to check, NULL if no max range
+* @param los 0 if it should look for entities behind objects and tiles, 1 otherwise.
 * @returns NULL if no valid entity, otherwise the closest entity
 */
-Entity* get_closest_entity_to(GFC_Vector2D position, EntityType type, float maxRange);
+Entity* get_closest_entity_to(GFC_Vector2D position, EntityType type, float maxRange, Uint8 los);
 
 #endif // !__ENTITY_H__

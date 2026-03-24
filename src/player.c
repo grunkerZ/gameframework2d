@@ -8,6 +8,7 @@
 void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity* self);
+void player_draw(Entity* self);
 
 static Entity* player = NULL;
 
@@ -80,9 +81,13 @@ Entity* player_new() {
 	stats->hookState = 0;
 	stats->hookedEntity = NULL;
 
+	stats->link = gf2d_sprite_load_image("images/placeholder/link.png");
+	stats->grapple = gf2d_sprite_load_image("images/placeholder/grapple.png");
+
 	self->think = player_think;
 	self->update = player_update;
 	self->free = player_free;
+	self->draw = player_draw;
 
 	player = self;
 	return self;
@@ -198,8 +203,18 @@ void player_think(Entity* self) {
 		}
 
 		else if (keys[SDL_SCANCODE_F]) {
+			slog("grapple key pressed");
+			slog("time diff: %llu | cooldown: %llu", SDL_GetTicks64() - stats->timeAtPull, stats->pullCooldown);
 			if (SDL_GetTicks64() - stats->timeAtPull > stats->pullCooldown) {
-				stats->hookState = 1;
+				slog("time check passed");
+				Entity* other = get_closest_entity_to(self->centerPos, ET_MONSTER, 1000,1);
+				if(other){
+					stats->timeAtPull = SDL_GetTicks64();
+					stats->hookDst = other->centerPos;
+					stats->hookPos = self->centerPos;
+					stats->hookState = 1;
+					slog("hookState: %u", stats->hookState);
+				}
 			}
 		}
 
@@ -326,6 +341,87 @@ void player_think(Entity* self) {
 		}
 	}
 
+	if (stats->hookState == 1) {
+		slog("HookState 1 Block:");
+		slog("Hook Pos: (%f,%f)", stats->hookPos.x, stats->hookPos.y);
+		GFC_Vector2D direction;
+		GFC_Shape grabBox;
+		GFC_List* hitList;
+		Entity* hitEntity;
+		int i;
+
+		grabBox.type = ST_CIRCLE;
+		grabBox.s.c.x = stats->hookPos.x;
+		grabBox.s.c.y = stats->hookPos.y;
+		grabBox.s.c.r = 32;
+
+		if (SDL_GetTicks64() - stats->timeAtPull > 1000) {
+			stats->timeAtPull = SDL_GetTicks64();
+			stats->hookState = 2;
+		}
+
+		gfc_vector2d_sub(direction,stats->hookDst,stats->hookPos);
+		gfc_vector2d_normalize(&direction);
+		gfc_vector2d_scale(direction, direction, 3);
+		gfc_vector2d_add(stats->hookPos, stats->hookPos, direction);
+
+		hitList = get_entities_in_shape(grabBox, self);
+		if (hitList) {
+			for (i = 0; i < hitList->count; i++) {
+				hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
+				if (hitEntity->type != ET_MONSTER) continue;
+				if(!stats->hookedEntity) stats->hookedEntity = hitEntity;
+				else {
+					if (gfc_vector2d_magnitude_between(hitEntity->centerPos, stats->hookPos) < gfc_vector2d_magnitude_between(stats->hookedEntity->centerPos, stats->hookPos)) {
+						stats->hookedEntity = hitEntity;
+					}
+				}
+			}
+			gfc_list_delete(hitList);
+		}
+		if (stats->hookedEntity) {
+			stats->hookPos = stats->hookedEntity->centerPos;
+			stats->hookState = 2;
+			stats->timeAtPull = SDL_GetTicks64();
+		}
+		if (gfc_vector2d_distance_between_less_than(stats->hookPos, stats->hookDst, 10)) {
+			stats->hookState = 2;
+			stats->timeAtPull = SDL_GetTicks64();
+		}
+	}
+
+	if (stats->hookState == 2) {
+		GFC_Vector2D direction;
+
+		if (stats->hookedEntity) {
+			if (stats->hookedEntity->_inuse) {
+				set_center(stats->hookedEntity, stats->hookPos);
+				stats->hookedEntity->stun = 16;
+				stats->hookedEntity->timeAtStun = SDL_GetTicks64();
+				stats->pullDuration = SDL_GetTicks64();
+			}
+			else {
+				stats->hookedEntity = NULL;
+			}
+		}
+
+		gfc_vector2d_sub(direction, self->centerPos, stats->hookPos);
+		gfc_vector2d_normalize(&direction);
+		gfc_vector2d_scale(direction, direction, 3);
+		gfc_vector2d_add(stats->hookPos, stats->hookPos, direction);
+
+		if (gfc_vector2d_distance_between_less_than(stats->hookPos, self->centerPos, 96)) {
+			stats->hookedEntity = NULL;
+			stats->timeAtPull = SDL_GetTicks64();
+			stats->hookState = 0;
+		}
+		else if (stats->hookedEntity && stats->pullDuration - stats->timeAtPull > 1500) {
+			stats->hookedEntity = NULL;
+			stats->timeAtPull = SDL_GetTicks64();
+			stats->hookState = 0;
+		}
+	}
+
 }
 
 void player_update(Entity* self) {
@@ -341,10 +437,16 @@ void player_update(Entity* self) {
 }
 
 void player_free(Entity* self) {
+	PlayerData* stats;
 	if (!self) return;
+	stats = self->data;
 	player = NULL;
-	free(self->data);
-	self->data = NULL;
+	if (self->data) {
+		gf2d_sprite_free(stats->link);
+		gf2d_sprite_free(stats->grapple);
+		free(self->data);
+		self->data = NULL;
+	}
 }
 
 GFC_Vector2D player_get_position() {
@@ -431,6 +533,60 @@ void player_calculate_stats(Entity* self) {
 Entity* get_player_entity() {
 	if (!player) return NULL;
 	return player;
+}
+
+void player_draw(Entity* self) {
+	PlayerData* stats = self->data;
+	GFC_Vector2D chain = { 0,0 };
+	GFC_Vector2D linkPos;
+	GFC_Vector2D step;
+	GFC_Vector2D startPos = self->centerPos;
+	GFC_Vector2D offset = camera_get_offset();
+	Uint32 distance;
+	float rotation;
+	int linkNum;
+	int i;
+
+
+	if(stats->hookState>0){
+		gfc_vector2d_sub(chain, stats->hookPos, self->centerPos);
+
+		rotation = gfc_vector2d_angle(chain);
+		rotation *= GFC_RADTODEG;
+
+		linkNum = gfc_vector2d_magnitude_between(self->centerPos, stats->hookPos) / stats->link->frame_h;
+
+		gfc_vector2d_normalize(&chain);
+		for (i = 0; i < linkNum; i++) {
+			distance = i * stats->link->frame_h;
+
+			gfc_vector2d_scale(step, chain, distance);
+			gfc_vector2d_add(linkPos, startPos, step);
+
+			gf2d_sprite_render(
+				stats->link,
+				gfc_vector2d(linkPos.x + offset.x, linkPos.y + offset.y),
+				NULL,
+				NULL,
+				&rotation,
+				NULL,
+				NULL,
+				NULL,
+				0
+			);
+		}
+		gf2d_sprite_render(
+			stats->grapple,
+			gfc_vector2d(stats->hookPos.x + offset.x, stats->hookPos.y + offset.y),
+			NULL,
+			NULL,
+			&rotation,
+			NULL,
+			NULL,
+			NULL,
+			0
+		);
+	}
 }
 
 /*eol@eof*/
