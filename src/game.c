@@ -50,7 +50,7 @@ void update_game(System* game) {
         if (game->mainMenu->Menu.start.exitButton.clicked) game->done = 1;
         if (game->mainMenu->Menu.start.startButton.clicked) {
             slog("GAME START! Attempting floor generation");
-            game->floor = floor_create(10,2,1,1,999);
+            game->floor = floor_create(10,2,1,1,rand());
             if (!game->floor) {
                 slog("ERROR: Floor Generation Failed");
             }
@@ -252,11 +252,12 @@ int main(int argc, char * argv[])
     camera_set_dimension(gfc_vector2d(1200, 720));
     gf2d_graphics_set_frame_delay(16);
     gf2d_sprite_init(1024);
+    simple_font_init();
+    console_init();
     entity_manager_init(1024);
     SDL_ShowCursor(SDL_DISABLE);
     item_manager_init(1024);
-    simple_font_init();
-    console_init();
+
 
 
 

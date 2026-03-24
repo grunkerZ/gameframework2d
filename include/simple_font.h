@@ -42,4 +42,22 @@ void simple_font_free(Font* font);
 */
 void simple_font_draw(Font* font, const char* text, GFC_Vector2D position, SDL_Color color);
 
+/*
+* @brief gets the width and height of a text
+* @param font the font for the text
+* @param text the text to use
+* @param width the width dst
+* @param height the height dst
+*/
+void simple_font_get_bounds(Font* font, const char* text, int* width, int* height);
+
+/*
+* @brief draws text to the screen using a center point
+* @param font the loaded font
+* @param text the text to draw
+* @param center the center point of the text
+* @color the color to draw in
+*/
+void simple_font_draw_with_center(Font* font, const char* text, GFC_Vector2D center, SDL_Color color);
+
 #endif // !__SIMPLE_FONT_H__

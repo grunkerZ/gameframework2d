@@ -72,3 +72,34 @@ void simple_font_draw(Font* font, const char* text, GFC_Vector2D position, SDL_C
 	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(surface);
 }
+
+void simple_font_get_bounds(Font* font, const char* text, int* width, int* height) {
+	if (!font || !font->font || !text || text[0] == '\0') {
+		if (width) *width = 0;
+		if (height) *height = 0;
+		return;
+	}
+
+	if (TTF_SizeText(font->font, text, width, height)!=0) {
+		slog("failed to get text size: '%s'", TTF_GetError());
+		if (width) *width = 0;
+		if (height) *height = 0;
+	}
+}
+
+void simple_font_draw_with_center(Font* font, const char* text, GFC_Vector2D center, SDL_Color color) {
+	int width = 0;
+	int height = 0;
+	GFC_Vector2D drawPos;
+
+	if (!font || !font->font || !text || text[0] == '\0') return;
+
+	simple_font_get_bounds(font, text, &width, &height);
+
+	drawPos.x = center.x - (width / 2);
+	drawPos.y = center.y - (height / 2);
+
+	simple_font_draw(font, text, drawPos, color);
+}
+
+/*eol@eof*/

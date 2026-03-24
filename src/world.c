@@ -79,18 +79,21 @@ Stage** floor_generate(Floor* floor) {
 
 	validSpot.x = startX;
 	validSpot.y = startY - 1;
-	candidates[numCandidates++] = validSpot;
+	if(validSpot.y>=0 && numCandidates < 256) candidates[numCandidates++] = validSpot;
+
 	validSpot.x = startX - 1;
 	validSpot.y = startY;
-	candidates[numCandidates++] = validSpot;
+	if (validSpot.x >= 0 && numCandidates < 256) candidates[numCandidates++] = validSpot;
+
 	validSpot.x = startX + 1;
-	candidates[numCandidates++] = validSpot;
+	validSpot.y = startY;
+	if (validSpot.x < floor->width && numCandidates < 256) candidates[numCandidates++] = validSpot;
 
 	while (floor->roomsLeft > 0 && numCandidates > 0) {
 		int index = rand() % numCandidates;
 		GFC_Vector2I pos = candidates[index];
 
-		if(floor_count_neighbors(floor,pos.x,pos.y)==1){
+		if(floor_get_room_type(floor,pos.x,pos.y) == RT_EMPTY && floor_count_neighbors(floor,pos.x,pos.y)==1){
 			slog("Generating standard rooms...");
 			index = floor_get_room_index(floor, pos.x, pos.y);
 			if (index != -1) {
@@ -101,12 +104,16 @@ Stage** floor_generate(Floor* floor) {
 			
 			validSpot.x = pos.x;
 			validSpot.y = pos.y - 1;
-			candidates[numCandidates++] = validSpot;
+			if (validSpot.y >= 0 && numCandidates < 256) candidates[numCandidates++] = validSpot;
+
 			validSpot.x = pos.x - 1;
 			validSpot.y = pos.y;
-			candidates[numCandidates++] = validSpot;
+			if (validSpot.x >= 0 && numCandidates < 256) candidates[numCandidates++] = validSpot;
+
 			validSpot.x = pos.x + 1;
-			candidates[numCandidates++] = validSpot;
+			validSpot.y = pos.y;
+			if (validSpot.x < floor->width && numCandidates < 256) candidates[numCandidates++] = validSpot;
+
 		}
 
 		candidates[index] = candidates[numCandidates - 1];
@@ -226,7 +233,7 @@ void print_floor(Floor* floor) {
 int floor_get_room_index(Floor* floor, int x, int y) {
 	int index;
 	if (x<0 || y<0 || x>=floor->width || y>=floor->height) {
-		slog("Room Index Out of Bounds: (%d,%d)",x,y);
+		//slog("Room Index Out of Bounds: (%d,%d)",x,y);
 		return -1;
 	}
 	index = (floor->width * y) + x;

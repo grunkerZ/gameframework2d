@@ -56,44 +56,44 @@ void item_manager_init(Uint32 maxItems) {
 
 
 	itemManager->itemList[ITEM_HAIR_TRIGGER].id = ITEM_HAIR_TRIGGER;
-	strcpy(itemManager->itemList[ITEM_HAIR_TRIGGER].name, "Hair Trigger");
-	strcpy(itemManager->itemList[ITEM_HAIR_TRIGGER].flavor, "The Devil loves an idle hand, but he prefers a twitchy one");
+	itemManager->itemList[ITEM_HAIR_TRIGGER].name = "Hair Trigger";
+	itemManager->itemList[ITEM_HAIR_TRIGGER].flavor = "The Devil loves an idle hand, but he prefers a twitchy one";
 	itemManager->itemList[ITEM_HAIR_TRIGGER].fireRateMod = -500;
 
 	itemManager->itemList[ITEM_COMBAT_BOOTS].id = ITEM_COMBAT_BOOTS;
-	strcpy(itemManager->itemList[ITEM_COMBAT_BOOTS].name, "Combat Boots");
-	strcpy(itemManager->itemList[ITEM_COMBAT_BOOTS].flavor, "Sturdy enough to brave hellfire");
+	itemManager->itemList[ITEM_COMBAT_BOOTS].name = "Combat Boots";
+	itemManager->itemList[ITEM_COMBAT_BOOTS].flavor = "Sturdy enough to brave hellfire";
 	itemManager->itemList[ITEM_COMBAT_BOOTS].moveSpeedMod = 1;
 	itemManager->itemList[ITEM_COMBAT_BOOTS].dashCooldownMod = -1000;
 
 	itemManager->itemList[ITEM_COMMANDO_BANDANA].id = ITEM_COMMANDO_BANDANA;
-	strcpy(itemManager->itemList[ITEM_COMMANDO_BANDANA].name, "Commando Bandana");
-	strcpy(itemManager->itemList[ITEM_COMMANDO_BANDANA].flavor, "Keeps the sweat out of your eyes. Not that you have sweat. Or eyes");
+	itemManager->itemList[ITEM_COMMANDO_BANDANA].name = "Commando Bandana";
+	itemManager->itemList[ITEM_COMMANDO_BANDANA].flavor = "Keeps the sweat out of your eyes. Not that you have sweat. Or eyes";
 	itemManager->itemList[ITEM_COMMANDO_BANDANA].moveSpeedMod = 1;
 	itemManager->itemList[ITEM_COMMANDO_BANDANA].fireRateMod = -250;
 
 	itemManager->itemList[ITEM_REINFORCED_RIBCAGE].id = ITEM_REINFORCED_RIBCAGE;
-	strcpy(itemManager->itemList[ITEM_REINFORCED_RIBCAGE].name, "Reinforced Ribcage");
-	strcpy(itemManager->itemList[ITEM_REINFORCED_RIBCAGE].flavor, "Made with scrap metal and love");
+	itemManager->itemList[ITEM_REINFORCED_RIBCAGE].name = "Reinforced Ribcage";
+	itemManager->itemList[ITEM_REINFORCED_RIBCAGE].flavor = "Made with scrap metal and love";
 	itemManager->itemList[ITEM_REINFORCED_RIBCAGE].maxHealthMod = 1;
 	itemManager->itemList[ITEM_REINFORCED_RIBCAGE].touchDamageMod = 1;
 
 	itemManager->itemList[ITEM_SULFUR_TIPPED_ROUNDS].id = ITEM_SULFUR_TIPPED_ROUNDS;
-	strcpy(itemManager->itemList[ITEM_SULFUR_TIPPED_ROUNDS].name, "Sulfur Tipped Rounds");
-	strcpy(itemManager->itemList[ITEM_SULFUR_TIPPED_ROUNDS].flavor, "In case you didn't pack enough punch");
+	itemManager->itemList[ITEM_SULFUR_TIPPED_ROUNDS].name = "Sulfur Tipped Rounds";
+	itemManager->itemList[ITEM_SULFUR_TIPPED_ROUNDS].flavor = "In case you didn't pack enough punch";
 	itemManager->itemList[ITEM_SULFUR_TIPPED_ROUNDS].damageMod = 1;
 	itemManager->itemList[ITEM_SULFUR_TIPPED_ROUNDS].rangeMod = 320;
 
 	itemManager->itemList[ITEM_LEAD_HALO].id = ITEM_LEAD_HALO;
-	strcpy(itemManager->itemList[ITEM_LEAD_HALO].name, "Lead Halo");
-	strcpy(itemManager->itemList[ITEM_LEAD_HALO].flavor, "If you can't beat 'em, join 'em");
+	itemManager->itemList[ITEM_LEAD_HALO].name = "Lead Halo";
+	itemManager->itemList[ITEM_LEAD_HALO].flavor = "If you can't beat 'em, join 'em";
 	itemManager->itemList[ITEM_LEAD_HALO].shotSpeedMod = 2;
 	itemManager->itemList[ITEM_LEAD_HALO].rangeMod = 320;
 	itemManager->itemList[ITEM_LEAD_HALO].touchDamageMod = 1;
 
 	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].id = ITEM_FORBIDDEN_KNOWLEDGE;
-	strcpy(itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].name, "Forbidden Knowledge");
-	strcpy(itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].flavor, "Ignorance is bliss");
+	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].name = "Forbidden Knowledge";
+	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].flavor = "Ignorance is bliss";
 	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].maxHealthMod = -1;
 	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].damageMod = 2;
 	itemManager->itemList[ITEM_FORBIDDEN_KNOWLEDGE].fireRateMod = -250;
@@ -160,31 +160,31 @@ Item* item_create(ItemID id) {
 		break;
 	case ITEM_HAIR_TRIGGER:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/hair_trigger.png");
-		self->presentTime = 2000;
+		self->presentTime = 4000;
 		break;
 	case ITEM_COMBAT_BOOTS:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/combat_boots.png");
-		self->presentTime = 2000;
+		self->presentTime = 4000;
 		break;
 	case ITEM_COMMANDO_BANDANA:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/bandana.png");
-		self->presentTime = 2000;
+		self->presentTime = 4000;
 		break;
 	case ITEM_REINFORCED_RIBCAGE:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/ribcage.png");
-		self->presentTime = 2000;
+		self->presentTime = 4000;
 		break;
 	case ITEM_SULFUR_TIPPED_ROUNDS:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/sulfur_tipped.png");
-		self->presentTime = 2000;
+		self->presentTime = 4000;
 		break;
 	case ITEM_LEAD_HALO:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/lead_halo.png");
-		self->presentTime = 2000;
+		self->presentTime = 4000;
 		break;
 	case ITEM_FORBIDDEN_KNOWLEDGE:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/forbidden_knowledge.png");
-		self->presentTime = 2000;
+		self->presentTime = 4000;
 		break;
 	}
 	self->collision.type = ST_RECT;
@@ -300,14 +300,23 @@ void item_draw(Item* self) {
 	}
 
 	if (self->presenting) {
-	/*	title = gfc_string_new();
-		flavor = gfc_string_new();
-		gfc_string_appendf(title, self->name);
-		gfc_string_appendf(flavor, self->flavor);
 
-		if (itemManager->nameFont) {
-			simple_font_draw(itemManager->nameBorder,title,)
-		}*/
+		if (itemManager->nameFont && self->name) {
+			/*simple_font_draw_with_center(itemManager->nameBorder, self->name,
+				gfc_vector2d(self->position.x + offset.x + ((self->sprite->frame_w / 2) * self->scale.x), self->position.y + offset.y + ((self->sprite->frame_h) * self->scale.y) + 32),
+				borderColor);*/
+			simple_font_draw_with_center(itemManager->nameFont, self->name,
+				gfc_vector2d(self->position.x + offset.x + ((self->sprite->frame_w / 2) * self->scale.x), self->position.y + offset.y + ((self->sprite->frame_h) * self->scale.y) + 32),
+				textColor);
+		}
+		if (itemManager->flavorFont && self->flavor) {
+			/*simple_font_draw_with_center(itemManager->flavorBorder, self->flavor,
+				gfc_vector2d(self->position.x + offset.x + ((self->sprite->frame_w / 2) * self->scale.x), self->position.y + offset.y + ((self->sprite->frame_h) * self->scale.y) + 64),
+				borderColor);*/
+			simple_font_draw_with_center(itemManager->flavorFont, self->flavor,
+				gfc_vector2d(self->position.x + offset.x + ((self->sprite->frame_w / 2) * self->scale.x), self->position.y + offset.y + ((self->sprite->frame_h) * self->scale.y) + 64),
+				textColor);
+		}
 	}
 }
 
