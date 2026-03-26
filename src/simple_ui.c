@@ -52,8 +52,8 @@ GenericMenu* main_menu_init() {
 	self->Menu.start.startButton.shape = ST_RECT;
 	self->Menu.start.startButton.sprite = gf2d_sprite_load_image("images/placeholder/startButton.png");
 	self->Menu.start.startButton.position = gfc_vector2d(
-		(self->background->frame_w) - 160 - (self->Menu.start.startButton.sprite->frame_w / 2),
-		(self->background->frame_h / 2) - (self->Menu.start.startButton.sprite->frame_h / 2));
+		(self->background->frame_w * self->bgScale.x) - 320 - ((self->Menu.start.startButton.sprite->frame_w / 2) * self->bgScale.x),
+		((self->background->frame_h / 2) * self->bgScale.y) - ((self->Menu.start.startButton.sprite->frame_h / 2)) * self->bgScale.y);
 	self->Menu.start.startButton.bounds.s.r.x = self->Menu.start.startButton.position.x;
 	self->Menu.start.startButton.bounds.s.r.y = self->Menu.start.startButton.position.y;
 	self->Menu.start.startButton.bounds.s.r.w = self->Menu.start.startButton.sprite->frame_w;
