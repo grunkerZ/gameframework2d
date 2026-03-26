@@ -37,8 +37,10 @@
 	}MenuType;
 
 	typedef struct {
-		MenuType	menuType;				//the type of the menu
-		Sprite*		background;				//the background image of the menu
+		MenuType		menuType;				//the type of the menu
+		Sprite*			background;				//the background image of the menu
+		GFC_Vector2D	bgScale;
+		float		frame;
 		union
 		{
 			MainMenu	start;

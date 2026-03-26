@@ -44,9 +44,11 @@ GenericMenu* main_menu_init() {
 		return NULL;
 	}
 
-	self->background = gf2d_sprite_load_image("images/menu/main_bg.png");
+	self->background = gf2d_sprite_load_all("images/menu/main_bg_sheet.png",2048,1228,4,false);
+	self->bgScale = gfc_vector2d(0.5859375, 0.5863192182);
 
 	self->menuType = MT_MAIN;
+
 	self->Menu.start.startButton.shape = ST_RECT;
 	self->Menu.start.startButton.sprite = gf2d_sprite_load_image("images/placeholder/startButton.png");
 	self->Menu.start.startButton.position = gfc_vector2d(
@@ -165,13 +167,13 @@ void menu_draw(GenericMenu* menu) {
 		gf2d_sprite_render(
 			menu->background,
 			gfc_vector2d(0,0),
+			&menu->bgScale,
 			NULL,
 			NULL,
 			NULL,
 			NULL,
 			NULL,
-			NULL,
-			0);
+			menu->frame);
 	}
 	else if (menu->menuType == MT_PAUSE) {
 		gf2d_draw_rect_filled(gfc_rect(0, 0, 1200, 720), gfc_color8(0, 0, 0, 150));
@@ -195,6 +197,8 @@ void menu_draw(GenericMenu* menu) {
 void menu_update(GenericMenu* menu) {
 	switch (menu->menuType) {
 		case MT_MAIN:
+			menu->frame += 0.1;
+			if (menu->frame >= 16) menu->frame = 0;
 			button_update(&menu->Menu.start.startButton);
 			button_update(&menu->Menu.start.exitButton);
 			break;
