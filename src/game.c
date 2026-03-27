@@ -22,7 +22,6 @@ typedef enum {
 typedef struct {
     int                 mx;                 //the x coordinate of the mouse
     int                 my;                 //the y coordinate of the mouse
-    float               mf;                 //the mouse frame
     Uint8               done;               //1 when game quits, 0 otherwise
     Uint8               paused;             //1 when game is paused, 0 otherwise
     Uint8               debug;
@@ -34,6 +33,7 @@ typedef struct {
     Floor*              floor;              //the current floor
     Entity*             player;             //the player pointer
     Sprite*             mouse;              //the mouse pointer
+    GFC_Vector2D        mouseScale;
     Stage*              currentStage;       //the current stage the player is in
 }System;
 
@@ -171,50 +171,42 @@ void draw_game(System* game) {
 
     switch (game->state) {
     case GS_MAINMENU:
+
         menu_draw(game->mainMenu);
-        gf2d_sprite_draw(
-            game->mouse,
-            gfc_vector2d(game->mx, game->my),
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            &mouseGFC_Color,
-            (int)game->mf);
+
+        draw_mouse(game->mainMenu, game->mouse, game->mx, game->my, game->mouseScale);
+
         break;
     case GS_DEATH:
+
         menu_draw(game->deathMenu);
-        gf2d_sprite_draw(
-            game->mouse,
-            gfc_vector2d(game->mx, game->my),
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            &mouseGFC_Color,
-            (int)game->mf);
+
+        draw_mouse(game->deathMenu, game->mouse, game->mx, game->my, game->mouseScale);
+
         break;
     case GS_PAUSED:
+
         room_draw(game->currentStage->room);
+
         entity_manager_draw_all(game->debug);
+
         camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
+
         menu_draw(game->pauseMenu);
-        gf2d_sprite_draw(
-            game->mouse,
-            gfc_vector2d(game->mx, game->my),
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            &mouseGFC_Color,
-            (int)game->mf);
+
+        draw_mouse(game->pauseMenu,game->mouse,game->mx,game->my,game->mouseScale);
+
         console_draw();
         break;
     case GS_PLAYING:
         room_draw(game->currentStage->room);
+
         entity_manager_draw_all(game->debug);
+
         item_manager_draw_all();
+
         camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
+
         console_draw();
         break;
     }
@@ -233,7 +225,6 @@ int main(int argc, char * argv[])
 
     game->done = 0;
     game->paused=0;
-    game->mf = 0;
     game->state = GS_MAINMENU;
 
 
@@ -264,7 +255,8 @@ int main(int argc, char * argv[])
 
     /*demo setup*/
 
-    game->mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
+    game->mouse = gf2d_sprite_load_all("images/menu/cursor.png",2048,2048,1,0);
+    game->mouseScale = gfc_vector2d(0.01562, 0.01562);
     GFC_Vector2D offset = camera_get_offset();
     game->mainMenu = main_menu_init();
     game->deathMenu = death_menu_init();
@@ -301,8 +293,6 @@ int main(int argc, char * argv[])
         game->keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
 
         SDL_GetMouseState(&game->mx, &game->my);
-        game->mf += 0.1;
-        if (game->mf >= 16.0)game->mf = 0;
 
         update_game(game);
 

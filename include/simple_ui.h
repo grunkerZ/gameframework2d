@@ -52,7 +52,8 @@
 		MenuType		menuType;				//the type of the menu
 		Sprite*			background;				//the background image of the menu
 		GFC_Vector2D	bgScale;
-		float		frame;
+		Uint8			hovering;
+		float			frame;
 		union
 		{
 			MainMenu	start;
@@ -76,8 +77,9 @@
 	/*
 	* @brief updates the button's clicked and hovered flags and sprite
 	* @param button the button to update
+	* @returns 1 if a button has been hovered, 0 otherwise
 	*/
-	void button_update(Button* button);
+	Uint8 button_update(Button* button);
 
 	/*
 	* @brief updates a menu's buttons
@@ -109,7 +111,7 @@
 
 	/*
 	* @brief initializes the Pause menu with data
-	* 
+	* @return NULL on error, otherwise a GenericMenu pointer
 	*/
 	GenericMenu* pause_menu_init();
 
@@ -130,5 +132,15 @@
 	* @param button the button to free
 	*/
 	void button_draw(Button* button);
+
+	/*
+	* @brief draws the mouse to the screen
+	* @param menu the menu the mouse is in
+	* @param mouse the mouse sprite
+	* @param mx the mouse x
+	* @param my the mouse y
+	* @param mouseScale the scale of the mouse
+	*/
+	void draw_mouse(GenericMenu* menu, Sprite* mouse, float mx, float my, GFC_Vector2D mouseScale);
 
 	#endif //SIMPLE_UI_H__

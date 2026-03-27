@@ -16,7 +16,7 @@ GenericMenu* menu_new() {
 	return menu;
 }
 
-void button_update(Button* button) {
+Uint8 button_update(Button* button) {
 	int mx, my;
 	Uint32 mouse;
 	mouse = SDL_GetMouseState(&mx, &my);
@@ -24,6 +24,7 @@ void button_update(Button* button) {
 	button->clicked = 0;
 	if (gfc_point_in_shape(gfc_vector2d(mx, my), button->bounds)) {
 		button->hovered = 1;
+		
 		if (mouse & SDL_BUTTON_LMASK && !(button->lastMouseState & SDL_BUTTON_LMASK)) {
 			button->clicked = 1;
 		}
@@ -41,6 +42,7 @@ void button_update(Button* button) {
 		button->bounds = gfc_shape_circle(button->position.x, button->position.y, (button->spriteWidth / 2) * button->scale.x);
 	}
 
+	return button->hovered;
 }
 
 void button_init(Button* button, const char* imagePath, const char* highlightPath, GFC_Vector2D position, GFC_ShapeTypes shape) {
@@ -293,26 +295,28 @@ void menu_draw(GenericMenu* menu) {
 }
 
 void menu_update(GenericMenu* menu) {
+	Uint8 anyHovered = 0;
 	switch (menu->menuType) {
 		case MT_MAIN:
 			menu->frame += 0.075;
 			if (menu->frame >= 16) menu->frame = 0;
-			button_update(&menu->Menu.start.startButton);
-			button_update(&menu->Menu.start.continueButton);
-			button_update(&menu->Menu.start.optionsButton);
-			button_update(& menu->Menu.start.quitButton);
-			button_update(&menu->Menu.start.extrasButton);
-			button_update(&menu->Menu.start.creditsButton);
+			anyHovered |= button_update(&menu->Menu.start.startButton);
+			anyHovered |= button_update(&menu->Menu.start.continueButton);
+			anyHovered |= button_update(&menu->Menu.start.optionsButton);
+			anyHovered |= button_update(& menu->Menu.start.quitButton);
+			anyHovered |= button_update(&menu->Menu.start.extrasButton);
+			anyHovered |= button_update(&menu->Menu.start.creditsButton);
 			break;
 		case MT_DEATH:
-			button_update(&menu->Menu.death.mainMenuButton);
-			button_update(&menu->Menu.death.exitButton);
+			anyHovered |= button_update(&menu->Menu.death.mainMenuButton);
+			anyHovered |= button_update(&menu->Menu.death.exitButton);
 			break;
 		case MT_PAUSE:
-			button_update(&menu->Menu.pause.mainMenuButton);
-			button_update(&menu->Menu.pause.exitButton);
+			anyHovered |= button_update(&menu->Menu.pause.mainMenuButton);
+			anyHovered |= button_update(&menu->Menu.pause.exitButton);
 			break;
 	}
+	menu->hovering = anyHovered;
 }
 
 void menu_free(GenericMenu* self) {
@@ -345,6 +349,19 @@ void menu_free(GenericMenu* self) {
 		break;
 	}
 	free(self);
+}
+
+void draw_mouse(GenericMenu* menu, Sprite* mouse, float mx, float my, GFC_Vector2D mouseScale) {
+	Uint8 mf = menu->hovering;
+	gf2d_sprite_draw(
+		mouse,
+		gfc_vector2d(mx,my),
+		&mouseScale,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		mf);
 }
 
 /*eol@eof*/
