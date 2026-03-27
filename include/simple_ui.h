@@ -10,14 +10,26 @@
 		Uint8			clicked;			//1 if the button was clicked, 0 otherwise
 		Uint8			hovered;			//1 if the mouse is hovering over the button, 0 otherwise
 		Sprite*			sprite;				//the sprite of the button
+		Uint32			spriteWidth;
+		Uint32			spriteHeight;
 		Sprite*			highlight;			//the sprite of the button while hovered
+		Uint32			highlightWidth;
+		Uint32			highlightHeight;
 		GFC_Vector2D	position;			//the position of the button
 		Uint32			lastMouseState;		//the last moust state
+		GFC_Vector2D	scale;
+		GFC_Vector2D	defaultScale;
+		GFC_Vector2D	maxScale;
+		float			scaleAmount;
 	}Button;
 
 	typedef struct {
 		Button		startButton;			//starts the game
-		Button		exitButton;				//quits the game
+		Button		continueButton;
+		Button		optionsButton;
+		Button		extrasButton;
+		Button		creditsButton;
+		Button		quitButton;				//quits the game
 	}MainMenu;
 
 	typedef struct {
@@ -80,6 +92,16 @@
 	GenericMenu* main_menu_init();
 
 	/*
+	* @brief initialize a menu button
+	* @param button the button pointer
+	* @param imagePath the filepath for the button image
+	* @param highlightPath the filepath for the highlight image
+	* @param position the position of the button
+	* @param shape the shape of the button
+	*/
+	void button_init(Button* button, const char* imagePath, const char* highlightPath, GFC_Vector2D position, GFC_ShapeTypes shape);
+
+	/*
 	* @brief initializes the Death Menu with data
 	* @return NULL on error, otherwise A GenericMenu pointer
 	*/
@@ -102,5 +124,11 @@
 	* @param menu the menu to draw
 	*/
 	void menu_draw(GenericMenu* menu);
+
+	/*
+	* @brief frees previously allocated button
+	* @param button the button to free
+	*/
+	void button_draw(Button* button);
 
 	#endif //SIMPLE_UI_H__

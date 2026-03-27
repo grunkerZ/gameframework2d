@@ -48,7 +48,7 @@ void update_game(System* game) {
 
     case GS_MAINMENU:
         menu_update(game->mainMenu);
-        if (game->mainMenu->Menu.start.exitButton.clicked) game->done = 1;
+        if (game->mainMenu->Menu.start.quitButton.clicked) game->done = 1;
         if (game->mainMenu->Menu.start.startButton.clicked) {
             slog("GAME START! Attempting floor generation");
             game->floor = floor_create(10,2,1,1,rand());
