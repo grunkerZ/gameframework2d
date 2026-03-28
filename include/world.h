@@ -30,10 +30,17 @@ typedef struct {
 	Uint8			type;				//the type of monster spawn, 98 for ground, 99 for flying
 }SpawnPoint;
 
+typedef struct {
+	Sprite*			sprite;
+	GFC_Vector2D	scale;
+	Uint32			first_ID;
+	Uint32			last_ID;
+}TileSet;
+
 typedef struct Room_S
 {
 	Sprite*			background;			//background image for room
-	Sprite*			tileSet;			//Sprite containing tiles for room
+	TileSet*		tileSets;			//Sprite containing tiles for room
 	Uint8			uniqueTiles;		//Number of unique tiles on a tileSheet
 	Uint8*			tileMap;			//tiles that make up the world
 	Uint32			height;				//how many tiles tall the room is
@@ -41,6 +48,7 @@ typedef struct Room_S
 	Uint32			tileWidth;			//how many pixels wide a tile is
 	Uint32			tileHeight;			//how many pixels tall a tile is
 	Uint32			numItems;
+	Uint32			numTileSets;
 	Sprite*			tileLayer;			//prerendered tile layer
 	TileType*		tileLogic;			//contains the tile type for each unique tile
 	SpawnPoint*		spawnPoints;		//contains the spawning point data for each monster
@@ -193,14 +201,13 @@ Room* room_new();
 /**
 *@brief allocate and build a room from parameters
 * @param background the filepath to background image
-* @param tileSet the filepath to the tileSet
 * @param tileWidth how wide a tile is in pixels
 * @param tileHeight how tall a tile is in pixels
 * @param width how many tiles wide the room is
 * @param height how many tiles tall the room is
 * @return NULL on error or nonsensical parameters, 
 */
-Room* room_create(const char* background, const char* tileSet, Uint32 width, Uint32 height, Uint32 tileWidth, Uint32 tileHeight, Uint32 tilesPerLine, Uint8 uniqueTiles);
+Room* room_create(const char* background, Uint32 width, Uint32 height, Uint8 uniqueTiles);
 
 /**
 * @brief given a room, get the index of the tileMap for a file's coordinates

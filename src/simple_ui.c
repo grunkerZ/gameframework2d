@@ -460,8 +460,8 @@ void hud_update(HUD* hud, Entity* player) {
 
 	hud->healthPercent = hpPercent;
 
-	slog("current hp percent: %f", hpPercent);
-	slog("current frame: %f", hud->frame);
+	//slog("current hp percent: %f", hpPercent);
+	//slog("current frame: %f", hud->frame);
 	//hud->position = gfc_vector2d(0 + offset.x, 720 + offset.y - 72);
 }
 

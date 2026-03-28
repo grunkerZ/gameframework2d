@@ -339,12 +339,15 @@ void floor_update_active_rooms(Floor* floor, int playerX, int playerY) {
 static Room* activeRoom = NULL;
 
 void room_tile_layer_build(Room* room) {
-	int i, j;
+	int i, j, set;
 	Uint8 tile;
+	Uint8 localTile;
 	Uint32 index;
+	Sprite* activeTileSet;
+	GFC_Vector2D scale;
 
 	if (!room)return;
-	if (!room->tileSet)return;
+	if (!room->tileSets)return;
 
 	slog("World Size: %ix%i", room->width, room->height);
 	if (room->tileLayer) {
@@ -367,12 +370,28 @@ void room_tile_layer_build(Room* room) {
 			tile = room->tileMap[index];
 			if (!tile)continue;
 
+			activeTileSet = NULL;
+			localTile = 0;
+
+			for (set = 0; set < room->numTileSets; set++) {
+				if (tile >= room->tileSets[set].first_ID && tile <= room->tileSets[set].last_ID) {
+					activeTileSet = room->tileSets[set].sprite;
+					localTile = tile - room->tileSets[set].first_ID;
+					scale = room->tileSets[set].scale;
+					break;
+				}
+			}
+
+			if (!activeTileSet) {
+				slog("WARNING: Requested ID '%i' not found in tileSets", tile);
+			}
+
 			gf2d_sprite_draw_to_surface(
-				room->tileSet,
+				activeTileSet,
 				gfc_vector2d((i * room->tileWidth), (j * room->tileHeight)),
+				&scale,
 				NULL,
-				NULL,
-				tile - 1,
+				localTile,
 				room->tileLayer->surface
 			);
 		}
@@ -395,6 +414,7 @@ Room* room_load(const char* filename, const char* roomType) {
 	SJson* doorObj;
 	SJson* itemArray;
 	SJson* itemPos;
+	SJson* tileSetArray;
 	SpawnPoint spawnPoint;
 	int tileWidth, tileHeight, framesPerLine, uniqueTiles;
 	int numSpawnLocations = 0;
@@ -402,6 +422,7 @@ Room* room_load(const char* filename, const char* roomType) {
 	int tile;
 	int w = 0, h = 0, spawnCount = 0;
 	int i, j;
+	int currentID;
 	if (!filename) {
 		slog("no filename provided for room_load");
 		return NULL;
@@ -433,19 +454,62 @@ Room* room_load(const char* filename, const char* roomType) {
 
 	logicArray = sj_object_get_value(wjson, "tileLogic");
 
-	sj_object_get_value_as_int(wjson, "frame_w", &tileWidth);
-	sj_object_get_value_as_int(wjson, "frame_h", &tileHeight);
+
 	sj_object_get_value_as_int(wjson, "frames_per_line", &framesPerLine);
 	sj_object_get_value_as_int(wjson, "uniqueTiles", &uniqueTiles);
 	sj_object_get_value_as_int(wjson, "numSpawnLocations", &numSpawnLocations);
 	sj_object_get_value_as_int(wjson, "numItems", &numItems);
 	
 
-	room = room_create(sj_object_get_value_as_string(wjson, "background"), sj_object_get_value_as_string(wjson, "tileSet"), w, h, tileWidth, tileHeight, framesPerLine,uniqueTiles);
+	room = room_create(sj_object_get_value_as_string(wjson, "background"), w, h,uniqueTiles);
 	if (!room) {
 		slog("failed to create space for a new room for file %s", filename);
 		sj_free(json);
 		return NULL;
+	}
+
+	sj_object_get_value_as_int(wjson,"frame_w",&tileWidth);
+	sj_object_get_value_as_int(wjson, "frame_h", &tileHeight);
+	room->tileWidth = tileWidth;
+	room->tileHeight = tileHeight;
+
+	tileSetArray = sj_object_get_value(wjson, "tileSets");
+	if (tileSetArray) {
+		float x, y;
+		int w, h, framesPerLine, count;
+		const char* file;
+
+		room->numTileSets = sj_array_get_count(tileSetArray);
+		room->tileSets = gfc_allocate_array(sizeof(TileSet),room->numTileSets);
+
+		currentID = 1;
+		for (i = 0; i < room->numTileSets; i++) {
+			SJson* tileSet = sj_array_get_nth(tileSetArray, i);
+			if (!tileSet) continue;
+
+			file = sj_object_get_value_as_string(tileSet,"file");
+			if (!file) {
+				slog("WARNING: Missing tileSet file");
+				continue;
+			}
+
+			sj_object_get_value_as_int(tileSet, "frame_w", &w);
+			sj_object_get_value_as_int(tileSet, "frame_h", &h);
+			sj_object_get_value_as_int(tileSet, "frames_per_line", &framesPerLine);
+			sj_object_get_value_as_int(tileSet, "count", &count);
+
+			x = 1.0;
+			y = 1.0;
+			sj_object_get_value_as_float(tileSet,"tileScaleX", &x);
+			sj_object_get_value_as_float(tileSet, "tileScaleY", &y);
+
+			room->tileSets[i].sprite = gf2d_sprite_load_all(file,w,h,framesPerLine,1);
+			room->tileSets[i].scale = gfc_vector2d(x, y);
+			room->tileSets[i].first_ID = currentID;
+			room->tileSets[i].last_ID = currentID + count - 1;
+
+			currentID += count;
+		}
 	}
 
 	doorObj = sj_object_get_value(wjson, "doorLocations");
@@ -537,6 +601,7 @@ Room* room_load(const char* filename, const char* roomType) {
 		}
 	}
 
+
 	room_tile_layer_build(room);
 
 	sj_free(json);
@@ -556,7 +621,7 @@ Room* room_new() {
 	return room;
 }
 
-Room* room_create(const char* background, const char* tileSet, Uint32 width, Uint32 height, Uint32 tileWidth, Uint32 tileHeight, Uint32 tilesPerLine, Uint8 uniqueTiles) {
+Room* room_create(const char* background, Uint32 width, Uint32 height, Uint8 uniqueTiles) {
 	Room* room;
 
 	room = room_new();
@@ -570,22 +635,11 @@ Room* room_create(const char* background, const char* tileSet, Uint32 width, Uin
 	if (background) {
 		room->background = gf2d_sprite_load_image(background);
 	}
-	if (tileSet) {
-		room->tileSet = gf2d_sprite_load_all(
-			tileSet,
-			tileWidth,
-			tileHeight,
-			tilesPerLine,
-			1
-		);
-	}
 
 	room->tileMap = gfc_allocate_array(sizeof(Uint8), height * width);
 	room->entityGrid = gfc_allocate_array(sizeof(GFC_List*), width * height);
 	room->width = width;
 	room->height = height;
-	room->tileWidth = tileWidth;
-	room->tileHeight = tileHeight;
 	room->uniqueTiles = uniqueTiles;
 
 	return room;
@@ -606,8 +660,11 @@ void room_free(Room* room) {
 	if (room->background) {
 		gf2d_sprite_free(room->background);
 	}
-	if (room->tileSet) {
-		gf2d_sprite_free(room->tileSet);
+	if (room->tileSets) {
+		for (i = 0; i < room->numTileSets; i++) {
+			if (room->tileSets[i].sprite) gf2d_sprite_free(room->tileSets[i].sprite);
+		}
+		free(room->tileSets);
 	}
 	if (room->tileLayer) {
 		gf2d_sprite_free(room->tileLayer);
@@ -641,9 +698,9 @@ void room_draw(Room* room) {
 	}
 
 	if (room->background){
-		gf2d_sprite_draw_image(room->background, offset);
+		gf2d_sprite_draw_image(room->background, gfc_vector2d(0,0));
 	}
-	if (room->tileSet) {
+	if (room->tileLayer) {
 		gf2d_sprite_draw_image(room->tileLayer, offset);
 	}
 	

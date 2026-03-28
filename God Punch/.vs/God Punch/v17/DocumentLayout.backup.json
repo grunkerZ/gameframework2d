@@ -3,7 +3,46 @@
   "WorkspaceRootPath": "C:\\git\\gameframework2d\\God Punch\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\world.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\standard\\standard1.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\item\\item1.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\exit\\exit1.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\start\\start1.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\game.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\world.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\gfc\\simple_json\\src\\simple_json_object.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\entity.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\simple_ui.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\gf2d_sprite.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\entity.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\simple_ui.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\console.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\simple_font.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
@@ -16,27 +55,6 @@
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\player.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\entity.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\world.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\game.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\simple_ui.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\gf2d_sprite.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\entity.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\console.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\simple_font.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
@@ -64,11 +82,39 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 0,
+              "Title": "world.c",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\src\\world.c",
+              "RelativeDocumentMoniker": "..\\src\\world.c",
+              "ToolTip": "C:\\git\\gameframework2d\\src\\world.c*",
+              "RelativeToolTip": "..\\src\\world.c*",
+              "ViewState": "AgIAAMABAAAAAAAAAAAiwNcBAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2026-03-24T11:44:22.422Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "world.h",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\include\\world.h",
+              "RelativeDocumentMoniker": "..\\include\\world.h",
+              "ToolTip": "C:\\git\\gameframework2d\\include\\world.h",
+              "RelativeToolTip": "..\\include\\world.h",
+              "ViewState": "AgIAALsAAAAAAAAAAAAAANIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-03-28T11:02:54.628Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
               "Title": "game.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\game.c",
               "RelativeDocumentMoniker": "..\\src\\game.c",
@@ -82,7 +128,72 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 7,
+              "Title": "simple_json_object.c",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\gfc\\simple_json\\src\\simple_json_object.c",
+              "RelativeDocumentMoniker": "..\\gfc\\simple_json\\src\\simple_json_object.c",
+              "ToolTip": "C:\\git\\gameframework2d\\gfc\\simple_json\\src\\simple_json_object.c",
+              "RelativeToolTip": "..\\gfc\\simple_json\\src\\simple_json_object.c",
+              "ViewState": "AgIAAOsAAAAAAAAAAIAwwAABAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2026-03-28T21:12:31.205Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "exit1.map",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\exit\\exit1.map",
+              "RelativeDocumentMoniker": "..\\maps\\exit\\exit1.map",
+              "ToolTip": "C:\\git\\gameframework2d\\maps\\exit\\exit1.map",
+              "RelativeToolTip": "..\\maps\\exit\\exit1.map",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-03-28T10:37:16.748Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "start1.map",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\start\\start1.map",
+              "RelativeDocumentMoniker": "..\\maps\\start\\start1.map",
+              "ToolTip": "C:\\git\\gameframework2d\\maps\\start\\start1.map",
+              "RelativeToolTip": "..\\maps\\start\\start1.map",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-03-28T20:44:24.506Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "item1.map",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\item\\item1.map",
+              "RelativeDocumentMoniker": "..\\maps\\item\\item1.map",
+              "ToolTip": "C:\\git\\gameframework2d\\maps\\item\\item1.map",
+              "RelativeToolTip": "..\\maps\\item\\item1.map",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-03-28T10:37:11.464Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "standard1.map",
+              "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\standard\\standard1.map",
+              "RelativeDocumentMoniker": "..\\maps\\standard\\standard1.map",
+              "ToolTip": "C:\\git\\gameframework2d\\maps\\standard\\standard1.map",
+              "RelativeToolTip": "..\\maps\\standard\\standard1.map",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-03-28T10:37:00.903Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
               "Title": "gf2d_sprite.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\gf2d_sprite.c",
               "RelativeDocumentMoniker": "..\\src\\gf2d_sprite.c",
@@ -95,7 +206,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 13,
               "Title": "console.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\console.c",
               "RelativeDocumentMoniker": "..\\src\\console.c",
@@ -108,7 +219,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 12,
               "Title": "simple_ui.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\simple_ui.h",
               "RelativeDocumentMoniker": "..\\include\\simple_ui.h",
@@ -121,20 +232,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 9,
               "Title": "simple_ui.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\simple_ui.c",
               "RelativeDocumentMoniker": "..\\src\\simple_ui.c",
-              "ToolTip": "C:\\git\\gameframework2d\\src\\simple_ui.c*",
-              "RelativeToolTip": "..\\src\\simple_ui.c*",
-              "ViewState": "AgIAAK4BAAAAAAAAAAAAAM8BAAAUAAAAAAAAAA==",
+              "ToolTip": "C:\\git\\gameframework2d\\src\\simple_ui.c",
+              "RelativeToolTip": "..\\src\\simple_ui.c",
+              "ViewState": "AgIAALoBAAAAAAAAAAAAAM8BAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-03-24T16:48:25.459Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 8,
               "Title": "entity.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\entity.h",
               "RelativeDocumentMoniker": "..\\include\\entity.h",
@@ -147,7 +258,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 11,
               "Title": "entity.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\entity.c",
               "RelativeDocumentMoniker": "..\\src\\entity.c",
@@ -160,20 +271,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "world.c",
-              "DocumentMoniker": "C:\\git\\gameframework2d\\src\\world.c",
-              "RelativeDocumentMoniker": "..\\src\\world.c",
-              "ToolTip": "C:\\git\\gameframework2d\\src\\world.c",
-              "RelativeToolTip": "..\\src\\world.c",
-              "ViewState": "AgIAAE4AAAAAAAAAAAAAAHEAAAAXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2026-03-24T11:44:22.422Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 17,
               "Title": "player.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\player.h",
               "RelativeDocumentMoniker": "..\\include\\player.h",
@@ -186,7 +284,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 16,
               "Title": "player.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\player.c",
               "RelativeDocumentMoniker": "..\\src\\player.c",
@@ -199,7 +297,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 15,
               "Title": "gf2d_draw.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\gf2d_draw.c",
               "RelativeDocumentMoniker": "..\\src\\gf2d_draw.c",
@@ -212,7 +310,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 14,
               "Title": "simple_font.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\simple_font.c",
               "RelativeDocumentMoniker": "..\\src\\simple_font.c",
@@ -225,7 +323,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 18,
               "Title": "simple_font.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\simple_font.h",
               "RelativeDocumentMoniker": "..\\include\\simple_font.h",
@@ -237,7 +335,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 19,
               "Title": "item.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\item.h",
               "RelativeDocumentMoniker": "..\\include\\item.h",
@@ -249,7 +347,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 21,
               "Title": "console.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\console.h",
               "RelativeDocumentMoniker": "..\\include\\console.h",
@@ -261,7 +359,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 20,
               "Title": "monster.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\monster.h",
               "RelativeDocumentMoniker": "..\\include\\monster.h",
@@ -273,7 +371,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 23,
               "Title": "gfc_text.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\gfc\\include\\gfc_text.h",
               "RelativeDocumentMoniker": "..\\gfc\\include\\gfc_text.h",
@@ -285,7 +383,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 22,
               "Title": "gfc_string.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\gfc\\include\\gfc_string.h",
               "RelativeDocumentMoniker": "..\\gfc\\include\\gfc_string.h",
