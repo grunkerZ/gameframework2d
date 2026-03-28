@@ -2,7 +2,7 @@
 #include "simple_logger.h"
 #include "gf2d_draw.h"
 #include "camera.h"
-
+#include "player.h"
 
 GenericMenu* menu_new() {
 	GenericMenu* menu;
@@ -421,6 +421,126 @@ void draw_mouse(GenericMenu* menu, Sprite* mouse, float mx, float my, GFC_Vector
 		NULL,
 		NULL,
 		mf);
+}
+
+HUD* hud_init() {
+	HUD* hud;
+	hud = gfc_allocate_array(sizeof(HUD), 1);
+	if (!hud) {
+		slog("ERROR: HUD init failed");
+		return NULL;
+	}
+	hud->hud_frame = gf2d_sprite_load_all("images/ui/hud/hud_frame.png", 1024, 288, 1, false);
+	hud->health_gradient = gf2d_sprite_load_image("images/ui/hud/health_gradient.png");
+	hud->shield_gradient = gf2d_sprite_load_image("images/ui/hud/shield_gradient.png");
+	hud->frame = 0;
+	hud->scale = gfc_vector2d(0.25, 0.25);
+	hud->healthPercent = 1;
+
+	slog("hud initialized");
+	return hud;
+}
+
+void hud_update(HUD* hud, Entity* player) {
+	GFC_Vector2D offset;
+	PlayerData* stats;
+	float hpPercent;
+	float tempHpPercent;
+	
+	if (!player || !player->data) return;
+	offset = camera_get_offset();
+	stats = player->data;
+
+	hpPercent = (float)stats->health / (float)stats->maxHealth;
+
+	if (hpPercent > 0.5) hud->frame = 0;
+	else if (hpPercent > 0.25) hud->frame = 1;
+	else if (hpPercent > 0.0) hud->frame = 2;
+	else hud->frame = 3;
+
+	hud->healthPercent = hpPercent;
+
+	slog("current hp percent: %f", hpPercent);
+	slog("current frame: %f", hud->frame);
+	//hud->position = gfc_vector2d(0 + offset.x, 720 + offset.y - 72);
+}
+
+void draw_hud(HUD* hud, Entity* player) {
+	PlayerData* stats;
+	GFC_Vector2D healthBarPos;
+	GFC_Vector2D shieldBarPos;
+	GFC_Vector2D gradientScale;
+	float maxBarWidth;
+	GFC_Vector4D healthClip;
+	GFC_Color backColor;
+
+	if (!player || !player->data) return;
+	stats = player->data;
+
+	healthBarPos = gfc_vector2d(hud->position.x + (175 * hud->scale.x), hud->position.y + (35 * hud->scale.y));
+	shieldBarPos = gfc_vector2d(hud->position.x + (120 * hud->scale.x), hud->position.y + (40 * hud->scale.y));
+
+	maxBarWidth = 600 * hud->scale.x;
+
+	if (hud->health_gradient) {
+		gradientScale = gfc_vector2d(0.2075,0.215);
+		backColor = gfc_color8(0, 0, 0, 255);
+		healthClip = gfc_vector4d(0,0,hud->healthPercent,1);
+
+		gf2d_sprite_draw(
+			hud->health_gradient,
+			healthBarPos,
+			&gradientScale,
+			NULL,
+			NULL,
+			NULL,
+			&backColor,
+			0);
+
+		gf2d_sprite_render(
+			hud->health_gradient,
+			healthBarPos,
+			&gradientScale,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			&healthClip,
+			0);
+	}
+
+	//draw shield
+
+	gf2d_sprite_draw(
+		hud->hud_frame,
+		hud->position,
+		&hud->scale,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		hud->frame);
+
+	//draw cooldown squares
+
+}
+
+void hud_free(HUD* hud) {
+	if (hud->hud_frame) gf2d_sprite_free(hud->hud_frame);
+	if (hud->health_gradient) gf2d_sprite_free(hud->health_gradient);
+	if (hud->shield_gradient) gf2d_sprite_free(hud->shield_gradient);
+	
+	free(hud);
+}
+
+float get_cooldown_percent(Uint32 timeAt, Uint32 cooldown) {
+	Uint32 currentTime = SDL_GetTicks64();
+	if (currentTime - timeAt > cooldown) {
+		return 0;
+	}
+	else {
+		return 1.0 - ((float)(currentTime - timeAt) / ((float)cooldown));
+	}
 }
 
 /*eol@eof*/

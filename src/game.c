@@ -35,6 +35,7 @@ typedef struct {
     Sprite*             mouse;              //the mouse pointer
     GFC_Vector2D        mouseScale;
     Stage*              currentStage;       //the current stage the player is in
+    HUD*                hud;
 }System;
 
 
@@ -126,6 +127,7 @@ void update_game(System* game) {
         entity_manager_think_all();
         entity_manager_update_all();
         item_manager_think_all();
+        hud_update(game->hud, game->player);
 
         collider = check_entity_collision(game->player);
         if (collider && collider->type == ET_DOOR) {
@@ -207,6 +209,8 @@ void draw_game(System* game) {
 
         camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
 
+        draw_hud(game->hud, game->player);
+
         console_draw();
         break;
     }
@@ -246,6 +250,7 @@ int main(int argc, char * argv[])
     gf2d_sprite_init(1024);
     simple_font_init();
     console_init();
+    game->hud = hud_init();
     entity_manager_init(1024);
     SDL_ShowCursor(SDL_DISABLE);
     item_manager_init(1024);

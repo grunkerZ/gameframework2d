@@ -599,4 +599,9 @@ void player_draw(Entity* self) {
 	}
 }
 
+int player_get_health() {
+	return ((PlayerData*)player->data)->health;
+}
+
+
 /*eol@eof*/

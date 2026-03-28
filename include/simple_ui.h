@@ -3,6 +3,7 @@
 
 	#include "gfc_shape.h"
 	#include "gf2d_sprite.h"
+	#include "Entity.h"
 
 	typedef struct {
 		GFC_Shape		bounds;				//the bounds of the button
@@ -67,6 +68,21 @@
 			PauseMenu	pause;
 		}Menu;
 	}GenericMenu;
+
+	typedef struct {
+		Sprite* hud_frame;
+		Sprite* health_gradient;
+		Sprite* shield_gradient;
+		Uint32	abilityCooldown1;
+		Uint32	abilityCooldown2;
+		Uint32	abilityCooldown3;
+		Uint32	abilityCooldown4;
+		float	frame;
+		float	healthPercent;
+		float	shieldPercent;
+		GFC_Vector2D scale;
+		GFC_Vector2D position;
+	}HUD;
 
 	/*
 	* @brief allocates memory for a new menu
@@ -149,5 +165,32 @@
 	* @param mouseScale the scale of the mouse
 	*/
 	void draw_mouse(GenericMenu* menu, Sprite* mouse, float mx, float my, GFC_Vector2D mouseScale);
+
+	/*
+	* @brief initializes the hud
+	* @returns NULL on error, otherwise an allocated hud pointer
+	*/
+	HUD* hud_init();
+
+	/*
+	* @brief updates the hud
+	*/
+	void hud_update(HUD* hud, Entity* player);
+
+	/*
+	* @brief draws the hud
+	*/
+	void draw_hud(HUD* hud, Entity* player);
+
+	/*
+	* @brief frees previously allocated hud
+	*/
+	void hud_free(HUD* hud);
+
+	/*
+	* @brief gets the percent cooled down an ability is
+	* @returns the percent cooled down an ability is
+	*/
+	float get_cooldown_percent(Uint32 timeAt, Uint32 cooldown);
 
 	#endif //SIMPLE_UI_H__

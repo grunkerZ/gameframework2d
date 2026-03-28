@@ -103,4 +103,10 @@ void player_calculate_stats(Entity* self);
 */
 Entity* get_player_entity();
 
+/*
+* @brief get the players current health
+* @return the players current health
+*/
+int player_get_health();
+
 #endif // !__PLAYER_H__
