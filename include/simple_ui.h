@@ -38,8 +38,8 @@
 	}MainMenu;
 
 	typedef struct {
-		Button		exitButton;				//quits the game
-		Button		mainMenuButton;			//return to main menu
+		Button		restartButton;			//restarts the game
+		Button		menuButton;			//return to main menu
 	}DeathMenu;
 
 	typedef struct {

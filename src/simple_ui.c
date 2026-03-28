@@ -141,33 +141,33 @@ GenericMenu* main_menu_init() {
 
 	self->menuType = MT_MAIN;
 
-	self->background = gf2d_sprite_load_all("images/menu/main/main_bg_sheet.png",2048,1228,4,false);
+	self->background = gf2d_sprite_load_all("images/ui/main/main_bg_sheet.png",2048,1228,4,false);
 	self->bgScale = gfc_vector2d(0.5859375, 0.5863192182);
 
 	buttonPos.x = (self->background->frame_w * self->bgScale.x) - 400;
 	buttonPos.y = ((self->background->frame_h / 2) * self->bgScale.y) - 100;
 	float spacing = 100;
 
-	button_init(&self->Menu.start.startButton, "images/menu/main/start_button.png","images/menu/main/start_button_highlight.png",buttonPos,ST_RECT, 0);
+	button_init(&self->Menu.start.startButton, "images/ui/main/start_button.png","images/ui/main/start_button_highlight.png",buttonPos,ST_RECT, 0);
 
 	buttonPos.y += spacing;
-	button_init(&self->Menu.start.continueButton, "images/menu/main/continue_button.png", "images/menu/main/continue_button_highlight.png", buttonPos, ST_RECT, 0);
+	button_init(&self->Menu.start.continueButton, "images/ui/main/continue_button.png", "images/ui/main/continue_button_highlight.png", buttonPos, ST_RECT, 0);
 
 	buttonPos.y += spacing;
-	button_init(&self->Menu.start.optionsButton, "images/menu/main/options_button.png", "images/menu/main/options_button_highlight.png", buttonPos, ST_RECT, 0);
+	button_init(&self->Menu.start.optionsButton, "images/ui/main/options_button.png", "images/ui/main/options_button_highlight.png", buttonPos, ST_RECT, 0);
 
 	buttonPos.y += spacing;
-	button_init(&self->Menu.start.quitButton, "images/menu/main/quit_button.png", "images/menu/main/quit_button_highlight.png", buttonPos, ST_RECT, 0);
+	button_init(&self->Menu.start.quitButton, "images/ui/main/quit_button.png", "images/ui/main/quit_button_highlight.png", buttonPos, ST_RECT, 0);
 
 	buttonPos.y += 100;
-	button_init(&self->Menu.start.extrasButton, "images/menu/main/extras_button.png", "images/menu/main/extras_button_highlight.png", buttonPos, ST_RECT, 0);
+	button_init(&self->Menu.start.extrasButton, "images/ui/main/extras_button.png", "images/ui/main/extras_button_highlight.png", buttonPos, ST_RECT, 0);
 	self->Menu.start.extrasButton.defaultScale = gfc_vector2d(0.115,0.115);
 	self->Menu.start.extrasButton.scale = gfc_vector2d(0.115, 0.115);
 	self->Menu.start.extrasButton.scaleAmount = 0.0005;
 	self->Menu.start.extrasButton.maxScale = gfc_vector2d(0.120, 0.120);
 	
 	buttonPos.x = self->Menu.start.quitButton.position.x + ((self->Menu.start.quitButton.spriteWidth / 2) * self->Menu.start.quitButton.scale.x);
-	button_init(&self->Menu.start.creditsButton, "images/menu/main/credits_button.png", "images/menu/main/credits_button_highlight.png", buttonPos, ST_RECT, 0);
+	button_init(&self->Menu.start.creditsButton, "images/ui/main/credits_button.png", "images/ui/main/credits_button_highlight.png", buttonPos, ST_RECT, 0);
 	self->Menu.start.creditsButton.defaultScale = gfc_vector2d(0.115, 0.115);
 	self->Menu.start.creditsButton.scale = gfc_vector2d(0.115, 0.115);
 	self->Menu.start.creditsButton.scaleAmount = 0.0005;
@@ -178,6 +178,8 @@ GenericMenu* main_menu_init() {
 
 GenericMenu* death_menu_init() {
 	GenericMenu* self;
+	GFC_Vector2D buttonPos;
+
 	self = menu_new();
 	if (!self) {
 		slog("failed it init death menu");
@@ -185,28 +187,26 @@ GenericMenu* death_menu_init() {
 	}
 
 	self->menuType = MT_DEATH;
-	self->background = gf2d_sprite_load_image("images/placeholder/bg_flat.png");
-	self->Menu.death.mainMenuButton.shape = ST_RECT;
-	self->Menu.death.mainMenuButton.sprite = gf2d_sprite_load_image("images/placeholder/mainMenuButton.png");
-	self->Menu.death.mainMenuButton.position = gfc_vector2d(
-		(self->background->frame_w / 2) - (self->Menu.death.mainMenuButton.sprite->frame_w / 2),
-		(self->background->frame_h / 2) - (self->Menu.death.mainMenuButton.sprite->frame_h / 2));
-	self->Menu.death.mainMenuButton.bounds.s.r.x = self->Menu.death.mainMenuButton.position.x;
-	self->Menu.death.mainMenuButton.bounds.s.r.y = self->Menu.death.mainMenuButton.position.y;
-	self->Menu.death.mainMenuButton.bounds.s.r.w = self->Menu.death.mainMenuButton.sprite->frame_w;
-	self->Menu.death.mainMenuButton.bounds.s.r.h = self->Menu.death.mainMenuButton.sprite->frame_h;
-	self->Menu.death.mainMenuButton.clicked = 0;
-	self->Menu.death.mainMenuButton.hovered = 0;
+	self->background = gf2d_sprite_load_image("images/ui/death/death_bg.png");
+	self->bgScale = gfc_vector2d(1, 1);
 
-	self->Menu.death.exitButton.position = gfc_vector2d(self->Menu.death.mainMenuButton.position.x, self->Menu.death.mainMenuButton.position.y + (self->Menu.death.mainMenuButton.sprite->frame_h * 2));
-	self->Menu.death.exitButton.shape = ST_RECT;
-	self->Menu.death.exitButton.sprite = gf2d_sprite_load_image("images/placeholder/exitButton.png");
-	self->Menu.death.exitButton.bounds.s.r.x = self->Menu.death.exitButton.position.x;
-	self->Menu.death.exitButton.bounds.s.r.y = self->Menu.death.exitButton.position.y;
-	self->Menu.death.exitButton.bounds.s.r.w = self->Menu.death.exitButton.sprite->frame_w;
-	self->Menu.death.exitButton.bounds.s.r.h = self->Menu.death.exitButton.sprite->frame_h;
-	self->Menu.death.exitButton.clicked = 0;
-	self->Menu.death.exitButton.hovered = 0;
+	buttonPos = gfc_vector2d(self->background->frame_w / 2, 425);
+
+	button_init(&self->Menu.death.restartButton, "images/ui/death/retry.png", "images/ui/death/retry_highlight.png", buttonPos, ST_RECT, 0);
+	self->Menu.death.restartButton.defaultScale = gfc_vector2d(0.8, 0.8);
+	self->Menu.death.restartButton.scale = gfc_vector2d(0.8, 0.8);
+	self->Menu.death.restartButton.scaleAmount = 0.01;
+	self->Menu.death.restartButton.maxScale = gfc_vector2d(0.85, 0.85);
+	self->Menu.death.restartButton.position.x -= (self->Menu.death.restartButton.spriteWidth / 2) - 25;
+
+	buttonPos.y += 150;
+	button_init(&self->Menu.death.menuButton, "images/ui/death/quit.png", "images/ui/death/quit_highlight.png", buttonPos, ST_RECT, 0);
+	self->Menu.death.menuButton.position.x -= self->Menu.death.menuButton.spriteWidth;
+	self->Menu.death.menuButton.defaultScale = gfc_vector2d(0.8, 0.8);
+	self->Menu.death.menuButton.scale = gfc_vector2d(0.8, 0.8);
+	self->Menu.death.menuButton.scaleAmount = 0.01;
+	self->Menu.death.menuButton.maxScale = gfc_vector2d(0.85, 0.85);
+	self->Menu.death.menuButton.position.x += (self->Menu.death.menuButton.spriteWidth / 2) + 25;
 
 	return self;
 }
@@ -221,12 +221,12 @@ GenericMenu* pause_menu_init() {
 	}
 
 	self->menuType = MT_PAUSE;
-	self->background = gf2d_sprite_load_image("images/menu/pause/pause_bg.png");
+	self->background = gf2d_sprite_load_image("images/ui/pause/pause_bg.png");
 	self->bgScale = gfc_vector2d(1, 1);
 
 	buttonPos = gfc_vector2d(30,170);
 	
-	button_init(&self->Menu.pause.resumeButton, "images/menu/pause/play.png", "images/menu/pause/play_highlight.png", buttonPos, ST_RECT, -25);
+	button_init(&self->Menu.pause.resumeButton, "images/ui/pause/play.png", "images/ui/pause/play_highlight.png", buttonPos, ST_RECT, -25);
 	self->Menu.pause.resumeButton.defaultScale = gfc_vector2d(0.75, 0.75);
 	self->Menu.pause.resumeButton.scale = gfc_vector2d(0.75, 0.75);
 	self->Menu.pause.resumeButton.scaleAmount = 0.001;
@@ -238,7 +238,7 @@ GenericMenu* pause_menu_init() {
 	buttonPos.x += 75;
 	buttonPos.y += 110;
 
-	button_init(&self->Menu.pause.menuButton, "images/menu/pause/quit.png", "images/menu/pause/quit_highlight.png", buttonPos, ST_RECT, -25);
+	button_init(&self->Menu.pause.menuButton, "images/ui/pause/quit.png", "images/ui/pause/quit_highlight.png", buttonPos, ST_RECT, -25);
 	self->Menu.pause.menuButton.defaultScale = gfc_vector2d(0.75, 0.75);
 	self->Menu.pause.menuButton.scale = gfc_vector2d(0.75, 0.75);
 	self->Menu.pause.menuButton.scaleAmount = 0.001;
@@ -250,7 +250,7 @@ GenericMenu* pause_menu_init() {
 	buttonPos.x += 75;
 	buttonPos.y += 110;
 
-	button_init(&self->Menu.pause.optionsButton, "images/menu/pause/options.png", "images/menu/pause/options_highlight.png", buttonPos, ST_RECT, -25);
+	button_init(&self->Menu.pause.optionsButton, "images/ui/pause/options.png", "images/ui/pause/options_highlight.png", buttonPos, ST_RECT, -25);
 	self->Menu.pause.optionsButton.defaultScale = gfc_vector2d(0.75, 0.75);
 	self->Menu.pause.optionsButton.scale = gfc_vector2d(0.75, 0.75);
 	self->Menu.pause.optionsButton.scaleAmount = 0.001;
@@ -264,10 +264,15 @@ GenericMenu* pause_menu_init() {
 
 void button_draw(Button* button, Uint8 dropShadow) {
 	Sprite* activeSprite;
-	GFC_Rect position = gfc_rect(button->bounds.s.r.x+4, button->bounds.s.r.y+4, button->bounds.s.r.w, button->bounds.s.r.h);
-	activeSprite = button->sprite;
+	GFC_Vector2D drawPos;
+	GFC_Rect shadow;
 	
-	if (button->shape == ST_RECT && dropShadow) gf2d_draw_rect_filled(position, gfc_color8(0, 0, 0, 255));
+	activeSprite = button->sprite;
+	drawPos.x = button->position.x - ((button->spriteWidth / 2) * (button->scale.x - button->defaultScale.x));
+	drawPos.y = button->position.y - ((button->spriteHeight / 2) * (button->scale.y - button->defaultScale.y));
+	shadow = gfc_rect(drawPos.x + 4, drawPos.y + 4, button->bounds.s.r.w, button->bounds.s.r.h);
+
+	if (button->shape == ST_RECT && dropShadow) gf2d_draw_rect_filled(shadow, gfc_color8(0, 0, 0, 255));
 
 	if (button->hovered) {
 		activeSprite = button->highlight;
@@ -294,9 +299,11 @@ void button_draw(Button* button, Uint8 dropShadow) {
 	}
 
 	if (activeSprite) {
+		
+
 		gf2d_sprite_render(
 			activeSprite,
-			button->position,
+			drawPos,
 			&button->scale,
 			NULL,
 			NULL,
@@ -337,8 +344,8 @@ void menu_draw(GenericMenu* menu) {
 			break;
 
 		case MT_DEATH:
-			button_draw(&menu->Menu.death.mainMenuButton, 1);
-			button_draw(&menu->Menu.death.exitButton, 1);
+			button_draw(&menu->Menu.death.restartButton, 1);
+			button_draw(&menu->Menu.death.menuButton, 1);
 			break;
 		case MT_PAUSE:
 			button_draw(&menu->Menu.pause.resumeButton,0);
@@ -362,8 +369,8 @@ void menu_update(GenericMenu* menu) {
 			anyHovered |= button_update(&menu->Menu.start.creditsButton);
 			break;
 		case MT_DEATH:
-			anyHovered |= button_update(&menu->Menu.death.mainMenuButton);
-			anyHovered |= button_update(&menu->Menu.death.exitButton);
+			anyHovered |= button_update(&menu->Menu.death.restartButton);
+			anyHovered |= button_update(&menu->Menu.death.menuButton);
 			break;
 		case MT_PAUSE:
 			anyHovered |= button_update(&menu->Menu.pause.resumeButton);
@@ -391,10 +398,8 @@ void menu_free(GenericMenu* self) {
 		button_free(&self->Menu.start.creditsButton);
 		break;
 	case MT_DEATH:
-		gf2d_sprite_free(self->Menu.death.mainMenuButton.sprite);
-		gf2d_sprite_free(self->Menu.death.mainMenuButton.highlight);
-		gf2d_sprite_free(self->Menu.death.exitButton.sprite);
-		gf2d_sprite_free(self->Menu.death.exitButton.highlight);
+		button_free(&self->Menu.death.restartButton);
+		button_free(&self->Menu.death.menuButton);
 		break;
 	case MT_PAUSE:
 		button_free(&self->Menu.pause.resumeButton);

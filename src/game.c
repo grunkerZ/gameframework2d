@@ -94,8 +94,8 @@ void update_game(System* game) {
         }
 
         menu_update(game->deathMenu);
-        if (game->deathMenu->Menu.death.exitButton.clicked) game->done = 1;
-        if (game->deathMenu->Menu.death.mainMenuButton.clicked) game->state = GS_MAINMENU;
+        if (game->deathMenu->Menu.death.restartButton.clicked) game->done = 1;
+        if (game->deathMenu->Menu.death.menuButton.clicked) game->state = GS_MAINMENU;
         break;
 
     case GS_PAUSED:
@@ -255,7 +255,7 @@ int main(int argc, char * argv[])
 
     /*demo setup*/
 
-    game->mouse = gf2d_sprite_load_all("images/menu/cursor.png",2048,2048,1,0);
+    game->mouse = gf2d_sprite_load_all("images/ui/cursor.png",2048,2048,1,0);
     game->mouseScale = gfc_vector2d(0.01562, 0.01562);
     GFC_Vector2D offset = camera_get_offset();
     game->mainMenu = main_menu_init();

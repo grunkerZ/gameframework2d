@@ -436,6 +436,21 @@ void console_execute(const char* cmd_line) {
 			}
 		}
 	}
+	else if (strcmp(args[0], "kill") == 0) {
+		Entity* player = get_player_entity();
+		PlayerData* stats;
+		stats = player->data;
+		if (!player) {
+			slog("no active player to change stats");
+		}
+		else if (argc == 1) {
+			stats->health = 0;
+			stats->tempHealth = 0;
+		}
+		else {
+			slog("too many args for 'kill'");
+		}
+	}
 	else {
 		slog("unknown command");
 	}
