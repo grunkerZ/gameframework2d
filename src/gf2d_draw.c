@@ -468,4 +468,31 @@ void gf2d_bezier4_draw(
     gfc_list_delete(points);
 }
 
+void gf2d_draw_rotated_rect(GFC_Rect rect, float angle, GFC_Vector2D center, GFC_Color color) {
+    GFC_Vector2D corner[4];
+    GFC_Vector2D rotatedCorner[4];
+    float rad, cosVal, sinVal;
+    int i;
+
+    rad = angle * GFC_DEGTORAD;
+    cosVal = cos(rad);
+    sinVal = sin(rad);
+
+    corner[0] = gfc_vector2d(rect.x, rect.y);
+    corner[1] = gfc_vector2d(rect.x + rect.w, rect.y);
+    corner[2] = gfc_vector2d(rect.x + rect.w, rect.y + rect.h);
+    corner[3] = gfc_vector2d(rect.x, rect.y + rect.h);
+
+    for (i = 0; i < 4; i++) {
+        rotatedCorner[i].x = cosVal * (corner[i].x - center.x) - sinVal * (corner[i].y - center.y) + center.x;
+        rotatedCorner[i].y = sinVal * (corner[i].x - center.x) + cosVal * (corner[i].y - center.y) + center.y;
+    }
+
+    gf2d_draw_line(rotatedCorner[0], rotatedCorner[1], color);
+    gf2d_draw_line(rotatedCorner[1], rotatedCorner[2], color);
+    gf2d_draw_line(rotatedCorner[2], rotatedCorner[3], color);
+    gf2d_draw_line(rotatedCorner[3], rotatedCorner[0], color);
+    return;
+}
+
 /*eol@eof*/

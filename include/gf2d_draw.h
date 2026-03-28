@@ -88,4 +88,13 @@ void gf2d_draw_bezier4_curve(GFC_Vector2D p0,GFC_Vector2D r0,GFC_Vector2D r1,GFC
  */
 void gf2d_draw_polygon(GFC_List *points,GFC_Color color);
 
+/*
+* @brief draw a rotated rectangle
+* @param rect the rect to draw
+* @param angle the angle the rect is rotated
+* @param center the center of rotation
+* @param color to color to draw with
+*/
+void gf2d_draw_rotated_rect(GFC_Rect rect, float angle, GFC_Vector2D center, GFC_Color color);
+
 #endif

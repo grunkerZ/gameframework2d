@@ -21,6 +21,11 @@
 		GFC_Vector2D	defaultScale;
 		GFC_Vector2D	maxScale;
 		float			scaleAmount;
+		Uint8			isRotated;
+		float			angle;
+		GFC_Vector2D	rotateCenter;
+		float			bb_w;
+		float			bb_h;
 	}Button;
 
 	typedef struct {
@@ -38,8 +43,9 @@
 	}DeathMenu;
 
 	typedef struct {
-		Button		exitButton;				//return to play
-		Button		mainMenuButton;			//return to main menu
+		Button		resumeButton;			//unpauses
+		Button		optionsButton;
+		Button		menuButton;			//return to main menu
 	}PauseMenu;
 
 	typedef enum {
@@ -101,7 +107,7 @@
 	* @param position the position of the button
 	* @param shape the shape of the button
 	*/
-	void button_init(Button* button, const char* imagePath, const char* highlightPath, GFC_Vector2D position, GFC_ShapeTypes shape);
+	void button_init(Button* button, const char* imagePath, const char* highlightPath, GFC_Vector2D position, GFC_ShapeTypes shape, float angle);
 
 	/*
 	* @brief initializes the Death Menu with data
@@ -118,8 +124,9 @@
 	/*
 	* @brief draws a button to the screen
 	* @param button the button to draw
+	* @param dropShadow 1 to draw a dropshadow on the button, 0 otherwise
 	*/
-	void button_draw(Button* button);
+	void button_draw(Button* button, Uint8 dropShadow);
 
 	/*
 	* @brief draws a menu to the screen

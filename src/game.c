@@ -100,7 +100,7 @@ void update_game(System* game) {
 
     case GS_PAUSED:
         menu_update(game->pauseMenu);
-        if (game->pauseMenu->Menu.pause.mainMenuButton.clicked) {
+        if (game->pauseMenu->Menu.pause.menuButton.clicked) {
             if (game->player) {
                 entity_free(game->player);
                 game->player = NULL;
@@ -115,7 +115,7 @@ void update_game(System* game) {
             game->paused = 0;
             game->state = GS_MAINMENU;
         }
-        if (game->pauseMenu->Menu.pause.exitButton.clicked) {
+        if (game->pauseMenu->Menu.pause.resumeButton.clicked) {
             game->paused = 0;
             game->state = GS_PLAYING;
         }
