@@ -36,6 +36,7 @@
 		Button		extrasButton;
 		Button		creditsButton;
 		Button		quitButton;				//quits the game
+		Sprite*		title;
 	}MainMenu;
 
 	typedef struct {

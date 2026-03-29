@@ -144,6 +144,8 @@ GenericMenu* main_menu_init() {
 	self->background = gf2d_sprite_load_all("images/ui/main/main_bg_sheet.png",2048,1228,4,false);
 	self->bgScale = gfc_vector2d(0.5859375, 0.5863192182);
 
+	self->Menu.start.title = gf2d_sprite_load_image("images/ui/main/title.png");
+
 	buttonPos.x = (self->background->frame_w * self->bgScale.x) - 400;
 	buttonPos.y = ((self->background->frame_h / 2) * self->bgScale.y) - 100;
 	float spacing = 100;
@@ -335,6 +337,18 @@ void menu_draw(GenericMenu* menu) {
 	}
 	switch (menu->menuType) {
 		case MT_MAIN:
+			if (menu->Menu.start.title) {
+				gf2d_sprite_render(
+					menu->Menu.start.title,
+					gfc_vector2d(260, 0),
+					NULL,
+					NULL,
+					NULL,
+					NULL,
+					NULL,
+					NULL,
+					0);
+			}
 			button_draw(&menu->Menu.start.startButton, 1);
 			button_draw(&menu->Menu.start.continueButton, 1);
 			button_draw(&menu->Menu.start.optionsButton, 1);
@@ -390,6 +404,7 @@ void menu_free(GenericMenu* self) {
 
 	switch (self->menuType) {
 	case MT_MAIN:
+		if(self->Menu.start.title) gf2d_sprite_free(self->Menu.start.title);
 		button_free(&self->Menu.start.startButton);
 		button_free(&self->Menu.start.continueButton);
 		button_free(&self->Menu.start.optionsButton);

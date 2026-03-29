@@ -3,19 +3,25 @@
   "WorkspaceRootPath": "C:\\git\\gameframework2d\\God Punch\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\world.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\simple_ui.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\standard\\standard1.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\item\\item1.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\simple_ui.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\exit\\exit1.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\start\\start1.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\item\\item1.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\maps\\standard\\standard1.map||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\world.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\game.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
@@ -30,16 +36,10 @@
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\entity.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\simple_ui.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\gf2d_sprite.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\entity.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\include\\simple_ui.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{DCE0A5BC-14E9-4C9F-8064-29C6DE28D71A}|God Punch.vcxproj|C:\\git\\gameframework2d\\src\\console.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
@@ -82,17 +82,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 11,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 6,
               "Title": "world.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\world.c",
               "RelativeDocumentMoniker": "..\\src\\world.c",
-              "ToolTip": "C:\\git\\gameframework2d\\src\\world.c*",
-              "RelativeToolTip": "..\\src\\world.c*",
-              "ViewState": "AgIAAMABAAAAAAAAAAAiwNcBAAAVAAAAAAAAAA==",
+              "ToolTip": "C:\\git\\gameframework2d\\src\\world.c",
+              "RelativeToolTip": "..\\src\\world.c",
+              "ViewState": "AgIAAFkDAAAAAAAAAADwv2sDAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-03-24T11:44:22.422Z",
               "IsPinned": true,
@@ -100,7 +100,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 8,
               "Title": "world.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\world.h",
               "RelativeDocumentMoniker": "..\\include\\world.h",
@@ -109,12 +109,11 @@
               "ViewState": "AgIAALsAAAAAAAAAAAAAANIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2026-03-28T11:02:54.628Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
               "Title": "game.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\game.c",
               "RelativeDocumentMoniker": "..\\src\\game.c",
@@ -123,12 +122,11 @@
               "ViewState": "AgIAAGUAAAAAAAAAAAAAAIEAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-01-30T14:12:12.61Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 9,
               "Title": "simple_json_object.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\gfc\\simple_json\\src\\simple_json_object.c",
               "RelativeDocumentMoniker": "..\\gfc\\simple_json\\src\\simple_json_object.c",
@@ -136,25 +134,24 @@
               "RelativeToolTip": "..\\gfc\\simple_json\\src\\simple_json_object.c",
               "ViewState": "AgIAAOsAAAAAAAAAAIAwwAABAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2026-03-28T21:12:31.205Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-28T21:12:31.205Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "exit1.map",
               "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\exit\\exit1.map",
               "RelativeDocumentMoniker": "..\\maps\\exit\\exit1.map",
               "ToolTip": "C:\\git\\gameframework2d\\maps\\exit\\exit1.map",
               "RelativeToolTip": "..\\maps\\exit\\exit1.map",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAEAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACIAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2026-03-28T10:37:16.748Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "start1.map",
               "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\start\\start1.map",
               "RelativeDocumentMoniker": "..\\maps\\start\\start1.map",
@@ -167,7 +164,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "item1.map",
               "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\item\\item1.map",
               "RelativeDocumentMoniker": "..\\maps\\item\\item1.map",
@@ -180,20 +177,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
               "Title": "standard1.map",
               "DocumentMoniker": "C:\\git\\gameframework2d\\maps\\standard\\standard1.map",
               "RelativeDocumentMoniker": "..\\maps\\standard\\standard1.map",
               "ToolTip": "C:\\git\\gameframework2d\\maps\\standard\\standard1.map",
               "RelativeToolTip": "..\\maps\\standard\\standard1.map",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAEAAAAAAAAAA==",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAiwBoAAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2026-03-28T10:37:00.903Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "gf2d_sprite.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\gf2d_sprite.c",
               "RelativeDocumentMoniker": "..\\src\\gf2d_sprite.c",
@@ -201,8 +198,7 @@
               "RelativeToolTip": "..\\src\\gf2d_sprite.c",
               "ViewState": "AgIAAIMBAAAAAAAAAAAAAJUBAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2026-03-28T09:33:14.275Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-28T09:33:14.275Z"
             },
             {
               "$type": "Document",
@@ -214,38 +210,37 @@
               "RelativeToolTip": "..\\src\\console.c",
               "ViewState": "AgIAAMEBAAAAAAAAAAAAALABAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2026-03-28T07:16:54.398Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-28T07:16:54.398Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 1,
               "Title": "simple_ui.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\simple_ui.h",
               "RelativeDocumentMoniker": "..\\include\\simple_ui.h",
               "ToolTip": "C:\\git\\gameframework2d\\include\\simple_ui.h",
               "RelativeToolTip": "..\\include\\simple_ui.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAARAAAAAAAAAA==",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAACYAAAALAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2026-03-24T16:49:24.578Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 0,
               "Title": "simple_ui.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\simple_ui.c",
               "RelativeDocumentMoniker": "..\\src\\simple_ui.c",
-              "ToolTip": "C:\\git\\gameframework2d\\src\\simple_ui.c",
-              "RelativeToolTip": "..\\src\\simple_ui.c",
-              "ViewState": "AgIAALoBAAAAAAAAAAAAAM8BAAADAAAAAAAAAA==",
+              "ToolTip": "C:\\git\\gameframework2d\\src\\simple_ui.c*",
+              "RelativeToolTip": "..\\src\\simple_ui.c*",
+              "ViewState": "AgIAAIkBAAAAAAAAAADgv5YBAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-03-24T16:48:25.459Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 10,
               "Title": "entity.h",
               "DocumentMoniker": "C:\\git\\gameframework2d\\include\\entity.h",
               "RelativeDocumentMoniker": "..\\include\\entity.h",
@@ -253,12 +248,11 @@
               "RelativeToolTip": "..\\include\\entity.h",
               "ViewState": "AgIAABUAAAAAAAAAAAAAAEwAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2026-03-24T12:53:15.533Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-24T12:53:15.533Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "entity.c",
               "DocumentMoniker": "C:\\git\\gameframework2d\\src\\entity.c",
               "RelativeDocumentMoniker": "..\\src\\entity.c",
@@ -266,8 +260,7 @@
               "RelativeToolTip": "..\\src\\entity.c",
               "ViewState": "AgIAAEgAAAAAAAAAAAAAAHgAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2026-03-24T12:51:55.94Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-24T12:51:55.94Z"
             },
             {
               "$type": "Document",
@@ -279,8 +272,7 @@
               "RelativeToolTip": "..\\include\\player.h",
               "ViewState": "AgIAAFEAAAAAAAAAAAAAAGsAAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2026-03-24T08:28:21.392Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-24T08:28:21.392Z"
             },
             {
               "$type": "Document",
@@ -292,8 +284,7 @@
               "RelativeToolTip": "..\\src\\player.c",
               "ViewState": "AgIAADQCAAAAAAAAAADwv1ECAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2026-03-24T10:21:39.109Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-24T10:21:39.109Z"
             },
             {
               "$type": "Document",
@@ -305,8 +296,7 @@
               "RelativeToolTip": "..\\src\\gf2d_draw.c",
               "ViewState": "AgIAAM0BAAAAAAAAAAAAAOMBAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2026-03-24T10:21:36.36Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-24T10:21:36.36Z"
             },
             {
               "$type": "Document",
@@ -318,8 +308,7 @@
               "RelativeToolTip": "..\\src\\simple_font.c",
               "ViewState": "AgIAAEIAAAAAAAAAAAAAAGgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2026-03-24T08:58:28.19Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-24T08:58:28.19Z"
             },
             {
               "$type": "Document",
