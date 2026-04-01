@@ -2,47 +2,44 @@
 #define __PATHFINDING_H__
 
 #include "world.h"
-
+#include "gfc_list.h"
 
 typedef struct PathNode_S {
-	Uint32					distanceTo;				//the distance to the target
-	Uint32					distanceTraveled;		//the distance that has already been traveled from the starting position
-	Uint32					totalDistance;			//the total distance to the target from the starting position
-	GFC_Vector2I			gridPos;				//the grid position of a path node
-	struct PathNode_S*		parent;					//the parent node of a path node
-	struct PathNode_S*		next;					//the next node of a path node
+	Uint32					distanceTo;			//the estimated straight line distance to the target
+	Uint32					distanceTraveled;	//the distance already traveled
+	Uint32					totalDistance;		//the total distance (distanceTo + distanceTraveled)
+	GFC_Vector2I			gridPos;			//the gridPos of the pathNode
+	struct PathNode_S*		parent;				//use to trace back final path
 }PathNode;
 
+/*
+* @brief allocates data for a new pathNode at a position
+* @param gridPos the position on the tile grid for the node
+* @returns NULL on error, or a new path node
+*/
+PathNode* node_new(GFC_Vector2I gridPos);
 
 /*
-* @brief allocates memory and creates a new path node
-* @param gridPos a integer vector with the (row,col) of the tile that the node is at
-* @return NULL on error, otherwise a pointer to a PathNode
+* @brief gets the lowest cost node in the list
+* @param openList the openList
+* @returns NULL if there are no nodes, otherwise the lowest cost node
 */
-PathNode* path_node_new(GFC_Vector2I gridPos);
+PathNode* get_lowest_cost_node(GFC_List* openList);
 
 /*
-* @brief inserts a new node into a sorted node list
-* @param head the head node of the list you want to insert into
-* @param node the node you want to insert into the list
-* @return a pointer to the head of the sorted list
+* @brief check if a node is in a list
+* @param list the list to check
+* @param node the node to check
+* @returns NULL if not found, otherwise the PathNode pointer of the node in the list
 */
-PathNode* node_list_insert_sorted(PathNode* head, PathNode* node);
+PathNode* node_in_list(GFC_List* list, PathNode* node);
 
 /*
-* @brief searches a node list for a node at a position
-* @param head the head node of the list to search
-* @param gridPos the position to search for
-* @return NULL if no node exists in the list, otherwise a pointer to the node at that position
+* @brief finds a path of walkable tiles between a starting position and a target position
+* @param start the starting position of the pathfinder
+* @param target the target position of the pathfinder
+* @returns NULL if no path found, otherwise A GFC_List of grid coordinates representing the path
 */
-PathNode* node_list_get_node(PathNode* head, GFC_Vector2I gridPos);
-
-/*
-* @brief finds a path of walkable tiles between a start position and a target position
-* @param startPos the starting position of the entity pathfinding on the grid
-* @param targetPos the target's grid position
-* @return NULL if no path is found, otherwise a node list of the path with targetPos as the head
-*/
-PathNode* pathfind_2d(GFC_Vector2I startPos, GFC_Vector2I targetPos);
+GFC_List* pathfind_2d(GFC_Vector2I start, GFC_Vector2I target);
 
 #endif //__PATHFINDING_H__

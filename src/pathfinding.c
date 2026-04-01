@@ -2,142 +2,118 @@
 #include "entity.h"
 #include "simple_logger.h"
 
-PathNode* path_node_new(GFC_Vector2I gridPos) {
-	PathNode* self = gfc_allocate_array(sizeof(PathNode), 1);
-	if (!self) {
-		slog("failed to create a new path node");
+PathNode* node_new(GFC_Vector2I gridPos) {
+	PathNode* node = gfc_allocate_array(sizeof(PathNode), 1);
+	if (!node) {
+		slog("failed to allocate new path node");
 		return NULL;
 	}
-	self->gridPos = gridPos;
-	self->distanceTo = 0;
-	self->distanceTraveled = 0;
-	self->totalDistance = 0;
-	self->parent = NULL;
-	self->next = NULL;
-	return self;
+	node->gridPos = gridPos;
+
+	return node;
 }
 
-PathNode* node_list_insert_sorted(PathNode* head, PathNode* node) {
-	PathNode* current;
-	if (!head || head->totalDistance > node->totalDistance) {
-		node->next = head;
-		return node;
-	}
-	current = head;
-	while (current->next){
-		if (current->next->totalDistance > node->totalDistance) {
-			node->next = current->next;
-			current->next = node;
-			return head;
+PathNode* get_lowest_cost_node(GFC_List* openList) {
+	int i;
+	PathNode* temp;
+	PathNode* lowest = NULL;
+
+	for (i = 0; i < openList->count; i++) {
+		temp = gfc_list_get_nth(openList, i);
+		if (!lowest) lowest = temp;
+		else {
+			if (lowest->totalDistance > temp->totalDistance) lowest = temp;
 		}
-		current = current->next;
 	}
-	current->next = node;
-	return head;
+
+	return lowest;
 }
 
-PathNode* node_list_get_node(PathNode* head, GFC_Vector2I gridPos) {
-	PathNode* current = head;
-	while (current) {
-		if (current->gridPos.x == gridPos.x && current->gridPos.y == gridPos.y) {
-			return current;
-		}
-		current = current->next;
-	}
-	return NULL;
-}
-
-
-
-PathNode* pathfind_2d(GFC_Vector2I startPos, GFC_Vector2I targetPos) {
-	PathNode* openList = NULL;
-	PathNode* closeList = NULL;
-	PathNode* neighbor = NULL;
-	PathNode* path = NULL;
-	GFC_Vector2I neighborPos = { 0 };
-	GFC_Vector2I positions[] = {{1, 0}, {-1,0}, {0, 1}, {0, -1}};
-	int distanceTo;
-	int distanceTraveled;
-	int totalDistance;
+PathNode* node_in_list(GFC_List* list, PathNode* node) {
+	PathNode* listNode;
 	int i;
 
-	openList = path_node_new(startPos);
+	for (i = 0; i < list->count; i++) {
+		listNode = gfc_list_get_nth(list, i);
+		if (listNode->gridPos.x == node->gridPos.x && listNode->gridPos.y == node->gridPos.y) return listNode;
+	}
 
-	while (openList) {
-		PathNode* bestNode = openList;
-		openList = openList->next;
-		bestNode->next = NULL;
+	return NULL;
+}
 
-		if (bestNode->gridPos.x == targetPos.x && bestNode->gridPos.y == targetPos.y) {
-			PathNode* current = bestNode;
-			while (current) {
-				PathNode* temp;
-				temp = path_node_new(current->gridPos);
-				temp->next = path;
-				path = temp;
-				current = current->parent;
+GFC_List* pathfind_2d(GFC_Vector2I start, GFC_Vector2I target) {
+	GFC_List* openList = gfc_list_new();
+	GFC_List* closedList = gfc_list_new();
+	GFC_List* finalList = gfc_list_new();
+	PathNode* current = NULL;
+	PathNode* startNode = node_new(start);
+	PathNode* neighborNode = NULL;
+	GFC_Vector2I directions[4] = { { 1, 0 }, { -1, 0 }, { 0, -1 }, { 0, 1 } };
+	GFC_Vector2I neighborPos;
+	int i;
+
+	startNode->distanceTo = (abs(start.x - target.x) + abs(start.y - target.y));
+	startNode->distanceTraveled = 0;
+	startNode->totalDistance = startNode->distanceTo + startNode->distanceTraveled;
+
+	gfc_list_append(openList, startNode);
+
+	while (openList->count > 0) {
+		current = get_lowest_cost_node(openList);
+
+		if (current) {
+			if (current->gridPos.x == target.x && current->gridPos.y == target.y) {
+				while (current) {
+					GFC_Vector2I* pos = gfc_allocate_array(sizeof(GFC_Vector2I),1);
+					*pos = current->gridPos;
+					gfc_list_append(finalList, pos);
+					current = current->parent;
+				}
+				break;
 			}
-			while (closeList) {
-				PathNode* temp = closeList->next;
-				free(closeList);
-				closeList = temp;
-			}
-			while (openList) {
-				PathNode* temp = openList->next;
-				free(openList);
-				openList = temp;
-			}
-			return path;
-		}
 
-		for (i = 0; i < 4; i++) {
-			neighbor = NULL;
-			neighborPos.x = bestNode->gridPos.x + positions[i].x;
-			neighborPos.y = bestNode->gridPos.y + positions[i].y;
+			gfc_list_append(closedList, current);
+			gfc_list_delete_data(openList, current);
 
-			if (tile_at(gfc_vector2d(neighborPos.x * get_tile_dimensions().x, neighborPos.y * get_tile_dimensions().y)) != 0) continue;
-			if (node_list_get_node(closeList, neighborPos)) continue;
+			for (i = 0; i < 4; i++) {
+				neighborPos.x = current->gridPos.x + directions[i].x;
+				neighborPos.y = current->gridPos.y + directions[i].y;
 
-			neighbor = node_list_get_node(openList, neighborPos);
-			if (neighbor) {
-				distanceTraveled = bestNode->distanceTraveled + 1;
-				if (distanceTraveled < neighbor->distanceTraveled) {
-					distanceTo = abs(targetPos.x - neighborPos.x) + abs(targetPos.y - neighborPos.y);
-					totalDistance = distanceTo + distanceTraveled;
-					neighbor->distanceTo = distanceTo;
-					neighbor->distanceTraveled = distanceTraveled;
-					neighbor->totalDistance = totalDistance;
-					neighbor->parent = bestNode;
+				if (tile_at(grid_to_world(neighborPos)) == 0) {
+					neighborNode = node_new(neighborPos);
+					if (!node_in_list(openList, neighborNode) && !node_in_list(closedList, neighborNode)) {
+						neighborNode->distanceTraveled = current->distanceTraveled + 1;
+						neighborNode->distanceTo = (abs(neighborNode->gridPos.x - target.x) + abs(neighborNode->gridPos.y - target.y));
+						neighborNode->totalDistance = neighborNode->distanceTo + neighborNode->distanceTraveled;
+						neighborNode->parent = current;
+						gfc_list_append(openList, neighborNode);
+					}
+					else {
+						free(neighborNode);
+					}
 				}
 			}
-			else {
-				neighbor = path_node_new(neighborPos);
-				distanceTraveled = bestNode->distanceTraveled + 1;
-				distanceTo = abs(targetPos.x - neighborPos.x) + abs(targetPos.y - neighborPos.y);
-				totalDistance = distanceTo + distanceTraveled;
-				neighbor->distanceTo = distanceTo;
-				neighbor->distanceTraveled = distanceTraveled;
-				neighbor->totalDistance = totalDistance;
-				neighbor->parent = bestNode;
-				openList = node_list_insert_sorted(openList, neighbor);
-				neighbor = NULL;
-			}
+
+		}
+	}
+
+	for (i = 0; i < openList->count; i++) {
+		current = gfc_list_get_nth(openList, i);
+		if (current) free(current);
+	}
+	gfc_list_delete(openList);
+
+	for (i = 0; i < closedList->count; i++) {
+		current = gfc_list_get_nth(closedList, i);
+		if (current) free(current);
+	}
+	gfc_list_delete(closedList);
+
+		for (i = 0; i < finalList->count / 2; i++) {
+			gfc_list_swap_indices(finalList, i, finalList->count - 1 - i);
 		}
 
-		bestNode->next = closeList;
-		closeList = bestNode;
-	}
-	while (closeList) {
-		PathNode* temp = closeList->next;
-		free(closeList);
-		closeList = temp;
-	}
-	while (openList) {
-		PathNode* temp = openList->next;
-		free(openList);
-		openList = temp;
-	}
-	return NULL;
+	return finalList;
 }
 
 /*eol@eof*/
