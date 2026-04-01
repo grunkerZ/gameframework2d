@@ -174,4 +174,12 @@ GFC_List* get_entities_in_shape(GFC_Shape shape, Entity* ignored);
 */
 Entity* get_closest_entity_to(GFC_Vector2D position, EntityType type, float maxRange, Uint8 los);
 
+/*
+* @brief runs the hit function for an entity
+* @param self the entity whose hit function will run
+* @param attacker the entity attacking self
+* @param damage the damage the hit would do
+*/
+void entity_hit(Entity* self, Entity* attacker, Uint8 damage);
+
 #endif // !__ENTITY_H__

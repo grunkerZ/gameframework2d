@@ -4,6 +4,7 @@
 
 void damned_think(Entity* self);
 void damned_update(Entity* self);
+void damned_hit(Entity* self, Entity* attacker, Uint8 damage);
 
 Entity* damned_new(GFC_Vector2D position) {
 	Entity* self = monster_new();
@@ -20,13 +21,24 @@ Entity* damned_new(GFC_Vector2D position) {
 	set_center(self, self->position);
 	entity_setup_collision_box(self, ST_RECT, 0.05);
 
-	stats->aggroRange = 800;
-	stats->touchDamage = 1;
-	stats->moveSpeed = 2;
+	// === STATS ===
+
 	stats->health = 2;
+	stats->touchDamage = 1;
+
+	// === MOVEMENT ===
+
+	stats->aggroRange = 800;
+	stats->moveSpeed = 2;
+
+	// === MISC ===
+	
+	stats->monster = MT_DAMNED;
+	stats->state = MS_IDLE;
 
 	self->think = damned_think;
 	self->update = damned_update;
+	self->hit = damned_hit;	
 
 	return self;
 }
@@ -35,45 +47,98 @@ void damned_think(Entity* self) {
 	GFC_Vector2D playerPos;
 	Entity* collider;
 	CollisionInfo info;
+	Entity* nearestMonster;
+	GFC_Vector2D push;
 	MonsterData* stats = (MonsterData*)self->data;
-	if (!self) return;
+
+	if (!self || !stats) return;
+
 	playerPos = player_get_position();
 
-	info = check_map_collision(self);
+	switch (stats->state) {
+	case MS_IDLE:
 
-	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
-		if (info.bottom) {
-			if (world_to_grid(playerPos).y > world_to_grid(self->centerPos).y && info.bottom) {
-				move_to_2d(self, playerPos);
-			}
-			else {
-				move_to_1d(self, playerPos);
-			}
-		}
-	}
-	else {
-		self->velocity = self->knockback;
-	}
+		self->velocity = gfc_vector2d(0, 0);
 
-	collider = check_entity_collision(self);
-	if (collider) {
-		if (collider->type == ET_PLAYER) {
-			((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((PlayerData*)collider->data)->health);
+		if (gfc_vector2d_distance_between_less_than(self->centerPos, playerPos, stats->aggroRange)) {
+			stats->state = MS_CHASE;
 		}
+
+		break;
+	case MS_CHASE:
+
+		move_to_2d(self, playerPos);
+
+		nearestMonster = get_closest_entity_to(self->centerPos, ET_MONSTER, 32, 0);
+		if (nearestMonster && nearestMonster != self) {
+			gfc_vector2d_sub(push, self->centerPos, nearestMonster->centerPos);
+			gfc_vector2d_normalize(&push);
+			gfc_vector2d_scale(push, push, 0.5);
+			gfc_vector2d_add(self->velocity, self->velocity, push);
+		}
+
+		collider = check_entity_collision(self);
+		if (collider && collider->type == ET_PLAYER) {
+			entity_hit(collider, self, stats->touchDamage);
+		}
+
+		break;
+	case MS_STUNNED:
+
+		if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
+			stats->state = MS_CHASE;
+		}
+		else {
+			self->velocity = self->knockback;
+		}
+
+		break;
+	case MS_DEAD:
+		self->velocity = gfc_vector2d(0, 0);
+		break;
 	}
 
 }
 
+void damned_hit(Entity* self, Entity* attacker, Uint8 damage) {
+	MonsterData* stats = self->data;
+	GFC_Vector2D bounce;
+
+	if (!self || !stats || !attacker) return;
+
+	stats->health -= damage;
+
+	if(stats->health <= 0){
+		stats->state = MS_DEAD;
+		self->velocity = gfc_vector2d(0, 0);
+		return;
+	}
+
+	stats->state = MS_STUNNED;
+	self->timeAtStun = SDL_GetTicks64();
+	self->stun = 250;
+
+	gfc_vector2d_sub(bounce, self->centerPos, attacker->centerPos);
+	gfc_vector2d_normalize(&bounce);
+	gfc_vector2d_scale(self->knockback, bounce, 3);
+}
+
 void damned_update(Entity* self) {
 	CollisionInfo info;
-	if (((MonsterData*)self->data)->health <= 0) {
+	MonsterData* stats = self->data;
+
+	if (!self || !stats) return;
+
+	if (stats->state == MS_DEAD) {
 		entity_free(self);
 		return;
 	}
-	self->collision.s.r.x = self->position.x;
-	self->collision.s.r.y = self->position.y;
+
 	info = check_map_collision(self);
+	
 	gfc_vector2d_add(self->position, self->position, self->velocity);
+	gfc_vector2d_add(self->centerPos, self->centerPos, self->velocity);
+	set_center(self,self->centerPos);
 
 }
 
