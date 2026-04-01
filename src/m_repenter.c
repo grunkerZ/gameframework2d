@@ -16,7 +16,8 @@ Entity* repenter_new(GFC_Vector2D position) {
 
 	self->gravity = 1;
 	self->position = position;
-	self->sprite = gf2d_sprite_load_image("images/placeholder/repenter.png");
+	self->sprite = gf2d_sprite_load_all("images/monster/repenter.png",256,256,5,false);
+	self->scale = gfc_vector2d(0.25, 0.25);
 	set_center(self, self->position);
 	entity_setup_collision_box(self, ST_RECT, 0.05);
 
@@ -57,13 +58,20 @@ void repenter_think(Entity* self) {
 
 	playerPos = player_get_position();
 
-	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
-		move_to_1d(self, playerPos);
-
+	if (stats->health <= 0) {
+		if (self->frame < 35) self->frame = 35;
+		self->frame += 0.1;
+	}
+	else if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
 		if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {
+			
+			if (self->frame < 20 || self->frame > 30) self->frame = 20;
+			self->frame += 0.1;
+			if (self->frame >= 30) self->frame = 20;
+
 			self->velocity.x = 0;
 			if (stats->attacking) {
-				if ((SDL_GetTicks64() - stats->timeAtAttack > stats->attackDelay) && detect_los(self,playerPos)) {
+				if ((SDL_GetTicks64() - stats->timeAtAttack > stats->attackDelay) && detect_los(self, playerPos)) {
 					Entity* projectile = projectile_new(self, &stats->projectileStats);
 					projectile->gravity = 1;
 					projectile->velocity = gfc_vector2d(stats->projectileStats.speed * self->forward.x, -5);
@@ -76,6 +84,15 @@ void repenter_think(Entity* self) {
 			}
 
 		}
+		
+		else {
+
+			if (self->frame < 0 || self->frame > 16) self->frame = 0;
+			self->frame += 0.1;
+			if (self->frame >= 16) self->frame = 0;
+
+			move_to_1d(self, playerPos);
+		}
 	}
 	else {
 		self->velocity = self->knockback;
@@ -85,23 +102,6 @@ void repenter_think(Entity* self) {
 	if (collider) {
 		if (collider->type == ET_PLAYER) {
 			((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((PlayerData*)collider->data)->health);
-		}
-	}
-
-	if (self->knockback.x != 0 || self->knockback.y != 0) {
-		self->velocity = self->knockback;
-		gfc_vector2d_scale(self->knockback, self->knockback, 0.8);
-		if (self->knockback.x > 0) {
-			if (self->knockback.x < 0.1) self->knockback.x = 0;
-		}
-		if (self->knockback.y > 0) {
-			if (self->knockback.y < 0.1) self->knockback.y = 0;
-		}
-		if (self->knockback.x < 0) {
-			if (self->knockback.x < -0.1) self->knockback.x = 0;
-		}
-		if (self->knockback.y < 0) {
-			if (self->knockback.y < -0.1) self->knockback.y = 0;
 		}
 	}
 }
