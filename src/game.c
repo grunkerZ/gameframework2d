@@ -3,6 +3,7 @@
 #include "gfc_input.h"
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
+#include "gf2d_draw.h"
 #include "entity.h"
 #include "player.h"
 #include "world.h"
@@ -36,6 +37,8 @@ typedef struct {
     GFC_Vector2D        mouseScale;
     Stage*              currentStage;       //the current stage the player is in
     HUD*                hud;
+    GFC_Rect            ftb;                //fade to black rect
+    float               ftb_alpha;
 }System;
 
 
@@ -82,21 +85,39 @@ void update_game(System* game) {
         break;
 
     case GS_DEATH:
-        if (game->player) {
-            entity_free(game->player);
-            game->player = NULL;
-        }
-        if (game->floor) {
-            free_world(game->floor);
-            game->floor = NULL;
-        }
-        if (game->currentStage) {
-            game->currentStage = NULL;
+        if(game->player){
+            if (game->player->frame < 125) {
+                game->player->frame = 125;
+                game->ftb = gfc_rect(0, 0, 1200, 720);
+                game->ftb_alpha = 0;
+            }
+
+            game->player->frame += 0.1;
+            if (game->player->frame >= 142){
+                game->player->frame = 142;
+                game->ftb_alpha += 1.5;
+            }
         }
 
-        menu_update(game->deathMenu);
-        if (game->deathMenu->Menu.death.restartButton.clicked) game->done = 1;
-        if (game->deathMenu->Menu.death.menuButton.clicked) game->state = GS_MAINMENU;
+        if (game->ftb_alpha >= 255) {
+            if (game->currentStage) clear_stage();
+            if (game->player) {
+                entity_free(game->player);
+                game->player = NULL;
+            }
+            if (game->floor) {
+                free_world(game->floor);
+                game->floor = NULL;
+            }
+            if (game->currentStage) {
+                game->currentStage = NULL;
+            }
+
+            menu_update(game->deathMenu);
+            if (game->deathMenu->Menu.death.restartButton.clicked) game->done = 1;
+            if (game->deathMenu->Menu.death.menuButton.clicked) game->state = GS_MAINMENU;
+        }
+        
         break;
 
     case GS_PAUSED:
@@ -155,7 +176,6 @@ void update_game(System* game) {
         }
 
         if (((PlayerData*)game->player->data)->health <= 0) {
-            clear_stage();
             game->state = GS_DEATH;
         }
         if (game->keys[SDL_SCANCODE_P]) {
@@ -181,9 +201,27 @@ void draw_game(System* game) {
         break;
     case GS_DEATH:
 
-        menu_draw(game->deathMenu);
+        if (game->ftb_alpha < 255) {
+            room_draw(game->currentStage->room);
 
-        draw_mouse(game->deathMenu, game->mouse, game->mx, game->my, game->mouseScale);
+            entity_manager_draw_all(game->debug);
+
+            item_manager_draw_all();
+
+            camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
+
+            draw_hud(game->hud, game->player);
+
+            gf2d_draw_rect_filled(game->ftb, gfc_color8(0, 0, 0, game->ftb_alpha));
+
+            console_draw();
+        }
+        else{
+
+            menu_draw(game->deathMenu);
+
+            draw_mouse(game->deathMenu, game->mouse, game->mx, game->my, game->mouseScale);
+        }
 
         break;
     case GS_PAUSED:
@@ -210,6 +248,10 @@ void draw_game(System* game) {
         camera_center_on(gfc_vector2d(game->player->position.x + (game->player->sprite->frame_w / 2), game->player->position.y + (game->player->sprite->frame_h / 2)));
 
         draw_hud(game->hud, game->player);
+
+        if (((PlayerData*)game->player->data)->health < 0) {
+            gf2d_draw_rect_filled(game->ftb,gfc_color8(0,0,0,game->ftb_alpha));
+        }
 
         console_draw();
         break;

@@ -25,16 +25,21 @@ Entity* player_new() {
 	self->data = gfc_allocate_array(sizeof(PlayerData), 1);
 	PlayerData* stats = (PlayerData*)self->data;
 
-	self->sprite = gf2d_sprite_load_all("images/player.png",64,64,8,false);
+	self->sprite = gf2d_sprite_load_all("images/player/player.png",256, 256, 5, false);
 	self->frame=0;
 	self->position = gfc_vector2d(0,0);
 	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
+	self->scale = gfc_vector2d(0.25, 0.25);
 	entity_setup_collision_box(self, ST_RECT, 0.15);
 	self->forward = gfc_vector2d(1, 0);
 	self->invincibility = 500;
 	self->type = ET_PLAYER;
 	self->width = self->sprite->frame_w;
 	self->height = self->sprite->frame_h;
+
+	self->width *= self->scale.x;
+	self->height *= self->scale.y;
+	
 	
 	stats->baseMaxHealth = 6;
 	stats->baseJumps = 0;
@@ -81,8 +86,8 @@ Entity* player_new() {
 	stats->hookState = 0;
 	stats->hookedEntity = NULL;
 
-	stats->link = gf2d_sprite_load_image("images/placeholder/link.png");
-	stats->grapple = gf2d_sprite_load_image("images/placeholder/grapple.png");
+	stats->link = gf2d_sprite_load_image("images/player/link.png");
+	stats->grapple = gf2d_sprite_load_image("images/player/hook.png");
 
 	self->think = player_think;
 	self->update = player_update;
@@ -108,18 +113,22 @@ void player_think(Entity* self) {
 	if (!self) return;
 	keys=SDL_GetKeyboardState(NULL);
 	stats = (PlayerData*)self->data;
+	
 
+	stats->attacking = 0;
 
 	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
 		if (keys[SDL_SCANCODE_D]) {
-			dir.x = 1;
-		}
-		if (keys[SDL_SCANCODE_S]) {
-			if (!self->gravity) dir.y = 1;
+			dir.x = 1;	
 		}
 		if (keys[SDL_SCANCODE_A]) {
 			dir.x = -1;
 		}
+
+		if (keys[SDL_SCANCODE_S]) {
+			if (!self->gravity) dir.y = 1;
+		}
+		
 		gfc_vector2d_normalize(&dir);
 		if (keys[SDL_SCANCODE_W]) {
 			if (stats->grounded) dir.y = -7;
@@ -264,9 +273,13 @@ void player_think(Entity* self) {
 
 	info = check_map_collision(self);
 	if (info.bottom) {
+		if (stats->grounded == 0 && self->velocity.y >= 0) {
+			stats->landing = 1;
+		}
 		stats->grounded = 1;
 	}
 	else {
+		stats->landing = 0;
 		stats->grounded = 0;
 	}
 
@@ -276,6 +289,7 @@ void player_think(Entity* self) {
 	stats->projectileStats.parent = self;
 
 	if (keys[SDL_SCANCODE_UP]) {
+		stats->attacking = 2;
 		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
 			stats->timeAtAttack = SDL_GetTicks64();
 			projectile = projectile_new(self,&stats->projectileStats);
@@ -284,6 +298,7 @@ void player_think(Entity* self) {
 		
 	}
 	else if (keys[SDL_SCANCODE_DOWN]) {
+		stats->attacking = 3;
 		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
 			stats->timeAtAttack = SDL_GetTicks64();
 			projectile = projectile_new(self, &stats->projectileStats);
@@ -291,6 +306,7 @@ void player_think(Entity* self) {
 		}
 	}
 	else if (keys[SDL_SCANCODE_LEFT]) {
+		stats->attacking = 1;
 		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
 			stats->timeAtAttack = SDL_GetTicks64();
 			projectile = projectile_new(self, &stats->projectileStats);
@@ -298,6 +314,7 @@ void player_think(Entity* self) {
 		}
 	}
 	else if (keys[SDL_SCANCODE_RIGHT]) {
+		stats->attacking = 1;
 		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
 			stats->timeAtAttack = SDL_GetTicks64();
 			projectile = projectile_new(self, &stats->projectileStats);
@@ -429,8 +446,116 @@ void player_update(Entity* self) {
 	if (!self) return;
 	PlayerData* stats = (PlayerData*)self->data;
 	GFC_Vector2D offset = camera_get_offset();
-	self->frame += 0.1;
-	if (self->frame >= 8) self->frame = 0;
+
+	// ====================
+	//
+	// ANIMATION
+	//
+	// ====================
+
+	if (stats->attacking > 0 && stats->grounded && !stats->landing) {
+		if (self->velocity.x == 0) {
+
+			// === IDLE GROUND ATTACKS ===
+
+			switch (stats->attacking) {
+			case 1: //FORWARD
+				if (self->frame < 10 || self->frame > 21) self->frame = 10;
+				self->frame += 0.1;
+				if (self->frame >= 21) self->frame = 10;
+				break;
+			case 2: //UP
+				if (self->frame < 25 || self->frame > 30) self->frame = 25;
+				self->frame += 0.1;
+				if (self->frame >= 30) self->frame = 25;
+				break;
+			case 3: //DOWN
+				if (self->frame < 35 || self->frame > 40) self->frame = 35;
+				self->frame += 0.1;
+				if (self->frame >= 40) self->frame = 35;
+				break;
+			}
+		}
+
+		else {
+
+			// === RUNNING GROUND ATTACKS ===
+
+			switch (stats->attacking) {
+			case 1: //FORWARD
+				if (self->frame < 55 || self->frame > 64) self->frame = 55;
+				self->frame += 0.1;
+				if (self->frame >= 64) self->frame = 55;
+				break;
+			case 2: //UP
+				if (self->frame < 65 || self->frame > 74) self->frame = 65;
+				self->frame += 0.1;
+				if (self->frame >= 74) self->frame = 65;
+				break;
+			case 3: //DOWN
+				if (self->frame < 75 || self->frame > 84) self->frame = 75;
+				self->frame += 0.1;
+				if (self->frame >= 84) self->frame = 75;
+				break;
+			}
+		}
+	}
+	else if (stats->attacking > 0 && !stats->landing) {
+
+		// === AERIAL ATTACKS ===
+
+	}
+	else if (stats->landing) {
+
+		// === LANDING ===
+
+		if ((self->frame < 85) || (self->frame > 99)) self->frame = 99;
+		self->frame -= 0.5;
+		if (self->frame <= 85 || self->velocity.x!=0) {
+			self->frame = 85;
+			stats->landing = 0;
+		}
+	}
+	else if (stats->attacking == 0 && stats->grounded && !stats->landing) {
+		if (self->velocity.x == 0) {
+
+			// === IDLE ANIMATION ===
+
+			if (self->frame < 0 || self->frame > 5) self->frame = 0;
+			self->frame += 0.1;
+			if (self->frame >= 5) self->frame = 0;
+
+		}
+		else {
+
+			// === RUNNING ANIMATION ===
+
+			if (self->frame < 45 || self->frame > 54) self->frame = 45;
+			self->frame += 0.1;
+			if (self->frame >= 54) self->frame = 45;
+
+		}
+	}
+	else {
+
+		// === JUMPING ANIMATION ===
+
+		if(self->velocity.y < 0) {
+			if (self->frame < 85 || self->frame > 124) self->frame = 85;
+			self->frame += 0.3;
+			if (self->frame > 98) self->frame = 105;
+		}
+
+		// === FREEFALL ===
+
+		else{
+			if (self->frame < 105 || self->frame >= 124) self->frame = 105;
+			self->frame += 0.1;
+			if (self->frame >= 124) self->frame = 105;
+		}
+
+	}
+
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 	gfc_vector2d_add(self->centerPos, self->centerPos, self->velocity);
 
@@ -551,6 +676,8 @@ void player_draw(Entity* self) {
 	GFC_Vector2D linkPos;
 	GFC_Vector2D step;
 	GFC_Vector2D startPos = self->centerPos;
+	GFC_Vector2D hookScale = gfc_vector2d(0.125, 0.125);
+	GFC_Vector2D linkScale = gfc_vector2d(0.5, 0.5);
 	GFC_Vector2D offset = camera_get_offset();
 	Uint32 distance;
 	float rotation;
@@ -564,11 +691,11 @@ void player_draw(Entity* self) {
 		rotation = gfc_vector2d_angle(chain);
 		rotation *= GFC_RADTODEG;
 
-		linkNum = gfc_vector2d_magnitude_between(self->centerPos, stats->hookPos) / stats->link->frame_h;
+		linkNum = gfc_vector2d_magnitude_between(self->centerPos, stats->hookPos) / (stats->link->frame_h * linkScale.y);
 
 		gfc_vector2d_normalize(&chain);
 		for (i = 0; i < linkNum; i++) {
-			distance = i * stats->link->frame_h;
+			distance = i * stats->link->frame_h * linkScale.y;
 
 			gfc_vector2d_scale(step, chain, distance);
 			gfc_vector2d_add(linkPos, startPos, step);
@@ -576,11 +703,11 @@ void player_draw(Entity* self) {
 			gf2d_sprite_render(
 				stats->link,
 				gfc_vector2d(linkPos.x + offset.x, linkPos.y + offset.y),
-				NULL,
+				&linkScale,
 				NULL,
 				&rotation,
 				NULL,
-				NULL,
+				NULL,	
 				NULL,
 				0
 			);
@@ -588,7 +715,7 @@ void player_draw(Entity* self) {
 		gf2d_sprite_render(
 			stats->grapple,
 			gfc_vector2d(stats->hookPos.x + offset.x, stats->hookPos.y + offset.y),
-			NULL,
+			&hookScale,
 			NULL,
 			&rotation,
 			NULL,

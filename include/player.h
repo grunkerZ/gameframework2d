@@ -54,8 +54,10 @@ typedef struct {
 // === Player Flags/States ===
 
 	Uint8				grounded;				//1 if the player is currently touching the ground, 0 otherwise
+	Uint8				landing;				
 	Uint8				slamming;				//1 if the player is actively slamming, 0 otherwise
 	Uint8				hookState;				//0 if inactive, 1 if shooting out, 2 if reeling in
+	Uint8				attacking;				//0 if not attacking, 1 if forward, 2 if up, 3 if down
 
 // === Times and Timers ===
 
