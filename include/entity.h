@@ -47,6 +47,7 @@ typedef struct Entity_S
 	void			(*update)(struct Entity_S* self);	//execute entity decisions
 	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data
 	void			(*draw)(struct Entity_S* self);		//draw entity
+	void			(*hit)(struct Entity_S* self, struct Entity_S* attacker, Uint8 damage);		//logic for when an entity is hit
 	void*			data;								//for ad hoc addtion data
 }Entity;
 

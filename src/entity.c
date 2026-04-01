@@ -309,6 +309,11 @@ CollisionInfo check_map_collision(Entity* self) {
 	return info;
 }
 
+void entity_hit(Entity* self, Entity* attacker, Uint8 damage) {
+	if (self->hit)self->hit(self,attacker, damage);
+	return;
+}
+
 int apply_damage(Entity* target, Entity* attacker, Uint8 damage, int health) {
 	GFC_Vector2D bounce;
 	GFC_Vector2D attackerCenter, targetCenter;

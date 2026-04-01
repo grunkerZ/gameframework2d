@@ -33,6 +33,8 @@ Entity* monster_new() {
 	stats->path = gfc_list_new();
 	stats->lastPlayerGridPos = world_to_grid(player_get_position());
 	stats->timeAtPathCalc = 0;
+	stats->state = MS_IDLE;
+
 	return self;
 }
 

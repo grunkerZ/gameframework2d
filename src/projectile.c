@@ -45,8 +45,6 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	slog("Owner Position at (%f,%f)",owner->position.x,owner->position.y);
 	
 	selfStats->parent = owner;
-	
-	
 	self->type = ET_PROJECTILE;
 
 	selfStats->timeAtSpawn = SDL_GetTicks64();
@@ -71,137 +69,79 @@ void projectile_free(Entity* self) {
 	
 }
 
-void projectile_damage(Entity* self, Entity* collider) {
-	ProjectileData* stats = self->data;
-
-	if (collider == stats->parent) return;
-	if (collider->type == stats->team) return;
-	if (collider->type == ET_DOOR) {
-		entity_free(self);
-		return;
-	}
-
-	if (stats->explodes) {
-		self->velocity = gfc_vector2d(0, 0);
-		self->scale = gfc_vector2d(2, 2);
-		if (!stats->exploded) {
-			stats->timeAtExplosion = SDL_GetTicks64();
-			stats->exploded = 1;
-		}
-		switch (collider->type) {
-		case ET_MONSTER:
-			if (collider->type == ET_MONSTER && ((MonsterData*)collider->data)->monster == MT_REPENTER) {
-				GFC_Rect front;
-				if (collider->forward.x == -1) {
-					slog("FACING LEFT");
-					front.x = collider->collision.s.r.x;
-				}
-				if (collider->forward.x == 1) {
-					slog("FACING RIGHT");
-					front.x = collider->collision.s.r.x + collider->sprite->frame_w / 2;
-				}
-				front.y = collider->collision.s.r.y;
-				front.w = collider->collision.s.r.w / 2;
-				front.h = collider->collision.s.r.h;
-				if (!gfc_circle_rect_overlap(self->collision.s.c, front)) {
-					break;
-				}
-			}
-			((MonsterData*)collider->data)->health = apply_damage(collider, self, stats->damage, ((MonsterData*)collider->data)->health);
-			break;
-		case ET_PLAYER:
-			((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->damage, ((PlayerData*)collider->data)->health);
-			break;
-		}
-	
-		if (SDL_GetTicks64() - stats->timeAtExplosion > stats->explosionTime) {
-			entity_free(self);
-			return;
-		}
-
-		return;
-	}
-	
-	switch (collider->type) {
-	case ET_MONSTER:
-		if (collider->type == ET_MONSTER && ((MonsterData*)collider->data)->monster == MT_REPENTER) {
-			GFC_Rect front;
-			if (collider->forward.x == -1) {
-				slog("FACING LEFT");
-				front.x = collider->collision.s.r.x;
-			}
-			if (collider->forward.x == 1) {
-				slog("FACING RIGHT");
-				front.x = collider->collision.s.r.x + collider->sprite->frame_w / 2;
-			}
-			front.y = collider->collision.s.r.y;
-			front.w = collider->collision.s.r.w / 2;
-			front.h = collider->collision.s.r.h;
-			if (!gfc_circle_rect_overlap(self->collision.s.c, front)) {
-				entity_free(self);
-				return;
-			}
-		}
-		((MonsterData*)collider->data)->health = apply_damage(collider, self, stats->damage, ((MonsterData*)collider->data)->health);
-		entity_free(self);
-		return;
-	case ET_PLAYER:
-		((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->damage, ((PlayerData*)collider->data)->health);
-		entity_free(self);
-		return;
-	}
+Uint8 is_valid_target(Entity* self, Entity* collider, ProjectileData* stats) {
+	if (!collider) return 0;
+	if (collider == stats->parent) return 0;
+	if (collider->type == stats->team) return 0;
+	if (collider->type == ET_PROJECTILE) return 0;
+	return 1;
 }
 
 void projectile_think(Entity* self) {
 	Entity* collider;
 	CollisionInfo info;
 	ProjectileData* stats = self->data;
-	collider = check_entity_collision(self);
-	if (collider) {
-		projectile_damage(self, collider);
-		if (!self->_inuse) return;
-	}
-	info = check_map_collision(self);
-	if(SDL_GetTicks64() - stats->timeAtSpawn > stats->spawnImmunity){
-		if (info.collided) {
-			if (stats->explodes) {
-				self->velocity = gfc_vector2d(0, 0);
-				self->scale = gfc_vector2d(2, 2);
-				if (!stats->exploded) {
-					stats->timeAtExplosion = SDL_GetTicks64();
-					stats->exploded = 1;
-				}
-			}
-			else {
-				entity_free(self);
-				return;
-			}
-		}
-		if (SDL_GetTicks64() - stats->timeAtExplosion > stats->explosionTime && stats->exploded) {
+	Uint8 die = 0;
+	
+	if (stats->exploded) {
+		if (SDL_GetTicks64() - stats->timeAtExplosion > stats->explosionTime) {
 			entity_free(self);
-			return;
+		}
+		return;
+	}
+	
+	collider = check_entity_collision(self);
+	if (collider && is_valid_target(self, collider, stats)) {
+		if (collider != ET_DOOR) {
+			entity_hit(collider,self,stats->damage);
+		}
+		die = 1;
+	}
+
+	info = check_map_collision(self);
+	if (info.collided && (SDL_GetTicks64() - stats->timeAtSpawn > stats->spawnImmunity)) {
+		die = 1;
+	}
+
+	if (die) {
+		if (stats->explodes) {
+			self->velocity = gfc_vector2d(0, 0);
+			self->scale = gfc_vector2d(2, 2);
+			stats->timeAtExplosion = SDL_GetTicks64();
+			stats->exploded = 1;
+		}
+		else {
+			entity_free(self);
 		}
 	}
+
 	return;
 }
 
 void projectile_update(Entity* self) {
 	GFC_Vector2D rotateVector;
+
 	GFC_Vector2D offset = camera_get_offset();
 	ProjectileData* stats = self->data;
+
 	if (gfc_vector2d_distance_between_less_than(self->position, stats->origin, stats->range) == false) {
 		entity_free(self);
 		return;
 	}
+
 	gfc_vector2d_negate(rotateVector, self->velocity);
 	self->rotation = gfc_vector2d_angle(rotateVector);
 	self->rotation *= GFC_RADTODEG;
+
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 	self->collision.s.c.x = self->position.x + ((self->sprite->frame_w / 2) * self->scale.x);
 	self->collision.s.c.y = self->position.y + ((self->sprite->frame_h / 2) * self->scale.y);
+
 	//slog("Projectile velocity (%f,%f)", self->velocity.x, self->velocity.y);
-	self->frame += 0.1;
-	if (self->frame >= stats->maxFrame) self->frame = 0;
+	if(stats->maxFrame>0){
+		self->frame += 0.1;
+		if (self->frame >= stats->maxFrame) self->frame = 0;
+	}
 }
 
 

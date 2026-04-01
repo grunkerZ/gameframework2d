@@ -15,26 +15,50 @@ typedef enum {
 	MT_END
 }MonsterType;
 
+typedef enum {
+	MS_NONE,
+	MS_IDLE,
+	MS_WANDERING,
+	MS_CHASE,
+	MS_CHARGEATTACK,
+	MS_ATTACKING,
+	MS_STUNNED,
+	MS_DEAD,
+	MS_END
+}MonsterState;
+
 typedef struct {
+
+	// === STATS ===
+
 	int				health;				//the health of the monster
 	Uint8			damage;				//the damage of the monsters attack
-	Uint8			sentry;				//1 if the monster should patrol its platform, 0 otherwise
 	Uint8			touchDamage;		//the damage delt to valid colliding entities
+	ProjectileData  projectileStats;	//the stats of the monsters projectile
+
+	// === MOVEMENT ===
+
+	Uint8			sentry;				//1 if the monster should patrol its platform, 0 otherwise
 	Uint8			moveSpeed;			//the speed the monster moves
-	Uint8			attacking;			//1 if the monster is currently attacking, 0 otherwise, Numbers other than 1 and 0 are monster dependant
-	Uint8			isStunned;			//1 if the monster is stunned, 0 otherwise
-	Uint8			value;				//used for stage population, the higher the more difficult the monster
 	Uint32			aggroRange;			//the range in which a monster will aggro the player
-	Uint32			attackSpeed;		
+	Uint32			stopDistance;		//the distance that the monster will not move to the player in
+
+	// === TIME ===
+
+	Uint32			attackSpeed;
 	Uint32			attackDelay;		//the time it takes for the monster to charge an attack
 	Uint32			attackCooldown;		//the time it takes for the monster to attack after it completed an attack
-	Uint32			stopDistance;		//the distance that the monster will not move to the player in
 	Uint32			timeAtPathCalc;		//the time when the 2d pathfinding path was calculated
 	Uint32			timeAtAttack;		//the time when the monster attacked
+
+	// === MISC ===
+
+	Uint8			value;				//used for stage population, the higher the more difficult the monster
 	GFC_Vector2I	lastPlayerGridPos;	//the last time the player was at when the path was calculated
 	MonsterType		monster;			//the type of monster
-	ProjectileData  projectileStats;	//the stats of the monsters projectile
-	GFC_List*		path;				//the path to a target position		
+	MonsterState	state;
+	GFC_List* path;				//the path to a target position		
+	
 }MonsterData;
 
 /*
