@@ -118,10 +118,16 @@ void entity_update(Entity* self) {
 		if (self->velocity.x > 0) {
 			self->forward = gfc_vector2d(1, 0);
 			self->flip = gfc_vector2d(0, 0);
+			if (self->left) {
+				self->flip = gfc_vector2d(1, 0);
+			}
 		}
 		if (self->velocity.x < 0) {
 			self->forward = gfc_vector2d(-1, 0);
 			self->flip = gfc_vector2d(1, 0);
+			if (self->left) {
+				self->flip = gfc_vector2d(0, 0);
+			}
 		}
 	}
 

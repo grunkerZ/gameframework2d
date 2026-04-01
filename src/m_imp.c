@@ -16,10 +16,12 @@ Entity* imp_new(GFC_Vector2D position) {
 
 	self->gravity = 0;
 	self->position = position;
-	self->sprite = gf2d_sprite_load_all("images/imp.png",64,64,11,false);
+	self->sprite = gf2d_sprite_load_all("images/monster/imp.png",256,256,5,false);
+	self->scale = gfc_vector2d(0.25,0.25);
 	self->frame = 0;
 	set_center(self, self->position);
 	entity_setup_collision_box(self, ST_RECT, 0.05);
+	self->left = 1;
 
 	stats->aggroRange = 800;
 	stats->touchDamage = 1;
@@ -46,26 +48,21 @@ void imp_think(Entity* self) {
 	MonsterData* stats = ((MonsterData*)self->data);
 
 
-	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
-		move_to_2d(self, playerPos);
+	if (stats->health <= 0) {
+		if (self->frame < 30) self->frame = 30;
+		self->frame += 0.1;
 	}
-	else {
-		self->velocity = self->knockback;
-	}
+	else if (gfc_vector2d_distance_between_less_than(playerPos, self->position, stats->stopDistance + 1) && detect_los(self, playerPos)) {
 
-	collider = check_entity_collision(self);
-	if (collider) {
-		if (collider->type == ET_PLAYER) {
-			((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((PlayerData*)collider->data)->health);
-		}
-	}
+		if (self->frame < 10 || self->frame > 26) self->frame = 10;
+		self->frame += 0.1;
+		if (self->frame >= 26) self->frame = 10;
 
-	if (gfc_vector2d_distance_between_less_than(playerPos, self->position, stats->stopDistance + 1) && detect_los(self,playerPos)) {
 		if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackSpeed) {
 			slog("fired shot, time passed: %llu", SDL_GetTicks64() - stats->timeAtAttack);
 			stats->timeAtAttack = SDL_GetTicks64();
 			Entity* projectile = projectile_new(self, &stats->projectileStats);
-			projectile->sprite = gf2d_sprite_load_all("images/small_fireball_projectile.png",32,32,11,false);
+			projectile->sprite = gf2d_sprite_load_all("images/small_fireball_projectile.png", 32, 32, 11, false);
 			projectile->scale = gfc_vector2d(0.75, 0.75);
 			entity_setup_collision_box(projectile, ST_CIRCLE, 0.0);
 			projectile->centerAnchor = gfc_vector2d((projectile->width / 2) * projectile->scale.x, (projectile->height / 2) * projectile->scale.y);
@@ -79,12 +76,34 @@ void imp_think(Entity* self) {
 			gfc_vector2d_add(projectile->velocity, projectile->velocity, projectileDir);
 		}
 	}
+	else {
+		if (self->frame < 0 || self->frame > 8) self->frame = 0;
+		self->frame += 0.1;
+		if (self->frame >= 8) self->frame = 0;
+	}
 
+	if(stats->health>0){
+		if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
+			move_to_2d(self, playerPos);
+		}
+		else {
+			self->velocity = self->knockback;
+		}
+
+		collider = check_entity_collision(self);
+		if (collider) {
+			if (collider->type == ET_PLAYER) {
+				((PlayerData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((PlayerData*)collider->data)->health);
+			}
+		}
+	}
+
+	
 }
 
 void imp_update(Entity* self) {
 	CollisionInfo info;
-	if (((MonsterData*)self->data)->health <= 0) {
+	if (self->frame >= 38) {
 		entity_free(self);
 		return;
 	}
@@ -92,8 +111,7 @@ void imp_update(Entity* self) {
 	self->collision.s.r.y = self->position.y+3;
 	info = check_map_collision(self);
 	gfc_vector2d_add(self->position, self->position, self->velocity);
-	self->frame += 0.1;
-	if (self->frame >= 11) self->frame = 0;
+
 }
 
 /*eol@eof*/

@@ -21,6 +21,7 @@ typedef struct Entity_S
 {
 	Uint8			_inuse;								//dont touch
 	Uint8			gravity;							//1 if the entity is affected by gravity, 0 otherwise
+	Uint8			left;
 	Uint32			invincibility;						//the time the entity is invincible for after damage
 	Uint32			timeAtDamaged;						//the time when the entity last took damage
 	Uint32			timeAtStun;							//the time when stun is applied to an entity
