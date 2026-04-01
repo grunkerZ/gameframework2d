@@ -30,7 +30,7 @@ Entity* monster_new() {
 	self->flip = gfc_vector2d(0,0);
 	self->invincibility = 0;
 
-	stats->path = pathfind_2d(world_to_grid(self->position), world_to_grid(player_get_position()));
+	stats->path = gfc_list_new();
 	stats->lastPlayerGridPos = world_to_grid(player_get_position());
 	stats->timeAtPathCalc = 0;
 	return self;
@@ -51,62 +51,51 @@ Uint8 detect_ledge(Entity* self) {
 }
 
 void monster_free(Entity* self) {
+	MonsterData* stats;
+	GFC_Vector2I* nodePos;
+	int i;
+
 	if (!self)return;
-	PathNode* temp;
-	while (((MonsterData*)self->data)->path) {
-		temp = ((MonsterData*)self->data)->path;
-		((MonsterData*)self->data)->path = ((MonsterData*)self->data)->path->next;
-		free(temp);
+
+	stats = self->data;
+	
+	for (i = 0; i < stats->path->count; i++) {
+		nodePos = gfc_list_get_nth(stats->path, i);
+		if (nodePos) free(nodePos);
 	}
+	gfc_list_delete(stats->path);
 	free(self->data);
 }
 
 Uint8 detect_los(Entity* self, GFC_Vector2D targetPos) {
+	float left, right, top, bottom;
 	GFC_Vector2D distance;
 	GFC_Vector2D step;
 	GFC_Vector2D currentPos;
-	GFC_Vector2D corner;
 	Uint32 w, h;
 
-	w = self->sprite->frame_w - 4;
-	h = self->sprite->frame_h - 4;
+	w = self->width;
+	h = self->height;
 
-	currentPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
+	currentPos = self->centerPos;
 
 	gfc_vector2d_sub(distance, targetPos, currentPos);
 	gfc_vector2d_normalize(&distance);
 	gfc_vector2d_scale(step, distance, get_tile_dimensions().x/2);
 	
 	while (!gfc_vector2d_distance_between_less_than(currentPos, targetPos, 32)) {
-		if (distance.x > 0) {
-			corner = gfc_vector2d(currentPos.x + (w / 2), currentPos.y - (h / 2));
-			if (tile_at(corner) != 0) return 0;
-			corner = gfc_vector2d(currentPos.x + (w / 2), currentPos.y + (h / 2));
-			if (tile_at(corner) != 0) return 0;
-		}
-
-		if (distance.x < 0) {
-			corner = gfc_vector2d(currentPos.x - (w / 2), currentPos.y - (h / 2));
-			if (tile_at(corner) != 0) return 0;
-			corner = gfc_vector2d(currentPos.x - (w / 2), currentPos.y + (h / 2));
-			if (tile_at(corner) != 0) return 0;
-		}
-
-		if (distance.y > 0) {
-			corner = gfc_vector2d(currentPos.x - (w / 2), currentPos.y + (h / 2));
-			if (tile_at(corner) != 0) return 0;
-			corner = gfc_vector2d(currentPos.x + (w / 2), currentPos.y + (h / 2));
-			if (tile_at(corner) != 0) return 0;
-		}
-
-		if (distance.y < 0) {
-			corner = gfc_vector2d(currentPos.x - (w / 2), currentPos.y - (h / 2));
-			if (tile_at(corner) != 0) return 0;
-			corner = gfc_vector2d(currentPos.x + (w / 2), currentPos.y - (h / 2));
-			if (tile_at(corner) != 0) return 0;
-		}
-			
 		gfc_vector2d_add(currentPos, currentPos, step);
+		
+		left = currentPos.x - (w / 2);
+		right = currentPos.x + (w / 2);
+		top = currentPos.y - (h / 2);
+		bottom = currentPos.y + (h / 2);
+
+		if (tile_at(gfc_vector2d(left, top)) != 0) return 0;
+		if (tile_at(gfc_vector2d(left, bottom)) != 0) return 0;
+		if (tile_at(gfc_vector2d(right, top)) != 0) return 0;
+		if (tile_at(gfc_vector2d(right, bottom)) != 0) return 0;
+			
 	}
 	//slog("los true");
 	return 1;
@@ -171,73 +160,64 @@ void move_to_1d(Entity* self, GFC_Vector2D targetPos) {
 }
 
 void move_to_2d(Entity* self, GFC_Vector2D targetPos) {
+	GFC_Vector2I* nodePos;
+	GFC_Vector2D waypoint;
+	GFC_Vector2D direction;
+	int playerOffset;
+	GFC_Vector2I targetGrid;
+	float softRadius = 32;
+	float hardRadius = 4;
+	int i;
+
 	MonsterData* stats = self->data;
-	GFC_Vector2I selfGrid = world_to_grid(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)));
-	GFC_Vector2I targetGrid = world_to_grid(targetPos);
-	GFC_Vector2D nodePos;
-	PathNode* temp;
-	GFC_Vector2D distance;
-	
 
-	gfc_vector2d_sub(distance, targetPos, self->position);
-
-	if (gfc_vector2d_magnitude(distance) <= stats->stopDistance && detect_los(self,targetPos)) {
-		self->velocity = gfc_vector2d(0,0);
-		return;
-	}
-		
 	if (detect_los(self, targetPos)) {
-		while (stats->path) {
-			temp = stats->path;
-			stats->path = stats->path->next;
-			free(temp);
-		}
-		gfc_vector2d_sub(distance, targetPos, self->position);
-		gfc_vector2d_normalize(&distance);
-		gfc_vector2d_scale(distance, distance, stats->moveSpeed);
-		self->velocity = distance;
+		gfc_vector2d_sub(direction, targetPos, self->centerPos);
+		gfc_vector2d_normalize(&direction);
+		gfc_vector2d_scale(self->velocity, direction, stats->moveSpeed);
 		return;
 	}
 
-	if ((!stats->path && (SDL_GetTicks64()-stats->timeAtPathCalc>500)) || SDL_GetTicks64() - stats->timeAtPathCalc > 500 || !gfc_vector2d_distance_between_less_than(grid_to_world(stats->lastPlayerGridPos),targetPos,64)) {
-		//slog("move_to has no path");
-		while (stats->path) {
-			temp = stats->path;
-			stats->path = stats->path->next;
-			free(temp);
-		}
-		stats->path=pathfind_2d(selfGrid, targetGrid);
-		stats->timeAtPathCalc = SDL_GetTicks64();
+	targetGrid = world_to_grid(targetPos);
+	playerOffset = abs(targetGrid.x - stats->lastPlayerGridPos.x) + abs(targetGrid.y - stats->lastPlayerGridPos.y);
+
+	if ((SDL_GetTicks64() - stats->timeAtPathCalc > 250) || playerOffset>1) {
+
 		stats->lastPlayerGridPos = targetGrid;
-		if (stats->path && stats->path->gridPos.x == selfGrid.x && stats->path->gridPos.y == selfGrid.y) {
-			PathNode* temp = stats->path;
-			stats->path = stats->path->next;
-			free(temp);
-		}
-	}
-
-	if (!stats->path) return;
-
-	nodePos = grid_to_world(stats->path->gridPos);
-	
-	if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x+ (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), nodePos, stats->moveSpeed+1)) {
-		temp = stats->path;
-		stats->path = stats->path->next;
-		free(temp);
 		
-		if (!stats->path) {
-			self->velocity = gfc_vector2d(0, 0);
-			return;
+		for (i = 0; i < stats->path->count; i++) {
+			nodePos = gfc_list_get_nth(stats->path, i);
+			if (nodePos) free(nodePos);
 		}
+		gfc_list_delete(stats->path);
 
-		nodePos = grid_to_world(stats->path->gridPos);
+		stats->path = pathfind_2d(world_to_grid(self->centerPos), targetGrid);
+
+		stats->timeAtPathCalc = SDL_GetTicks64();
 	}
 
+	if (stats->path->count > 0) {
+		GFC_Vector2I* next = gfc_list_get_nth(stats->path, 1);
+		nodePos = gfc_list_get_nth(stats->path, 0);
+		waypoint = grid_to_world(*nodePos);
 
-	gfc_vector2d_sub(distance, nodePos, gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)));
-	gfc_vector2d_normalize(&distance);
-	gfc_vector2d_scale(distance, distance, stats->moveSpeed);
-	self->velocity = distance;
+		if ((gfc_vector2d_distance_between_less_than(self->centerPos, waypoint, softRadius) 
+			&& (next && detect_los(self, grid_to_world(*next)))) 
+			|| (gfc_vector2d_distance_between_less_than(self->centerPos, waypoint, hardRadius))) {
+
+			gfc_list_delete_data(stats->path, nodePos);
+			free(nodePos);
+		}
+		else {
+			gfc_vector2d_sub(direction, waypoint, self->centerPos);
+			gfc_vector2d_normalize(&direction);
+			gfc_vector2d_scale(self->velocity,direction,stats->moveSpeed);
+		}
+	}
+	else {
+		self->velocity = gfc_vector2d(0,0);
+	}
+
 	return;
 }
 

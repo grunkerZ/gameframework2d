@@ -34,7 +34,7 @@ typedef struct {
 	GFC_Vector2I	lastPlayerGridPos;	//the last time the player was at when the path was calculated
 	MonsterType		monster;			//the type of monster
 	ProjectileData  projectileStats;	//the stats of the monsters projectile
-	PathNode*		path;				//the path to a target position		
+	GFC_List*		path;				//the path to a target position		
 }MonsterData;
 
 /*
