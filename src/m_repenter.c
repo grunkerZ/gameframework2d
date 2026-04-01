@@ -19,9 +19,9 @@ Entity* repenter_new(GFC_Vector2D position) {
 	self->sprite = gf2d_sprite_load_all("images/monster/repenter.png",256,256,5,false);
 	self->scale = gfc_vector2d(0.25, 0.25);
 	set_center(self, self->position);
-	entity_setup_collision_box(self, ST_RECT, 0.05);
+	entity_setup_collision_box(self, ST_RECT, 0.00);
 
-	stats->aggroRange = 100;
+	stats->aggroRange = 200;
 	stats->touchDamage = 1;
 	stats->moveSpeed = 1;
 	stats->health = 2;
@@ -63,6 +63,9 @@ void repenter_think(Entity* self) {
 		self->frame += 0.1;
 	}
 	else if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
+		
+		move_to_1d(self, playerPos);
+
 		if (gfc_vector2d_distance_between_less_than(gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2)), playerPos, stats->stopDistance)) {
 			
 			if (self->frame < 20 || self->frame > 30) self->frame = 20;
@@ -91,7 +94,6 @@ void repenter_think(Entity* self) {
 			self->frame += 0.1;
 			if (self->frame >= 16) self->frame = 0;
 
-			move_to_1d(self, playerPos);
 		}
 	}
 	else {
@@ -108,7 +110,7 @@ void repenter_think(Entity* self) {
 
 void repenter_update(Entity* self) {
 	CollisionInfo info;
-	if (((MonsterData*)self->data)->health <= 0) {
+	if (self->frame>=43) {
 		entity_free(self);
 		return;
 	}
