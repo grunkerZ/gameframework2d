@@ -16,7 +16,8 @@ Entity* hellhound_new(GFC_Vector2D position) {
 
 	self->gravity = 1;
 	self->position = position;
-	self->sprite = gf2d_sprite_load_all("images/hellhound.png",64,64,19,false);
+	self->sprite = gf2d_sprite_load_all("images/monster/hellhound.png",256,256,5,false);
+	self->scale = gfc_vector2d(0.25, 0.25);
 	set_center(self, self->position);
 	entity_setup_collision_box(self, ST_RECT, 0.05);
 
@@ -51,7 +52,11 @@ void hellhound_think(Entity* self) {
 
 	info = check_map_collision(self);
 
-	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
+	if (stats->health <= 0) {
+		if (self->frame < 35) self->frame = 35;
+		self->frame += 0.1;
+	}
+	else if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
 		stats->isStunned = (SDL_GetTicks64() - stats->timeAtAttack < stats->attackCooldown) && (stats->attacking == 0);
 
 		// normal movement
@@ -71,7 +76,7 @@ void hellhound_think(Entity* self) {
 					stats->attacking = 1;
 					stats->timeAtAttack = SDL_GetTicks64();
 					self->velocity.x = 0;
-					self->frame = 0;
+					self->frame = 15;
 				}
 			}
 		}
@@ -86,7 +91,7 @@ void hellhound_think(Entity* self) {
 				gfc_vector2d_scale(self->velocity, self->velocity, 8);
 				self->velocity.y = -2;
 
-				self->frame = 6;
+				self->frame = 22;
 				stats->attacking = 2;
 			}
 		}
@@ -127,19 +132,25 @@ void hellhound_update(Entity* self) {
 	MonsterData* stats = self->data;
 	
 	if (stats->health <= 0) {
-		entity_free(self);
-		return;
+		if(self->frame >= 47){
+			entity_free(self);
+			return;
+		}
 	}
 	
-	if (stats->attacking > 0) {
+	else if (stats->attacking > 0) {
 		self->frame += 0.1;
-		if (stats->attacking == 1 && self->frame >= 6) self->frame = 6;
-		else if (stats->attacking == 2 && self->frame >= 12) self->frame = 12;
-		else if (stats->attacking == 3 && self->frame >= 18) {
-			self->frame = 18;
+		if (stats->attacking == 1 && self->frame >= 17) self->frame = 17;
+		else if (stats->attacking == 2 && self->frame >= 22) self->frame = 22;
+		else if (stats->attacking == 3 && self->frame >= 28) {
+			self->frame = 0;
 			stats->attacking = 0;
 			stats->timeAtAttack = SDL_GetTicks64();
 		}
+	}
+	else {
+		self->frame += 0.1;
+		if (self->frame >= 11) self->frame = 0;
 	}
 
 	gfc_vector2d_add(self->position, self->position, self->velocity);
