@@ -141,6 +141,8 @@ Item* item_create(ItemID id) {
 
 	*self = itemManager->itemList[id];
 
+	self->scale = gfc_vector2d(0.25, 0.25);
+
 	switch (id) {
 	case PICKUP_SHIELD_HALF:
 		self->sprite = gf2d_sprite_load_image("images/placeholder/shield_half.png");
@@ -159,31 +161,31 @@ Item* item_create(ItemID id) {
 		self->presentTime = 0;
 		break;
 	case ITEM_HAIR_TRIGGER:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/hair_trigger.png");
+		self->sprite = gf2d_sprite_load_image("images/items/hair_trigger.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_COMBAT_BOOTS:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/combat_boots.png");
+		self->sprite = gf2d_sprite_load_image("images/items/combat_boots.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_COMMANDO_BANDANA:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/bandana.png");
+		self->sprite = gf2d_sprite_load_image("images/items/commando_bandana.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_REINFORCED_RIBCAGE:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/ribcage.png");
+		self->sprite = gf2d_sprite_load_image("images/items/reinforced_ribcage.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_SULFUR_TIPPED_ROUNDS:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/sulfur_tipped.png");
+		self->sprite = gf2d_sprite_load_image("images/items/sulfur_tipped_rounds.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_LEAD_HALO:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/lead_halo.png");
+		self->sprite = gf2d_sprite_load_image("images/items/lead_halo.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_FORBIDDEN_KNOWLEDGE:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/forbidden_knowledge.png");
+		self->sprite = gf2d_sprite_load_image("images/items/forbidden_knowledge.png");
 		self->presentTime = 4000;
 		break;
 	}
@@ -219,7 +221,7 @@ void item_think(Item* self) {
 			self->timeAtPickup = SDL_GetTicks64();
 			playerStats->inventory[self->id]++;
 			player_calculate_stats(player);
-			self->scale = gfc_vector2d(4, 4);
+			self->scale = gfc_vector2d(1, 1);
 			self->presenting = 1;
 		}
 		if (self->presentTime>0) {

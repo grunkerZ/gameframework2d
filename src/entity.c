@@ -117,22 +117,22 @@ void entity_update(Entity* self) {
 	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
 		if (self->velocity.x > 0) {
 			self->forward = gfc_vector2d(1, 0);
-			self->flip = gfc_vector2d(0, 0);
-			if (self->left) {
-				self->flip = gfc_vector2d(1, 0);
-			}
 		}
 		if (self->velocity.x < 0) {
 			self->forward = gfc_vector2d(-1, 0);
-			self->flip = gfc_vector2d(1, 0);
-			if (self->left) {
-				self->flip = gfc_vector2d(0, 0);
-			}
 		}
 	}
 
 	if (self->update)self->update(self);
 
+	if (self->left) {
+		if (self->forward.x < 0) self->flip = gfc_vector2d(0, 0);
+		if (self->forward.x > 0) self->flip = gfc_vector2d(1, 0);
+	}
+	else {
+		if (self->forward.x > 0) self->flip = gfc_vector2d(0, 0);
+		if (self->forward.x < 0) self->flip = gfc_vector2d(1, 0);
+	}
 	self->centerPos = gfc_vector2d(self->position.x + (self->width / 2), self->position.y + (self->height / 2));
 }
 
