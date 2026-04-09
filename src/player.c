@@ -9,6 +9,7 @@ void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity* self);
 void player_draw(Entity* self);
+void player_hit(Entity* self, Entity* attacker, Uint8 damage);
 
 static Entity* player = NULL;
 
@@ -32,7 +33,7 @@ Entity* player_new() {
 	self->scale = gfc_vector2d(0.25, 0.25);
 	entity_setup_collision_box(self, ST_RECT, 0.15);
 	self->forward = gfc_vector2d(1, 0);
-	self->invincibility = 500;
+	self->invincibility = 1000;
 	self->type = ET_PLAYER;
 	self->width = self->sprite->frame_w;
 	self->height = self->sprite->frame_h;
@@ -93,6 +94,7 @@ Entity* player_new() {
 	self->update = player_update;
 	self->free = player_free;
 	self->draw = player_draw;
+	self->hit = player_hit;
 
 	player = self;
 	return self;
@@ -556,6 +558,14 @@ void player_update(Entity* self) {
 
 	}
 
+	if (SDL_GetTicks64() - self->timeAtDamaged < self->invincibility) {
+		if (((SDL_GetTicks64() / 200) % 2) == 0) self->hidden = 1;
+		else self->hidden = 0;
+	}
+	else {
+		self->hidden = 0;
+	}
+
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 	gfc_vector2d_add(self->centerPos, self->centerPos, self->velocity);
 
@@ -569,6 +579,44 @@ void player_update(Entity* self) {
 		self->forward = gfc_vector2d(1, 0);
 		self->flip = gfc_vector2d(0, 0);
 	}
+}
+
+void player_hit(Entity* self, Entity* attacker, Uint8 damage) {
+	PlayerData* stats;
+	GFC_Vector2D bounce;
+	if (!self || !self->data || !attacker) return;
+	stats = self->data;
+
+	if (SDL_GetTicks64() - self->timeAtDamaged < self->invincibility) {
+		return;
+	}
+
+	self->timeAtDamaged = SDL_GetTicks64();
+
+
+	if (stats->tempHealth > 0) {
+		if (damage > stats->tempHealth) {
+			stats->health -= (damage - stats->tempHealth);
+			stats->tempHealth = 0;
+		}
+		else {
+			stats->tempHealth -= damage;
+		}
+	}
+	else{
+		stats->health -= damage;
+	}
+
+	if (attacker->type != ET_PROJECTILE) {
+		//stats->state = MS_STUNNED;
+		self->timeAtStun = SDL_GetTicks64();
+		self->stun = 250;
+
+		gfc_vector2d_sub(bounce, self->centerPos, attacker->centerPos);
+		gfc_vector2d_normalize(&bounce);
+		gfc_vector2d_scale(self->knockback, bounce, 3);
+	}
+	
 }
 
 void player_free(Entity* self) {

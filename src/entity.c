@@ -165,7 +165,7 @@ void entity_draw(Entity* self) {
 	GFC_Vector2D offset;
 	if (!self) return;
 	offset = camera_get_offset();
-	if (self->sprite) {
+	if (self->sprite && !self->hidden) {
 		gf2d_sprite_render(
 			self->sprite,
 			gfc_vector2d(self->position.x + offset.x + self->centerAnchor.x, self->position.y + offset.y + self->centerAnchor.y),

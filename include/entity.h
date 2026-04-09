@@ -14,6 +14,7 @@ typedef enum {
 	ET_PLAYER,
 	ET_PROJECTILE,
 	ET_DOOR,
+	ET_HAZARD,
 	ET_END
 }EntityType;
 
@@ -37,6 +38,7 @@ typedef struct Entity_S
 	GFC_Vector2D	forward;							//the forward vector of the entity
 	GFC_Vector2D	knockback;							//a vector containing the knockback velocity
 	GFC_Vector2D	centerAnchor;						//the center point for rotation and scaling
+	Uint8			hidden;
 	GFC_Shape		collision;							//the collision box of the entity
 	EntityType		type;								//the type of entity
 	Sprite*			sprite;								//the sprite of the entity

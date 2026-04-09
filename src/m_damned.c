@@ -77,11 +77,6 @@ void damned_think(Entity* self) {
 			gfc_vector2d_add(self->velocity, self->velocity, push);
 		}
 
-		collider = check_entity_collision(self);
-		if (collider && collider->type == ET_PLAYER) {
-			entity_hit(collider, self, stats->touchDamage);
-		}
-
 		break;
 	case MS_STUNNED:
 
@@ -96,6 +91,11 @@ void damned_think(Entity* self) {
 	case MS_DEAD:
 		self->velocity = gfc_vector2d(0, 0);
 		break;
+	}
+
+	collider = check_entity_collision(self);
+	if (collider && collider->type == ET_PLAYER) {
+		entity_hit(collider, self, stats->touchDamage);
 	}
 
 }
@@ -114,13 +114,15 @@ void damned_hit(Entity* self, Entity* attacker, Uint8 damage) {
 		return;
 	}
 
-	stats->state = MS_STUNNED;
-	self->timeAtStun = SDL_GetTicks64();
-	self->stun = 250;
+	if (attacker->type != ET_PROJECTILE) {
+		stats->state = MS_STUNNED;
+		self->timeAtStun = SDL_GetTicks64();
+		self->stun = 250;
 
-	gfc_vector2d_sub(bounce, self->centerPos, attacker->centerPos);
-	gfc_vector2d_normalize(&bounce);
-	gfc_vector2d_scale(self->knockback, bounce, 3);
+		gfc_vector2d_sub(bounce, self->centerPos, attacker->centerPos);
+		gfc_vector2d_normalize(&bounce);
+		gfc_vector2d_scale(self->knockback, bounce, 3);
+	}
 }
 
 void damned_update(Entity* self) {

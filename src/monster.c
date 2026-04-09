@@ -44,10 +44,10 @@ Uint8 detect_ledge(Entity* self) {
 	gfc_vector2d_add(nextPos, self->position, self->velocity);
 
 	if (self->position.x - nextPos.x < 0) {
-		nextPos.x += self->sprite->frame_w;
+		nextPos.x += self->width;
 	}
 
-	nextPos.y += self->sprite->frame_h + 1;
+	nextPos.y += self->height + 1;
 	if (tile_at(nextPos) == 0) return 1;
 	return 0;
 }
@@ -107,9 +107,9 @@ Uint8 is_drop_safe(Entity* self){
 	GFC_Vector2D nextPos;
 	gfc_vector2d_add(nextPos, self->position, self->velocity);
 	
-	nextPos.y = self->position.y + self->sprite->frame_h;
+	nextPos.y = self->position.y + self->height;
 	if (self->position.x - nextPos.x < 0) {
-		nextPos.x += self->sprite->frame_w;
+		nextPos.x += self->width;
 	}
 
 	while (tile_at(nextPos) == 0) {
@@ -176,49 +176,69 @@ void move_to_2d(Entity* self, GFC_Vector2D targetPos) {
 	if (detect_los(self, targetPos)) {
 		gfc_vector2d_sub(direction, targetPos, self->centerPos);
 		gfc_vector2d_normalize(&direction);
-		gfc_vector2d_scale(self->velocity, direction, stats->moveSpeed);
-		return;
 	}
 
-	targetGrid = world_to_grid(targetPos);
-	playerOffset = abs(targetGrid.x - stats->lastPlayerGridPos.x) + abs(targetGrid.y - stats->lastPlayerGridPos.y);
+	else {
+		targetGrid = world_to_grid(targetPos);
+		playerOffset = abs(targetGrid.x - stats->lastPlayerGridPos.x) + abs(targetGrid.y - stats->lastPlayerGridPos.y);
 
-	if ((SDL_GetTicks64() - stats->timeAtPathCalc > 250) || playerOffset>1) {
+		if ((SDL_GetTicks64() - stats->timeAtPathCalc > 250) || playerOffset > 1) {
 
-		stats->lastPlayerGridPos = targetGrid;
-		
-		for (i = 0; i < stats->path->count; i++) {
-			nodePos = gfc_list_get_nth(stats->path, i);
-			if (nodePos) free(nodePos);
+			stats->lastPlayerGridPos = targetGrid;
+
+			for (i = 0; i < stats->path->count; i++) {
+				nodePos = gfc_list_get_nth(stats->path, i);
+				if (nodePos) free(nodePos);
+			}
+			gfc_list_delete(stats->path);
+
+			stats->path = pathfind_2d(world_to_grid(self->centerPos), targetGrid);
+
+			stats->timeAtPathCalc = SDL_GetTicks64();
 		}
-		gfc_list_delete(stats->path);
 
-		stats->path = pathfind_2d(world_to_grid(self->centerPos), targetGrid);
+		if (stats->path->count > 0) {
+			GFC_Vector2I* next = gfc_list_get_nth(stats->path, 1);
+			nodePos = gfc_list_get_nth(stats->path, 0);
+			waypoint = grid_to_world(*nodePos);
 
-		stats->timeAtPathCalc = SDL_GetTicks64();
-	}
+			if ((gfc_vector2d_distance_between_less_than(self->centerPos, waypoint, softRadius)
+				&& (next && detect_los(self, grid_to_world(*next))))
+				|| (gfc_vector2d_distance_between_less_than(self->centerPos, waypoint, hardRadius))) {
 
-	if (stats->path->count > 0) {
-		GFC_Vector2I* next = gfc_list_get_nth(stats->path, 1);
-		nodePos = gfc_list_get_nth(stats->path, 0);
-		waypoint = grid_to_world(*nodePos);
-
-		if ((gfc_vector2d_distance_between_less_than(self->centerPos, waypoint, softRadius) 
-			&& (next && detect_los(self, grid_to_world(*next)))) 
-			|| (gfc_vector2d_distance_between_less_than(self->centerPos, waypoint, hardRadius))) {
-
-			gfc_list_delete_data(stats->path, nodePos);
-			free(nodePos);
+				gfc_list_delete_data(stats->path, nodePos);
+				free(nodePos);
+				return;
+			}
+			else {
+				gfc_vector2d_sub(direction, waypoint, self->centerPos);
+				gfc_vector2d_normalize(&direction);
+			}
 		}
 		else {
-			gfc_vector2d_sub(direction, waypoint, self->centerPos);
-			gfc_vector2d_normalize(&direction);
-			gfc_vector2d_scale(self->velocity,direction,stats->moveSpeed);
+			self->velocity.x = 0;
+			return;
+		}
+	}
+
+	if (self->gravity == 1) {
+		GFC_Vector2D moveTarget = detect_los(self, targetPos) ? targetPos : waypoint;
+		float distX = moveTarget.x - self->centerPos.x;
+
+
+		if (detect_ledge(self) && !is_drop_safe(self)) {
+			self->velocity.x = 0;
+		}
+		else {
+			if (fabs(distX) <= stats->moveSpeed) self->velocity.x = 0;
+			else if (distX > 0) self->velocity.x = stats->moveSpeed;
+			else self->velocity.x = -stats->moveSpeed;
 		}
 	}
 	else {
-		self->velocity = gfc_vector2d(0,0);
+		gfc_vector2d_scale(self->velocity, direction, stats->moveSpeed);
 	}
+	
 
 	return;
 }

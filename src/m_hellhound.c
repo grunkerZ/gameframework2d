@@ -85,7 +85,7 @@ void hellhound_think(Entity* self) {
 			gfc_vector2d_add(self->velocity, self->velocity, push);
 		}
 
-		if (gfc_vector2d_distance_between_less_than(self->centerPos, playerPos, stats->stopDistance)) {
+		if (info.bottom && gfc_vector2d_distance_between_less_than(self->centerPos, playerPos, stats->stopDistance)) {
 			if (SDL_GetTicks64() - stats->timeAtAttack > stats->attackCooldown) {
 				stats->state = MS_CHARGEATTACK;
 				self->velocity = gfc_vector2d(0, 0);
@@ -107,7 +107,7 @@ void hellhound_think(Entity* self) {
 			gfc_vector2d_normalize(&leapDir);
 
 			self->velocity.x = leapDir.x * 6;
-			self->velocity.y = -6;
+			self->velocity.y = -2;
 
 			stats->state = MS_ATTACKING;
 		}
@@ -155,13 +155,15 @@ void hellhound_hit(Entity* self, Entity* attacker, Uint8 damage) {
 		return;
 	}
 
-	stats->state = MS_STUNNED;
-	self->timeAtStun = SDL_GetTicks64();
-	self->stun = 250;
+	if(attacker->type != ET_PROJECTILE){
+		stats->state = MS_STUNNED;
+		self->timeAtStun = SDL_GetTicks64();
+		self->stun = 250;
 
-	gfc_vector2d_sub(bounce, self->centerPos, attacker->centerPos);
-	gfc_vector2d_normalize(&bounce);
-	gfc_vector2d_scale(self->knockback, bounce, 3);
+		gfc_vector2d_sub(bounce, self->centerPos, attacker->centerPos);
+		gfc_vector2d_normalize(&bounce);
+		gfc_vector2d_scale(self->knockback, bounce, 3);
+	}
 
 	return;
 }
