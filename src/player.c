@@ -558,7 +558,7 @@ void player_update(Entity* self) {
 
 	}
 
-	if (SDL_GetTicks64() - self->timeAtDamaged < self->invincibility) {
+	if (SDL_GetTicks64() - self->timeAtDamaged < self->invincibility && stats->health > 0) {
 		if (((SDL_GetTicks64() / 200) % 2) == 0) self->hidden = 1;
 		else self->hidden = 0;
 	}

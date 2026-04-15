@@ -1038,4 +1038,15 @@ void room_remove_entity(Room* room, Entity* entity) {
 	entity->currentTiles = NULL;
 }
 
+TileType tile_type_at(GFC_Vector2D position) {
+	int tile;
+	Room* room = get_active_room();
+	if (!room) return TT_EMPTY;
+
+	tile = tile_at(position);
+	if (tile < 0) return TT_EMPTY;
+
+	return room_get_tile_type(room, tile);
+}
+
 /*eol@eof*/

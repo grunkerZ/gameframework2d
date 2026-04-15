@@ -368,4 +368,11 @@ Room* get_active_room();
 */
 void room_remove_entity(Room* room, Entity* entity);
 
+/*
+* @brief gets the tile logic type at a world position
+* @param position the position in the world to check
+* @returns the tileType at the position
+*/
+TileType tile_type_at(GFC_Vector2D position);
+
 #endif // !__WORLD_H__

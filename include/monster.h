@@ -20,45 +20,73 @@ typedef enum {
 	MS_IDLE,
 	MS_WANDERING,
 	MS_CHASE,
-	MS_CHARGEATTACK,
+	MS_ATTACK_PREP,
 	MS_ATTACKING,
 	MS_STUNNED,
-	MS_DEAD,
+	MS_DEATH,
 	MS_END
 }MonsterState;
 
 typedef struct {
+	int					start;				//the starting frame
+	int					end;				//the ending frame
+	float				speed;				//the speed of the animation
+	Uint8				loop;				//1 to loop the animation, 0 otherwise
+}FrameRange;
 
-	// === STATS ===
+typedef struct {
 
-	int				health;				//the health of the monster
-	Uint8			damage;				//the damage of the monsters attack
-	Uint8			touchDamage;		//the damage delt to valid colliding entities
-	ProjectileData  projectileStats;	//the stats of the monsters projectile
+	// === MONSTER INFORMATION & IDENTITY ===
+	struct {
+		MonsterType		monster;			//the type of monster
+		MonsterState	state;				//the current state of the monster
+		int				health;				//the current health of the monster
+		int				maxHealth;			//the maximum health of the monster
+		Uint8			value;				//used for stage population, the higher the more difficult the monster
+	}info;
 
 	// === MOVEMENT ===
-
-	Uint8			sentry;				//1 if the monster should patrol its platform, 0 otherwise
-	Uint8			moveSpeed;			//the speed the monster moves
-	Uint32			aggroRange;			//the range in which a monster will aggro the player
-	Uint32			stopDistance;		//the distance that the monster will not move to the player in
-
-	// === TIME ===
-
-	Uint32			attackSpeed;
-	Uint32			attackDelay;		//the time it takes for the monster to charge an attack
-	Uint32			attackCooldown;		//the time it takes for the monster to attack after it completed an attack
-	Uint32			timeAtPathCalc;		//the time when the 2d pathfinding path was calculated
-	Uint32			timeAtAttack;		//the time when the monster attacked
-
-	// === MISC ===
-
-	Uint8			value;				//used for stage population, the higher the more difficult the monster
-	GFC_Vector2I	lastPlayerGridPos;	//the last time the player was at when the path was calculated
-	MonsterType		monster;			//the type of monster
-	MonsterState	state;
-	GFC_List* path;				//the path to a target position		
+	struct {
+		float			moveSpeed;			//the speed the monster moves
+		Uint8			isFlying;			//1 if gravity is ignored, 0 otherwise
+		Uint8			isSentry;			//1 if the monster should patrol its platform, 0 otherwise
+	}move;
 	
+	// === MONSTER AI ===
+	struct {
+		float			aggroRange;			//the range in which a monster will aggro the player
+		float			stopDistance;		//the distance that the monster will not move to the player in
+		Uint8			hasLOS;				//1 if the monster hasLOS of the player, 0 otherwise
+	}ai;
+
+	// === COMBAT ===
+	struct {
+		Uint8			touchDamage;		//the damage delt to valid colliding entities
+		Uint32			attackSpeed;		//the delay between attacks
+		Uint32			attackDelay;		//the time it takes for the monster to charge an attack
+		Uint32			attackCooldown;		//the time it takes for the monster to attack after it completed an attack
+		Uint32			timeAtLastAttack;	//the time when the monster attacked
+		ProjectileData  projectileStats;	//the stats of the monsters projectile
+	}combat;
+
+	struct {
+		GFC_List*		path;				//the path to a target position
+		Uint32			timeAtPathCalc;		//the time when the 2d pathfinding path was calculated
+		GFC_Vector2I	lastPlayerGridPos;	//the last time the player was at when the path was calculated
+	}pathfind;
+
+	struct {
+		FrameRange		idle;				//the frame range for the idle animation
+		FrameRange		walk;				//the frame range for the walk animation
+		FrameRange		attackPrep;			//the frame range for the attackPrep animation
+		FrameRange		attack;				//the frame range for the attack animation
+		FrameRange		death;				//the frame range for the death animation
+	}animation;
+	
+	// === MONSTER BEHAVIOR ===
+	void (*on_attack)(Entity* self);
+	void (*on_death)(Entity* self);
+
 }MonsterData;
 
 /*
@@ -90,20 +118,13 @@ Uint8 is_drop_safe(Entity* self);
 Uint8 detect_los(Entity* self, GFC_Vector2D targetPos);
 
 /*
-* @brief moves an entity towards a targetPos in the x dimension
-* @param self the entity to move
-* @param targetPos the target to move to
-*/
-void move_to_1d(Entity* self, GFC_Vector2D targetPos);
-
-/*
 * @brief moves an entity towards a targetPos using A*
 * @param self the entity to move
 * @param targetPos the target to move to in world position
 * @note returns early if within stopping distance
 * @note returns early if self has line of sight with the target position
 */
-void move_to_2d(Entity* self, GFC_Vector2D targetPos);
+void monster_move_to(Entity* self, GFC_Vector2D targetPos);
 
 /*
 * @brief runs a monster's spawn function
