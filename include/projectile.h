@@ -19,7 +19,7 @@ typedef struct {
 	// === TIME ===
 
 	Uint8			spawnImmunity;		//a short window of spawn immunity of the projectile protecting it from being freed on map collision
-	Uint8			explosionTime;		//how long the projectile explodes for
+	Uint32			explosionTime;		//how long the projectile explodes for
 	Uint32			timeAtSpawn;		//the time when the projectile was spawned
 	Uint32			timeAtExplosion;	//the time when the projectile exploded
 
