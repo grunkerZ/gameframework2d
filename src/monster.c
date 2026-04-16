@@ -3,11 +3,7 @@
 #include "camera.h"
 #include "player.h"
 #include "world.h"
-#include "m_damned.h"
-#include "m_fiend.h"
-#include "m_hellhound.h"
-#include "m_imp.h"
-#include "m_repenter.h"
+#include "monster_def.h"
 
 void monster_free(Entity* self);
 
@@ -310,6 +306,132 @@ MonsterType get_valid_monster(Uint8 spawnType, Uint8 budget) {
 		return candidates[index];
 	}
 }
+
+Entity* monster_spawn_by_name(const char* name, GFC_Vector2D position) {
+	Entity* self;
+	MonsterData* stats;
+	MonsterDef* def;
+
+	def = get_monster_def_by_name(name);
+	if (!def) {
+		slog("Failed to spawn monster by name: '%s'", name);
+		return NULL;
+	}
+
+	self = monster_new();
+	if (!self) return NULL;
+
+	stats = self->data;
+
+	strncpy(stats->info.name, def->name, 63);
+	stats->info.health = def->maxHealth;
+	stats->info.maxHealth = def->maxHealth;
+	stats->info.value = def->value;
+	self->scale = def->scale;
+
+	stats->move.moveSpeed = def->moveSpeed;
+	stats->move.isFlying = def->isFlying;
+	stats->move.isSentry = def->isSentry;
+	stats->move.moveSpeed = def->moveSpeed;
+	self->gravity = !def->isFlying;
+
+	stats->ai.aggroRange = def->aggroRange;
+	stats->ai.stopDistance = def->stopDistance;
+
+	stats->combat.attackCooldown = def->attackCooldown;
+	stats->combat.attackDelay = def->attackDelay;
+	stats->combat.attackSpeed = def->attackSpeed;
+	stats->combat.projectileStats = def->projectile;
+	stats->combat.projSprite = def->projectileSprite;
+	stats->combat.maxFrame = def->proj_max_frame;
+	stats->combat.projScale = def->projScale;
+
+	stats->animation.idle = def->idle;
+	stats->animation.walk = def->walk;
+	stats->animation.attackPrep = def->attackPrep;
+	stats->animation.attack = def->attack;
+	stats->animation.death = def->death;
+
+	self->position = position;
+	self->sprite = def->selfSprite;
+
+	stats->on_attack = monster_get_action_by_name(def->on_attack_name);
+	stats->on_death = monster_get_action_by_name(def->on_death_name);
+
+	slog("Spawned '%s' at (%f, %f)", name, position.x, position.y);
+	return self;
+}
+
+void monster_attack_shoot(Entity* self) {
+	MonsterData* stats;
+	Entity* projectile;
+	GFC_Vector2D playerPos;
+	GFC_Vector2D dir;
+
+	if (!self || !self->data) return;
+
+	stats = (MonsterData*)self->data;
+
+	playerPos = player_get_position();
+
+	gfc_vector2d_sub(dir, playerPos, self->centerPos);
+	gfc_vector2d_normalize(&dir);
+
+	projectile = projectile_new(self, &stats->combat.projectileStats);
+	if (!projectile) return;
+	projectile->sprite = stats->combat.projSprite;
+	projectile->scale = stats->combat.projScale;
+
+	entity_setup_collision_box(projectile, ST_CIRCLE, 0);
+	gfc_vector2d_scale(projectile->velocity, dir, stats->combat.projectileStats.speed);
+
+	slog("%s fired a projectile", stats->info.name);
+	return;
+}
+
+void monster_attack_melee(Entity* self) {
+	MonsterData* stats;
+	GFC_Shape attackBox;
+	GFC_List* hitList;
+	Entity* hitEntity;
+	int i;
+
+	if (!self || !self->data) return;
+	stats = self->data;
+
+	attackBox.type = ST_RECT;
+	attackBox.s.r.w = 64 * self->scale.x;
+	attackBox.s.r.h = 64 * self->scale.y;
+	attackBox.s.r.y = self->centerPos.y - (attackBox.s.r.h / 2);
+
+	if (self->forward.x > 0) {
+		attackBox.s.r.x = self->centerPos.x;
+	}
+	else {
+		attackBox.s.r.x = self->centerPos.x - attackBox.s.r.w;
+	}
+
+	hitList = get_entities_in_shape(attackBox, self);
+	if (hitList) {
+		for (i = 0; i < hitList->count; i++) {
+			hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
+			if (hitEntity->type == ET_PLAYER) {
+				entity_hit(hitEntity, self, stats->combat.touchDamage);
+			}
+		}
+		gfc_list_delete(hitList);
+	}
+	return;
+}
+
+void (*monster_get_action_by_name(const char* name))(Entity*) {
+	if (!name) return NULL;
+	if (strcmp(name, "monster_attack_shoot") == 0) return monster_attack_shoot;
+	if (strcmp(name, "monster_attack_melee") == 0) return monster_attack_melee;
+
+	return NULL;
+}
+
 
 
 /*eol@eof*/

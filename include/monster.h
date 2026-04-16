@@ -28,45 +28,49 @@ typedef enum {
 }MonsterState;
 
 typedef struct {
-	int					start;				//the starting frame
-	int					end;				//the ending frame
-	float				speed;				//the speed of the animation
-	Uint8				loop;				//1 to loop the animation, 0 otherwise
+	int					start;					//the starting frame
+	int					end;					//the ending frame
+	float				speed;					//the speed of the animation
+	Uint8				loop;					//1 to loop the animation, 0 otherwise
 }FrameRange;
 
 typedef struct {
 
 	// === MONSTER INFORMATION & IDENTITY ===
 	struct {
-		MonsterType		monster;			//the type of monster
-		MonsterState	state;				//the current state of the monster
-		int				health;				//the current health of the monster
-		int				maxHealth;			//the maximum health of the monster
-		Uint8			value;				//used for stage population, the higher the more difficult the monster
+		MonsterType		monster;				//the type of monster
+		MonsterState	state;					//the current state of the monster
+		int				health;					//the current health of the monster
+		int				maxHealth;				//the maximum health of the monster
+		Uint8			value;					//used for stage population, the higher the more difficult the monster
+		char			name[64];				//the name of the monster
 	}info;
 
 	// === MOVEMENT ===
 	struct {
-		float			moveSpeed;			//the speed the monster moves
-		Uint8			isFlying;			//1 if gravity is ignored, 0 otherwise
-		Uint8			isSentry;			//1 if the monster should patrol its platform, 0 otherwise
+		float			moveSpeed;				//the speed the monster moves
+		Uint8			isFlying;				//1 if gravity is ignored, 0 otherwise
+		Uint8			isSentry;				//1 if the monster should patrol its platform, 0 otherwise
 	}move;
 	
 	// === MONSTER AI ===
 	struct {
-		float			aggroRange;			//the range in which a monster will aggro the player
-		float			stopDistance;		//the distance that the monster will not move to the player in
-		Uint8			hasLOS;				//1 if the monster hasLOS of the player, 0 otherwise
+		float			aggroRange;				//the range in which a monster will aggro the player
+		float			stopDistance;			//the distance that the monster will not move to the player in
+		Uint8			hasLOS;					//1 if the monster hasLOS of the player, 0 otherwise
 	}ai;
 
 	// === COMBAT ===
 	struct {
-		Uint8			touchDamage;		//the damage delt to valid colliding entities
-		Uint32			attackSpeed;		//the delay between attacks
-		Uint32			attackDelay;		//the time it takes for the monster to charge an attack
-		Uint32			attackCooldown;		//the time it takes for the monster to attack after it completed an attack
-		Uint32			timeAtLastAttack;	//the time when the monster attacked
-		ProjectileData  projectileStats;	//the stats of the monsters projectile
+		Uint8			touchDamage;			//the damage delt to valid colliding entities
+		Uint32			attackSpeed;			//the delay between attacks
+		Uint32			attackDelay;			//the time it takes for the monster to charge an attack
+		Uint32			attackCooldown;			//the time it takes for the monster to attack after it completed an attack
+		Uint32			timeAtLastAttack;		//the time when the monster attacked
+		ProjectileData  projectileStats;		//the stats of the monsters projectile
+		Sprite*			projSprite;				//the projectile sprite
+		int				maxFrame;				//the maximum frames for the sprite
+		GFC_Vector2D	projScale;				//the scale of the projectile
 	}combat;
 
 	struct {

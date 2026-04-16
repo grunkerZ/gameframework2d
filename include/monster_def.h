@@ -5,14 +5,6 @@
 
 typedef struct {
 	char			name[64];
-	char			sprite_path[64];
-	char			projectile_sprite_path[64];
-	int				frame_w;
-	int				frame_h;
-	int				proj_frame_w;
-	int				proj_frame_h;
-	int				frames_per_line;
-	int				proj_frames_per_line;
 	int				proj_max_frame;
 	int				maxHealth;
 	float			moveSpeed;
@@ -33,6 +25,8 @@ typedef struct {
 	FrameRange		death;
 	GFC_Vector2D	scale;
 	GFC_Vector2D	projScale;
+	Sprite*			selfSprite;
+	Sprite*			projectileSprite;
 	char			on_attack_name[64];
 	char			on_death_name[64];
 }MonsterDef;
@@ -43,6 +37,12 @@ typedef struct {
 }MonsterAction;
 
 /*
+* @brief loads a monster definition
+* @param filename the name of the file to load
+*/
+void monster_def_load(const char* filename);
+
+/*
 * @brief initalizes the monster definition system and loads all def files
 */
 void monster_def_init();
@@ -51,11 +51,19 @@ void monster_def_init();
 * @brief gets a monster def by its name
 * @return NULL if no def is found, otherwise the MonsterDef object
 */
-MonsterDef* monster_def_get_by_name(const char* name);
+MonsterDef* get_monster_def_by_name(const char* name);
 
 /*
 * @brief frees the monster def system
 */
 void monster_def_close();
+
+/*
+* @brief loads the frame range from json
+* @param json the json object of the file
+* @param name the name of the animation
+* @param range the FrameRange pointer to populate
+*/
+void load_frame_range(SJson* json, const char* name, FrameRange* range);
 
 #endif //__MONSTER_DEF_H__

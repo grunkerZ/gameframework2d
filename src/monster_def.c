@@ -26,6 +26,7 @@ void monster_def_load(const char* filename) {
 	SJson* json;
 	SJson* animation;
 	SJson* projectile;
+	int frame_w, frame_h, frames_per_line;
 	const char* string;
 	int temp;
 
@@ -41,12 +42,12 @@ void monster_def_load(const char* filename) {
 	string = sj_get_string_value(sj_object_get_value(json, "name"));
 	if (string) strncpy(def->name, string, 63);
 
-	string = sj_get_string_value(sj_object_get_value(json, "sprite_path"));
-	if (string) strncpy(def->sprite_path, string, 63);
 
-	sj_object_get_value_as_int(json, "frame_w", &def->frame_w);
-	sj_object_get_value_as_int(json, "frame_h", &def->frame_h);
-	sj_object_get_value_as_int(json, "frames_per_line", &def->frames_per_line);
+	sj_object_get_value_as_int(json, "frame_w", &frame_w);
+	sj_object_get_value_as_int(json, "frame_h", &frame_h);
+	sj_object_get_value_as_int(json, "frames_per_line", &frames_per_line);
+	string = sj_get_string_value(sj_object_get_value(json, "sprite_path"));
+	if (string) def->selfSprite = gf2d_sprite_load_all(string, frame_w, frame_h, frames_per_line, false);
 
 	sj_object_get_value_as_int(json, "maxHealth", &def->maxHealth);
 	sj_object_get_value_as_float(json, "moveSpeed", &def->moveSpeed);
@@ -71,12 +72,14 @@ void monster_def_load(const char* filename) {
 
 	projectile = sj_object_get_value(json, "projectile");
 	if (projectile) {
-		string = sj_get_string_value(sj_object_get_value(projectile, "sprite_path"));
-		if (string) strncpy(def->projectile_sprite_path, string, 63);
 
-		sj_object_get_value_as_int(projectile, "frame_w", &def->proj_frame_w);
-		sj_object_get_value_as_int(projectile, "frame_h", &def->proj_frame_h);
-		sj_object_get_value_as_int(projectile, "frames_per_line", &def->proj_frames_per_line);
+		sj_object_get_value_as_int(projectile, "frame_w", &frame_w);
+		sj_object_get_value_as_int(projectile, "frame_h", &frame_h);
+		sj_object_get_value_as_int(projectile, "frames_per_line", &frames_per_line);
+		string = sj_get_string_value(sj_object_get_value(projectile, "sprite_path"));
+		if (string) def->projectileSprite = gf2d_sprite_load_all(string, frame_w, frame_h, frames_per_line, false);
+
+		
 		sj_object_get_value_as_int(projectile, "max_frame", &def->proj_max_frame);
 
 		sj_object_get_value_as_float(projectile, "scale_x", &def->projScale.x);
@@ -178,7 +181,10 @@ void monster_def_close() {
 
 	count = gfc_list_get_count(monsterDefs);
 	for (i = 0; i < count; i++) {
-		free(gfc_list_get_nth(monsterDefs, i));
+		MonsterDef* def = (MonsterDef*)gfc_list_get_nth(monsterDefs, i);
+		if(def->selfSprite) gf2d_sprite_free(def->selfSprite);
+		if(def->projectileSprite) gf2d_sprite_free(def->projectileSprite);
+		free(def);
 	}
 	gfc_list_delete(monsterDefs);
 	monsterDefs = NULL;
