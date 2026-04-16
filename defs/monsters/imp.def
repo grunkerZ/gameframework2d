@@ -1,0 +1,43 @@
+{
+	"name":									"imp",
+	"sprite_path":					"images/monster/imp.png",
+	"frame_w":							256,
+	"frame_h":							256,
+	"frames_per_line":			5,
+	"scale_x":							0.25,
+	"scale_y":							0.25,
+	"maxHealth":						3,
+	"moveSpeed":						1,
+	"aggroRange":						500,
+	"stopDistance":					200,
+	"touchDamage":					1,
+	"isFlying":							1,
+	"isSentry":							0,
+	"value":								2,
+	"attackSpeed":					500,
+	"attackDelay":					250,
+	"attackCooldown":				500,
+	"projectile": {
+		"sprite_path":				"images/monster/small_fireball_projectile.png",
+		"frame_w":						32,
+		"frame_h":						32,
+		"frames_per_line":		11,
+		"max_frame":					11,
+		"scale_x":						1,
+		"scale_y":						1,
+		"damage":							1,
+		"speed":							2,
+		"range":							1000,
+		"explodes":						0,
+		"explodeTime":				0
+	},
+	"animations":{
+		"idle":								{"start": 0, "end": 8, "speed": 0.1, "loop": 1},
+		"walk":								{"start": 0, "end": 8, "speed": 0.1, "loop": 1},
+		"attackPrep":					{"start": 10, "end": 20, "speed": 0.1, "loop": 0},
+		"attack":							{"start": 21, "end": 26, "speed": 0.1, "loop": 0},
+		"death":							{"start": 30, "end": 38, "speed": 0.2, "loop": 0}
+	},
+	"on_attack":						"monster_attack_shoot",
+	"on_death":							""
+}

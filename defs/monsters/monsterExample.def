@@ -1,0 +1,43 @@
+{
+	"name":						"",
+	"sprite_path":				"",
+	"frame_w":					0,
+	"frame_h":					0,
+	"frames_per_line":			0,
+	"scale_x":					1,
+	"scale_y":					1,
+	"maxHealth":				0,
+	"moveSpeed":				0,
+	"aggroRange":				0,
+	"stopDistance":				0,
+	"touchDamage":				0,
+	"isFlying":					0,
+	"isSentry":					0,
+	"value":					0,
+	"attackSpeed":				0,
+	"attackDelay":				0,
+	"attackCooldown":			0,
+	"projectile": {
+		"sprite_path":			"",
+		"frame_w":				0,
+		"frame_h":				0,
+		"frames_per_line":		0,
+		"max_frame":			0,
+		"scale_x":				1,
+		"scale_y":				1,
+		"damage":				0,
+		"speed":				0,
+		"range":				0,
+		"explodes":				0,
+		"explodeTime":			0
+	},
+	"animations":{
+		"idle":					{"start": 0, "end": 0, "speed": 0, "loop": 0},
+		"walk":					{"start": 0, "end": 0, "speed": 0, "loop": 0},
+		"attackPrep":			{"start": 0, "end": 0, "speed": 0, "loop": 0},
+		"attack":				{"start": 0, "end": 0, "speed": 0, "loop": 0},
+		"death":				{"start": 0, "end": 0, "speed": 0, "loop": 0}
+	},
+	"on_attack":				"",
+	"on_death":					""
+}

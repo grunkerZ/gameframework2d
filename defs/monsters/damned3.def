@@ -1,0 +1,29 @@
+{
+	"name":									"damned",
+	"sprite_path":					"images/monster/damned3.png",
+	"frame_w":							256,
+	"frame_h":							256,
+	"frames_per_line":			4,
+	"scale_x":							0.25,
+	"scale_y":							0.25,
+	"maxHealth":						5,
+	"moveSpeed":						1.5,
+	"aggroRange":						500,
+	"stopDistance":					16,
+	"touchDamage":					1,
+	"isFlying":							0,
+	"isSentry":							0,
+	"value":								1,
+	"attackSpeed":					0,
+	"attackDelay":					0,
+	"attackCooldown":				250,
+	"animations":{
+		"idle":								{"start": 0, "end": 8, "speed": 0.1, "loop": 1},
+		"walk":								{"start": 0, "end": 8, "speed": 0.1, "loop": 1},
+		"attackPrep":					{"start": 0, "end": 0, "speed": 0, "loop": 0},
+		"attack":							{"start": 0, "end": 0, "speed": 0, "loop": 0},
+		"death":							{"start": 12, "end": 20, "speed": 0.2, "loop": 0}
+	},
+	"on_attack":						"",
+	"on_death":							""
+}
