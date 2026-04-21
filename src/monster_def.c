@@ -110,11 +110,11 @@ void monster_def_load(const char* filename) {
 	sj_object_get_value_as_float(json, "scale_x", &def->scale.x);
 	sj_object_get_value_as_float(json, "scale_y", &def->scale.y);
 
-	string = sj_get_string_value(sj_object_get_value(json, "on_attack_name"));
-	if (string) gfc_strlcpy(def->on_attack_name, string, sizeof(def->on_attack_name));
+	string = sj_get_string_value(sj_object_get_value(json, "on_attack"));
+	if (string) strncpy(def->on_attack, string, 63);
 
-	string = sj_get_string_value(sj_object_get_value(json, "on_death_name"));
-	if (string) gfc_strlcpy(def->on_death_name, string, sizeof(def->on_death_name));
+	string = sj_get_string_value(sj_object_get_value(json, "on_death"));
+	if (string) strncpy(def->on_death, string, 63);
 
 	gfc_list_append(monsterDefs, def);
 	slog("Loaded Monster Def for '%s'", def->name);

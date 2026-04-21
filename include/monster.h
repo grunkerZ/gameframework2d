@@ -159,4 +159,19 @@ Uint8 get_monster_spawn_type(MonsterType monster);
 */
 Uint8 get_monster_cost(MonsterType monster);
 
+/*
+* @brief spawns a monster by a string name
+* @param name the name of the monster to spawn
+* @param position the position to spawn the monster
+* @return NULL on error, otherwise the spawned monster
+*/
+Entity* monster_spawn_by_name(const char* name, GFC_Vector2D position);
+
+/*
+* @brief gets a monster action function by its function name
+* @param name the name of the function
+* @return a pointer to the action function
+*/
+void (*monster_get_action_by_name(const char* name))(Entity*);
+
 #endif //__MONSTER_H__

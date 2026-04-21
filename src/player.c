@@ -255,8 +255,7 @@ void player_think(Entity* self) {
 					for (i = 0; i < hitList->count; i++) {
 						hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
 						if (hitEntity->type == ET_MONSTER) {
-							((MonsterData*)hitEntity->data)->health = apply_damage(hitEntity, self, stats->slamDamage, ((MonsterData*)hitEntity->data)->health);
-							if(hitEntity!=collider) hitEntity->knockback.y = -5;
+							entity_hit(hitEntity, self, stats->slamDamage);
 						}
 					}
 					gfc_list_delete(hitList);
@@ -265,7 +264,7 @@ void player_think(Entity* self) {
 				self->timeAtDamaged = SDL_GetTicks64();
 			}
 			else if(stats->touchDamage>0){
-				((MonsterData*)collider->data)->health = apply_damage(collider, self, stats->touchDamage, ((MonsterData*)collider->data)->health);
+				entity_hit(collider, self, stats->touchDamage);
 			}
 			
 		}
@@ -348,9 +347,7 @@ void player_think(Entity* self) {
 				for (i = 0; i < hitList->count; i++) {
 					hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
 					if (hitEntity->type == ET_MONSTER) {
-						((MonsterData*)hitEntity->data)->health = apply_damage(hitEntity, self, stats->slamDamage, ((MonsterData*)hitEntity->data)->health);
-						hitEntity->knockback.y = -5;
-
+						entity_hit(hitEntity, self, stats->slamDamage);
 					}
 				}
 				gfc_list_delete(hitList);

@@ -1,5 +1,11 @@
 {
 	"monster_files": [
-		"defs/monsters/damned.def"
+		"defs/monsters/damned1.def",
+		"defs/monsters/damned2.def",
+		"defs/monsters/damned3.def",
+		"defs/monsters/imp.def",
+		"defs/monsters/fiend.def",
+		"defs/monsters/hellhound.def",
+		"defs/monsters/repenter.def"
 	]
 }

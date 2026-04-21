@@ -27,8 +27,8 @@ typedef struct {
 	GFC_Vector2D	projScale;
 	Sprite*			selfSprite;
 	Sprite*			projectileSprite;
-	char			on_attack_name[64];
-	char			on_death_name[64];
+	char			on_attack[64];
+	char			on_death[64];
 }MonsterDef;
 
 typedef struct {

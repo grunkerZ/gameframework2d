@@ -12,6 +12,7 @@
 #include "item.h"
 #include "simple_font.h"
 #include "console.h"
+#include "monster_def.h"
 
 typedef enum {
     GS_MAINMENU,
@@ -296,6 +297,7 @@ int main(int argc, char * argv[])
     entity_manager_init(1024);
     SDL_ShowCursor(SDL_DISABLE);
     item_manager_init(1024);
+    monster_def_init();
 
 
 
