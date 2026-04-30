@@ -41,6 +41,7 @@ Entity* monster_new() {
 	stats->pathfind.path = gfc_list_new();
 	stats->pathfind.lastPlayerGridPos = world_to_grid(player_get_position());
 	stats->pathfind.timeAtPathCalc = 0;
+	stats->pathfind.wait = 999;
 	stats->info.state = MS_IDLE;
 
 	slog("Created new generic monster");
@@ -55,7 +56,7 @@ Uint8 detect_ledge(Entity* self) {
 	
 	edgeOffset = (self->velocity.x > 0) ? self->width : 0;
 
-	checkPos.x = self->position.x + edgeOffset + self->velocity.x;
+	checkPos.x = self->position.x + edgeOffset + (self->velocity.x * 2);
 	checkPos.y = self->position.y + self->height + 1;
 
 	if (tile_type_at(checkPos) == TT_EMPTY) {
@@ -131,8 +132,8 @@ Uint8 is_drop_safe(Entity* self){
 
 	tileDim = get_tile_dimensions();
 
-	edgeOffset = (self->velocity.x > 0) ? self->width : 0;
-	checkPos.x = self->position.x + edgeOffset + self->velocity.x;
+	edgeOffset = (self->forward.x > 0) ? self->width : 0;
+	checkPos.x = self->position.x + edgeOffset;	
 	checkPos.y = self->position.y + self->height;
 
 	while (checkPos.y < (get_active_room()->height * tileDim.y)) {
@@ -156,13 +157,32 @@ void monster_move_to(Entity* self, GFC_Vector2D targetPos) {
 	GFC_Vector2D direction;
 	GFC_Vector2D waypoint;
 	GFC_Vector2I targetGrid;
+	GFC_Vector2I* node;
+	GFC_Vector2I* currentPos;
+	GFC_Vector2I* nextPos;
 	int playerOffset;
-	float softRadius = 32.0;
-	float hardRadius = 4.0;
+	float softRadius;
+	float hardRadius;
+	float distX;
+	Uint8 reached;
 	int i;
 
 	if (!self || !self->data) return;
 	stats = self->data;
+	hardRadius = 4.0;
+	softRadius = 32.0;
+	reached = 0;
+
+	targetGrid = world_to_grid(targetPos);
+	if (stats->pathfind.timeAtPathCalc == stats->pathfind.wait) {
+		if (targetGrid.x == stats->pathfind.lastPlayerGridPos.x && targetGrid.y == stats->pathfind.lastPlayerGridPos.y) {
+			self->velocity.x = 0;
+			return;
+		}
+		else {
+			stats->pathfind.timeAtPathCalc = 0;
+		}
+	}
 
 	stats->ai.hasLOS = detect_los(self, targetPos);
 
@@ -172,17 +192,14 @@ void monster_move_to(Entity* self, GFC_Vector2D targetPos) {
 		waypoint = targetPos;
 	}
 	else {
-		targetGrid = world_to_grid(targetPos);
 		playerOffset = abs(targetGrid.x - stats->pathfind.lastPlayerGridPos.x) + abs(targetGrid.y - stats->pathfind.lastPlayerGridPos.y);
-
 		if ((SDL_GetTicks64() - stats->pathfind.timeAtPathCalc > 250 || playerOffset > 1)) {
 			stats->pathfind.lastPlayerGridPos = targetGrid;
 
 			if (stats->pathfind.path) {
-				GFC_Vector2I* node;
 				while (stats->pathfind.path->count > 0) {
 					node = gfc_list_get_nth(stats->pathfind.path, 0);
-					if(node) free(node);
+					if (node) free(node);
 					gfc_list_delete_nth(stats->pathfind.path, 0);
 				}
 			}
@@ -195,16 +212,15 @@ void monster_move_to(Entity* self, GFC_Vector2D targetPos) {
 		}
 
 		if (stats->pathfind.path && stats->pathfind.path->count > 0) {
-			Uint8 reached = 0;
-			GFC_Vector2I* currentPos = gfc_list_get_nth(stats->pathfind.path, 0);
-			GFC_Vector2I* nextPos = gfc_list_get_nth(stats->pathfind.path, 1);
+			currentPos = gfc_list_get_nth(stats->pathfind.path, 0);
+			nextPos = gfc_list_get_nth(stats->pathfind.path, 1);
 			waypoint = grid_to_world(*currentPos);
 
 			if (gfc_vector2d_distance_between_less_than(self->centerPos, waypoint, hardRadius)) {
 				reached = 1;
 			}
 			else if (gfc_vector2d_distance_between_less_than(self->centerPos, waypoint, softRadius)) {
-				if (detect_los(self, grid_to_world(*nextPos))) {
+				if (nextPos && detect_los(self, grid_to_world(*nextPos))) {
 					reached = 1;
 				}
 			}
@@ -212,7 +228,6 @@ void monster_move_to(Entity* self, GFC_Vector2D targetPos) {
 			if (reached) {
 				free(currentPos);
 				gfc_list_delete_nth(stats->pathfind.path, 0);
-				
 				if (stats->pathfind.path->count > 0) {
 					currentPos = gfc_list_get_nth(stats->pathfind.path, 0);
 					waypoint = grid_to_world(*currentPos);
@@ -222,7 +237,6 @@ void monster_move_to(Entity* self, GFC_Vector2D targetPos) {
 					return;
 				}
 			}
-
 			gfc_vector2d_sub(direction, waypoint, self->centerPos);
 			gfc_vector2d_normalize(&direction);
 		}
@@ -234,21 +248,34 @@ void monster_move_to(Entity* self, GFC_Vector2D targetPos) {
 	}
 
 	if (self->gravity) {
-		float distX = waypoint.x - self->centerPos.x;
-
+		distX = waypoint.x - self->centerPos.x;
 		if (fabs(distX) < hardRadius) {
 			self->velocity.x = 0;
 		}
-		else if (detect_ledge(self) && !is_drop_safe(self)) {
-			self->velocity.x = 0;
-		}
 		else {
-			self->velocity.x = (distX > 0) ? stats->move.moveSpeed : -stats->move.moveSpeed;
+			self->forward.x = (distX > 0) ? 1 : -1;
+
+			if (detect_ledge(self)) {
+				if (is_drop_safe(self) && !stats->move.isSentry) {
+					self->velocity.x = self->forward.x * stats->move.moveSpeed;
+				}
+				else {
+					self->velocity.x = 0;
+					stats->pathfind.timeAtPathCalc = stats->pathfind.wait;
+					stats->pathfind.lastPlayerGridPos = targetGrid;
+					slog("Monster '%s' waiting at ledge: unsafe drop to player", stats->info.name);
+				}
+			}
+			else {
+				self->velocity.x = self->forward.x * stats->move.moveSpeed;
+			}
 		}
 	}
 	else {
 		gfc_vector2d_scale(self->velocity, direction, stats->move.moveSpeed);
 	}
+	
+	return;
 }
 
 MonsterDef* monster_get_primary_def_for_type(MonsterType type) {
@@ -259,7 +286,7 @@ MonsterDef* monster_get_primary_def_for_type(MonsterType type) {
 }
 
 void monster_spawn(MonsterType monster, GFC_Vector2D position) {
-	const char* names[] = { "none", "damned", "imp", "hellhound", "fiend", "repenter" };
+	const char* names[] = { "none", "damned1", "imp", "hellhound", "fiend", "repenter" };
 	const char* damnedVariants[] = { "damned1", "damned2", "damned3" };
 	const char* nameToSpawn;
 
@@ -271,7 +298,7 @@ void monster_spawn(MonsterType monster, GFC_Vector2D position) {
 		nameToSpawn = damnedVariants[rand() % 3];
 	}
 
-	monster_spawn_by_name(names[monster], position);
+	monster_spawn_by_name(nameToSpawn, position);
 	return;
 }
 
@@ -332,7 +359,6 @@ Entity* monster_spawn_by_name(const char* name, GFC_Vector2D position) {
 	stats->info.health = def->maxHealth;
 	stats->info.maxHealth = def->maxHealth;
 	stats->info.value = def->value;
-	self->scale = def->scale;
 
 	stats->move.moveSpeed = def->moveSpeed;
 	stats->move.isFlying = def->isFlying;
@@ -357,12 +383,22 @@ Entity* monster_spawn_by_name(const char* name, GFC_Vector2D position) {
 	stats->animation.attack = def->attack;
 	stats->animation.death = def->death;
 
-	self->position = position;
 	self->sprite = def->selfSprite;
+	self->scale = def->scale;
+	
+	entity_setup_collision_box(self, ST_RECT, 0.1);
+
+	set_center(self, position);
 
 	if (strstr(name, "damned")) stats->info.monster = MT_DAMNED;
-	else if (strcmp(name, "imp") == 0) stats->info.monster = MT_IMP;
-	else if (strcmp(name, "fiend") == 0) stats->info.monster = MT_FIEND;
+	else if (strcmp(name, "imp") == 0) {
+		stats->info.monster = MT_IMP;
+		self->left = 1;
+	}
+	else if (strcmp(name, "fiend") == 0) {
+		stats->info.monster = MT_FIEND;
+		self->left = 1;
+	}
 	else if (strcmp(name, "repenter") == 0) stats->info.monster = MT_REPENTER;
 	else if (strcmp(name, "hellhound") == 0) stats->info.monster = MT_HELLHOUND;
 
@@ -516,13 +552,22 @@ void monster_think(Entity* self) {
 	GFC_Vector2D playerPos;
 	float dist;
 	CollisionInfo info;
+	Entity* collider;
+	Uint8 ledge;
+	Uint8 canAttack;
 
 	if (!self || !self->data) return;
 	stats = self->data;
 
 	playerPos = player_get_position();
 	dist = gfc_vector2d_magnitude_between(playerPos, self->centerPos);
-	info = check_map_collision(self);
+
+	if (stats->info.state != MS_DEATH) {
+		collider = check_entity_collision(self);
+		if (collider && collider->type == ET_PLAYER) {
+			entity_hit(collider, self, stats->combat.touchDamage);
+		}
+	}
 
 	switch (stats->info.state) {
 	case MS_IDLE:
@@ -537,44 +582,7 @@ void monster_think(Entity* self) {
 			break;
 		}
 
-		if (stats->move.isSentry) {
-			self->velocity.x = stats->move.moveSpeed * self->forward.x;
-
-			if ((self->forward.x > 0 && info.right) || (self->forward.x < 0 && info.left) || detect_ledge(self)) {
-				self->forward.x *= -1;
-				self->velocity.x = 0;
-			}
-
-			if ((world_to_grid(playerPos).y == world_to_grid(self->centerPos).y) && gfc_vector2d_distance_between_less_than(self->centerPos, playerPos, stats->ai.aggroRange)) {
-				stats->info.state = MS_CHASE;
-			}
-		}
-		else {
-			GFC_Vector2D wanderTarget;
-			GFC_Vector2D nextWanderTarget;
-			int dir;
-			float wanderDist;
-			
-			if (SDL_GetTicks64() < stats->pathfind.timeAtPathCalc) {
-				self->velocity.x = 0;
-				break;
-			}
-
-			wanderTarget = grid_to_world(stats->pathfind.lastPlayerGridPos);
-			if (gfc_vector2d_distance_between_less_than(self->centerPos, wanderTarget, 8) || (self->forward.x > 0 && info.right) || (self->forward.x < 0 && info.left) || detect_ledge(self)) {
-				stats->pathfind.timeAtPathCalc = SDL_GetTicks64() + 1000 + (rand() % 1000);
-				dir = (rand() % 2 == 0) ? 1 : -1;
-				wanderDist = 128 + (rand() % 128);
-				nextWanderTarget = self->centerPos;
-				nextWanderTarget.x += dir * wanderDist;
-
-				stats->pathfind.lastPlayerGridPos = world_to_grid(nextWanderTarget);
-				self->forward.x = dir;
-			}
-			else {
-				self->velocity.x = self->forward.x * (stats->move.moveSpeed * 0.5);
-			}
-		}
+		self->velocity.x = stats->move.moveSpeed * self->forward.x;
 
 		break;
 	case MS_CHASE:
@@ -585,7 +593,13 @@ void monster_think(Entity* self) {
 
 		monster_move_to(self, playerPos);
 
-		if (dist <= stats->ai.stopDistance) {
+		canAttack = 1;
+
+		if (stats->info.monster == MT_REPENTER) {
+			canAttack = world_to_grid(playerPos).y == world_to_grid(self->centerPos).y;
+		}
+
+		if (dist <= stats->ai.stopDistance && stats->ai.hasLOS && canAttack) {
 			if (SDL_GetTicks64() - stats->combat.timeAtLastAttack > stats->combat.attackCooldown) {
 				stats->info.state = MS_ATTACK_PREP;
 				stats->combat.timeAtLastAttack = SDL_GetTicks64();
@@ -605,12 +619,7 @@ void monster_think(Entity* self) {
 		break;
 
 	case MS_ATTACKING:
-		if (self->gravity && info.bottom && self->velocity.y >=0) {
-			stats->info.state = MS_CHASE;
-			stats->combat.timeAtLastAttack = SDL_GetTicks64();
-			self->velocity.x = 0;
-		}
-		else if (!self->gravity) {
+		if (!self->gravity) {
 			stats->info.state = MS_CHASE;
 			stats->combat.timeAtLastAttack = SDL_GetTicks64();
 		}
@@ -631,6 +640,27 @@ void monster_think(Entity* self) {
 		break;
 	}
 
+	ledge = detect_ledge(self);
+
+	info = check_map_collision(self);
+
+	if (stats->info.state == MS_WANDERING || stats->info.state == MS_CHASE) {
+		if (info.left || info.right || ledge) {
+			if(!stats->move.isFlying){
+				self->forward.x *= -1;
+				self->velocity.x = 0;
+			}
+		}
+	}
+
+	if (stats->info.state == MS_ATTACKING && self->gravity) {
+		if (info.bottom && self->velocity.y >= 0) {
+			stats->info.state = MS_CHASE;
+			stats->combat.timeAtLastAttack = SDL_GetTicks64();
+			self->velocity.x = 0;
+		}
+	}
+
 	return;
 }
 
@@ -649,7 +679,8 @@ void monster_update(Entity* self) {
 		range = &stats->animation.walk;
 		break;
 	case MS_CHASE: 
-		range = &stats->animation.walk;
+		if (gfc_vector2d_magnitude(self->velocity) < 0.1) range = &stats->animation.idle;
+		else range = &stats->animation.walk;
 		break;
 	case MS_ATTACK_PREP: 
 		range = &stats->animation.attackPrep;
@@ -665,18 +696,29 @@ void monster_update(Entity* self) {
 		break;
 	}
 
-	if (self->frame < range->start || self->frame > range->end) {
-		self->frame = range->start;
+	if (self->frame < (float)range->start || self->frame >= (float)range->end) {
+		if (range->loop || self->frame < (float)range->start) {
+			slog("MONSTER '%s' FRAME RESET: State '%d' | Frame %f -> %d (Range %d-%d)", stats->info.name, stats->info.state, self->frame, range->start, range->end);
+			self->frame = (float)range->start;
+		}
 	}
 
 	self->frame += range->speed;
-	if (self->frame >= range->end) {
-		if (range->loop) self->frame = range->start;
+
+	if (self->frame >= (float)range->end) {
+		if (range->loop) self->frame = (float)range->start;
 		else {
-			self->frame = range->end;
+			self->frame = (float)range->end;
+			slog("MONSTER '%s' END OF RANGE: State '%d' | Final Frame %f", stats->info.name, stats->info.state, self->frame);
 			if (stats->info.state == MS_DEATH) {
-				entity_free(self);
-				return;
+				if(self->frame >= (float)range->end){
+					slog("MONSTER '%s' DEATH ANIMATION END | Final Frame %f", stats->info.name, self->frame);
+					entity_free(self);
+					return;
+				}
+			}
+			if (stats->info.state == MS_ATTACKING && !self->gravity) {
+				stats->info.state == MS_CHASE;
 			}
 		}
 	}
@@ -698,6 +740,8 @@ void monster_hit(Entity* self, Entity* attacker, Uint8 damage) {
 
 	if (!self || !self->data) return;
 	stats = self->data;
+
+	if (stats->info.state == MS_DEATH) return;	
 
 	if (stats->info.monster == MT_REPENTER) {
 		float attackDirection = (attacker->centerPos.x - self->centerPos.x) * self->forward.x;

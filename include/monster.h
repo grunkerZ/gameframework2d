@@ -77,6 +77,7 @@ typedef struct {
 		GFC_List*		path;				//the path to a target position
 		Uint32			timeAtPathCalc;		//the time when the 2d pathfinding path was calculated
 		GFC_Vector2I	lastPlayerGridPos;	//the last time the player was at when the path was calculated
+		Uint32			wait;				//the wait signal when the monster is at an unsafe ledge
 	}pathfind;
 
 	struct {

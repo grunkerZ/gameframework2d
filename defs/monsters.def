@@ -1,5 +1,5 @@
 {
-	"monster_files": [
+	"monsters": [
 		"defs/monsters/damned1.def",
 		"defs/monsters/damned2.def",
 		"defs/monsters/damned3.def",

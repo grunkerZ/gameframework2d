@@ -16,7 +16,7 @@ void load_frame_range(SJson* json, const char* name, FrameRange* range) {
 
 	sj_object_get_value_as_int(animation, "start", &range->start);
 	sj_object_get_value_as_int(animation, "end", &range->end);
-	sj_object_get_value_as_int(animation, "speed", &range->speed);
+	sj_object_get_value_as_float(animation, "speed", &range->speed);
 	sj_object_get_value_as_int(animation, "loop", &temp);
 	range->loop = (Uint8)temp;
 }
