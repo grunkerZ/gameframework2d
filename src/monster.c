@@ -105,6 +105,7 @@ Uint8 detect_los(Entity* self, GFC_Vector2D targetPos) {
 
 	tileDim = get_tile_dimensions();
 	currentPos = self->centerPos;
+	currentPos.x += self->forward.x * (self->width / 2);
 
 	gfc_vector2d_sub(distance, targetPos, currentPos);
 	rayLength = gfc_vector2d_magnitude(distance);
@@ -207,14 +208,16 @@ void monster_move_to(Entity* self, GFC_Vector2D targetPos) {
 		}
 	}
 
-	if (stats->pathfind.path && stats->pathfind.path->count > 0) {
-		stats->ai.hasLOS = 0;
-	}
-	else {
-		stats->ai.hasLOS = detect_los(self, targetPos);
-	}
+	stats->ai.hasLOS = detect_los(self, targetPos);
 
 	if (stats->ai.hasLOS) {
+		if (stats->pathfind.path) {
+			while (stats->pathfind.path->count > 0) {
+				node = gfc_list_get_nth(stats->pathfind.path, 0);
+				if (node) free(node);
+				gfc_list_delete_nth(stats->pathfind.path, 0);
+			}
+		}
 		gfc_vector2d_sub(direction, targetPos, self->centerPos);
 		gfc_vector2d_normalize(&direction);
 		waypoint = targetPos;
@@ -536,25 +539,11 @@ void monster_attack_leap(Entity* self) {
 
 void monster_attack_fiend_beam(Entity* self) {
 	MonsterData* stats;
-	Entity* projectile;
-	GFC_Vector2D playerPos;
-	GFC_Vector2D dir;
 
 	if (!self || !self->data) return;
 	stats = self->data;
 
-	playerPos = player_get_position();
-	gfc_vector2d_sub(dir, playerPos, self->centerPos);
-	gfc_vector2d_normalize(&dir);
-
-	projectile = projectile_new(self, &stats->combat.projectileStats);
-	if (!projectile) return;
-	projectile->sprite = stats->combat.projSprite;
-	projectile->scale = stats->combat.projScale;
-	((ProjectileData*)projectile->data)->maxFrame = stats->combat.maxFrame;
-
-	entity_setup_collision_box(projectile, ST_CIRCLE, 0);
-	gfc_vector2d_scale(projectile->velocity, dir, stats->combat.projectileStats.speed);
+	hazard_beam_spawn(self, 1500, 1000);
 
 	return;
 }
@@ -647,6 +636,7 @@ void monster_think(Entity* self) {
 		monster_move_to(self, playerPos);
 
 		canAttack = 1;
+		stats->ai.hasLOS = detect_los(self, playerPos);
 
 		if (stats->info.monster == MT_REPENTER) {
 			canAttack = world_to_grid(playerPos).y == world_to_grid(self->centerPos).y;
@@ -654,9 +644,20 @@ void monster_think(Entity* self) {
 
 		if (dist <= stats->ai.stopDistance && stats->ai.hasLOS && canAttack) {
 			if (SDL_GetTicks64() - stats->combat.timeAtLastAttack > stats->combat.attackCooldown) {
+				slog("MONSTER '%s' AATTACKING: Dist %f | LOS %d | Cooldown %llu/%u", stats->info.name, dist, stats->ai.hasLOS, SDL_GetTicks64() - stats->combat.timeAtLastAttack, stats->combat.attackCooldown);
 				stats->info.state = MS_ATTACK_PREP;
 				stats->combat.timeAtLastAttack = SDL_GetTicks64();
 				self->velocity.x = 0;
+			}
+			else {
+				if (SDL_GetTicks64() % 500 < 20) {
+					slog("MONSTER '%s' WAITING: Cooldown %llu/%u", stats->info.name, SDL_GetTicks64() - stats->combat.timeAtLastAttack, stats->combat.attackCooldown);
+				}
+			}
+		}
+		else if (SDL_GetTicks64() % 500 < 20) {
+			if (dist <= stats->ai.stopDistance) {
+				slog("MONSTER '%s' NO ATTACK: Dist %f | LOS %d | canAttack %d", stats->info.name, dist, stats->ai.hasLOS, canAttack);
 			}
 		}
 
@@ -665,19 +666,30 @@ void monster_think(Entity* self) {
 	case MS_ATTACK_PREP:
 		self->velocity.x = 0;
 		if (SDL_GetTicks64() - stats->combat.timeAtLastAttack > stats->combat.attackDelay) {
+			slog("MONSTER '%s' PREP DONE -> ATTACKING", stats->info.name);
 			stats->info.state = MS_ATTACKING;
+			stats->combat.timeAtLastAttack = SDL_GetTicks64();
 			if (stats->on_attack) stats->on_attack(self);
 		}
 
 		break;
 
 	case MS_ATTACKING:
+		self->velocity.x = 0;
+		
 		if (!self->gravity) {
 			stats->info.state = MS_CHASE;
 			stats->combat.timeAtLastAttack = SDL_GetTicks64();
 		}
+		else if (stats->info.monster != MT_FIEND) {
+			if (check_map_collision(self).bottom && self->velocity.y >= 0) {
+				stats->info.state = MS_CHASE;
+				stats->combat.timeAtLastAttack = SDL_GetTicks64();
+			}
+		}
+
 		break;
-		
+
 	case MS_STUNNED:
 		if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
 			stats->info.state = MS_CHASE;
@@ -697,19 +709,9 @@ void monster_think(Entity* self) {
 
 	info = check_map_collision(self);
 
-	if (stats->info.state == MS_WANDERING) {
+	if (stats->info.state == MS_WANDERING && !stats->move.isFlying) {
 		if (info.left || info.right || ledge) {
-			if(!stats->move.isFlying){
-				self->forward.x *= -1;
-				self->velocity.x = 0;
-			}
-		}
-	}
-
-	if (stats->info.state == MS_ATTACKING && self->gravity) {
-		if (info.bottom && self->velocity.y >= 0) {
-			stats->info.state = MS_CHASE;
-			stats->combat.timeAtLastAttack = SDL_GetTicks64();
+			self->forward.x *= -1;
 			self->velocity.x = 0;
 		}
 	}

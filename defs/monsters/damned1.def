@@ -1,5 +1,5 @@
 {
-	"name":									"damned",
+	"name":									"damned1",
 	"sprite_path":					"images/monster/damned1.png",
 	"frame_w":							256,
 	"frame_h":							256,
