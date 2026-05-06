@@ -976,40 +976,6 @@ void spawn_at_door_exit(Entity* player, Room* room, Doors exitSide) {
 	set_center(player, grid_to_world(exitPos));
 }
 
-void update_entity_position_on_map(Room* room, Entity* entity) {
-	int i, index;
-
-	if (!room || !entity) return;
-
-	if (entity->currentTiles) {
-		for (i = 0; i < entity->currentTiles->count; i++) {
-			index = (int)(intptr_t)gfc_list_get_nth(entity->currentTiles, i);
-
-			if (room->entityGrid[index] && index >= 0 && index < (room->width * room->height)) {
-				gfc_list_delete_data(room->entityGrid[index], entity);
-			}
-		}
-		gfc_list_delete(entity->currentTiles);
-		entity->currentTiles = gfc_list_new();
-	}
-	else {
-		entity->currentTiles = gfc_list_new();
-	}
-
-	get_tiles_entity_is_in(room, entity);
-
-	for (i = 0; i < entity->currentTiles->count; i++) {
-		index = (int)(intptr_t)gfc_list_get_nth(entity->currentTiles, i);
-		if (index >= 0 && index < (room->width * room->height)) {
-			if (!room->entityGrid[index]) {
-				room->entityGrid[index] = gfc_list_new();
-			}
-			gfc_list_append(room->entityGrid[index], entity);
-		}
-	}
-	return;
-}
-
 void set_active_room(Room* room) {
 	activeRoom = room;
 	return;
@@ -1048,5 +1014,7 @@ TileType tile_type_at(GFC_Vector2D position) {
 
 	return room_get_tile_type(room, tile);
 }
+
+
 
 /*eol@eof*/

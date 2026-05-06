@@ -20,37 +20,63 @@ typedef enum {
 
 typedef struct Entity_S
 {
-	Uint8			_inuse;								//dont touch
-	Uint8			gravity;							//1 if the entity is affected by gravity, 0 otherwise
-	Uint8			left;
-	Uint32			invincibility;						//the time the entity is invincible for after damage
-	Uint32			timeAtDamaged;						//the time when the entity last took damage
-	Uint32			timeAtStun;							//the time when stun is applied to an entity
-	Uint32			stun;								//how long an entity does not move on its own for
-	float			rotation;							//the rotation of the sprite
-	float			frame;								//the frame of the sprite sheet
-	GFC_TextLine	name;								//name of entity for debug
-	GFC_Vector2D	position;							//position of entity on screen
-	GFC_Vector2D	scale;								//size of entity
-	GFC_Vector2D	flip;								//mirroring of the sprite (horizontal,vertical)
-	GFC_Vector2D	velocity;							//rate of position change per update
-	GFC_Vector2D	centerPos;							//the center position of the entity
-	GFC_Vector2D	forward;							//the forward vector of the entity
-	GFC_Vector2D	knockback;							//a vector containing the knockback velocity
-	GFC_Vector2D	centerAnchor;						//the center point for rotation and scaling
-	Uint8			hidden;
-	GFC_Shape		collision;							//the collision box of the entity
-	EntityType		type;								//the type of entity
-	Sprite*			sprite;								//the sprite of the entity
-	Uint32			width;								//how wide the entity is in pixels
-	Uint32			height;								//how tall the entity is in pixels
-	GFC_List*		currentTiles;						//holds the tiles that the entity exists in
-	void			(*think)(struct Entity_S* self);	//called every frame if defined for entity
-	void			(*update)(struct Entity_S* self);	//execute entity decisions
-	void			(*free)(struct Entity_S* self);		//cleanup custon allocated data
-	void			(*draw)(struct Entity_S* self);		//draw entity
+	Uint8			_inuse;																		//internal flag for an in use entity
+
+	// === Identity ===
+
+	EntityType		type;																		//the type of entity
+	GFC_TextLine	name;																		//name of entity for debug
+	void*			data;																		//for ad hoc addtion data
+
+
+	// === Visual ===
+
+	Sprite*			sprite;																		//the sprite of the entity
+	float			frame;																		//the frame of the sprite sheet
+	GFC_Vector2D	scale;																		//size of entity
+	float			rotation;																	//the rotation of the sprite
+	Uint8			hidden;																		//whether the sprite is hidden or not
+	Uint8			left;																		//1 if the spritesheet is left facing, 0 if right facing
+	GFC_Vector2D	flip;																		//mirroring of the sprite (horizontal,vertical)
+	GFC_Vector2D	centerAnchor;																//the center point for rotation and scaling
+
+
+	// === Movement ===
+
+	GFC_Vector2D	position;																	//position of entity on screen
+	GFC_Vector2D	centerPos;																	//the center position of the entity
+	GFC_Vector2D	velocity;																	//rate of position change per update
+	GFC_Vector2D	forward;																	//the forward vector of the entity
+	GFC_Vector2D	knockback;																	//a vector containing the knockback velocity
+	Uint8			gravity;																	//1 if the entity is affected by gravity, 0 otherwise
+	float			width;																		//how wide the entity is in pixels
+	float			height;																		//how tall the entity is in pixels
+
+
+	// === Status ===
+
+	Uint32			invincibility;																//the time the entity is invincible for after damage
+	Uint32			timeAtDamaged;																//the time when the entity last took damage
+	Uint32			timeAtStun;																	//the time when stun is applied to an entity
+	Uint32			stun;																		//how long an entity does not move on its own for
+
+
+	// === Collision & Navigation ===
+
+	GFC_Shape		collision;																	//the collision box of the entity
+	GFC_List*		currentTiles;																//holds the tiles that the entity exists in
+
+
+	// === Behavior ===
+
+	void			(*think)(struct Entity_S* self);											//called every frame if defined for entity
+	void			(*update)(struct Entity_S* self);											//execute entity decisions
+	void			(*free)(struct Entity_S* self);												//cleanup custon allocated data
+	void			(*draw)(struct Entity_S* self);												//draw entity
 	void			(*hit)(struct Entity_S* self, struct Entity_S* attacker, Uint8 damage);		//logic for when an entity is hit
-	void*			data;								//for ad hoc addtion data
+	
+	
+	
 }Entity;
 
 typedef struct {
@@ -117,16 +143,6 @@ void entity_free(Entity* self);
 void entity_manager_free_all();
 
 /*
-* @brief applies damage to a target
-* @param target the entity that is to be damaged
-* @param attacker the entity applying the damage
-* @param damage the damage to be taken
-* @param the target's health
-* @return the unmodified health value if the target is invincible or if shield absorbs all the damage, otherwise health - damage
-*/
-int apply_damage(Entity* target, Entity* attacker, Uint8 damage, int health);
-
-/*
 * @brief sets the entity's center position
 * @param self the entity to use
 * @param center the position to set the center to
@@ -138,11 +154,6 @@ void set_center(Entity* self, GFC_Vector2D center);
 */
 void clear_stage();
 
-/*
-* @brief appends the tile the entity exists in to the currentTiles list
-* @param entity the entity to check
-*/
-void get_tiles_entity_is_in(Room* room, Entity* entity);
 
 /*
 * @brief setups an entity's collision box
@@ -183,5 +194,12 @@ Entity* get_closest_entity_to(GFC_Vector2D position, EntityType type, float maxR
 * @param damage the damage the hit would do
 */
 void entity_hit(Entity* self, Entity* attacker, Uint8 damage);
+
+/*
+* @brief updates an entitys positions on the rooms entity map
+* @param room the room the entity is in
+* @param entity the entity to update
+*/
+void entity_update_grid_position(Entity* self);
 
 #endif // !__ENTITY_H__

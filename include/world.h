@@ -343,13 +343,6 @@ GFC_Vector2I get_door_position(Room* room, Doors side);
 void spawn_at_door_exit(Entity* player, Room* room, Doors exitSide);
 
 /*
-* @brief updates an entitys positions on the rooms entity map
-* @param room the room the entity is in
-* @param entity the entity to update
-*/
-void update_entity_position_on_map(Room* room, Entity* entity);
-
-/*
 * @brief sets the active room
 * @param room the room to set the active room to
 */

@@ -9,6 +9,13 @@
 
 #define CLAMP(x,min,max) ((x)<(min) ? (min) : ((x)> (max) ? (max) : (x)))
 
+// ================================================
+//
+//	ENTITY MANAGER FUNCTIONS
+//
+// ================================================
+
+
 typedef struct 
 {
 	Entity*		entityList;
@@ -35,6 +42,7 @@ void entity_manager_init(Uint32 max) {
 	slog("initialized entity system");
 }
 
+
 void entity_manager_close() {
 	int i;
 	if (!entityManager.entityList) return;
@@ -45,6 +53,7 @@ void entity_manager_close() {
 	memset(&entityManager, 0, sizeof(EntityManager));
 	slog("closed entity system");
 }
+
 
 Entity* entity_new() {
 	int i;
@@ -99,6 +108,25 @@ void entity_free(Entity* self) {
 	memset(self, 0, sizeof(Entity));
 }
 
+
+void entity_manager_free_all() {
+	int i;
+	for (i = 0; i < entityManager.entityMax; i++) {
+		if (!entityManager.entityList[i]._inuse) continue;
+		entity_free(&entityManager.entityList[i]);
+	}
+}
+
+
+
+// ================================================
+//
+//	CORE ENTITY LOOP FUNCTIONS
+//
+// ================================================
+
+
+
 void entity_think(Entity* self) {
 	if(!self) return;
 
@@ -108,11 +136,16 @@ void entity_think(Entity* self) {
 		}
 	}
 
+	if (SDL_GetTicks64() - self->timeAtStun < self->stun) return;
+	
 	if (self->think)self->think(self);
+
+	return;
 }
 
+
 void entity_update(Entity* self) {
-	if (!self) return;
+	if (!self || !self->_inuse) return;
 
 	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
 		if (self->velocity.x > 0) {
@@ -125,16 +158,29 @@ void entity_update(Entity* self) {
 
 	if (self->update)self->update(self);
 
-	if (self->left) {
-		if (self->forward.x < 0) self->flip = gfc_vector2d(0, 0);
-		if (self->forward.x > 0) self->flip = gfc_vector2d(1, 0);
+	gfc_vector2d_add(self->position, self->position, self->velocity);
+	gfc_vector2d_add(self->position, self->position, self->knockback);
+
+	gfc_vector2d_scale(self->knockback, self->knockback, 0.9);
+	if (gfc_vector2d_magnitude(self->knockback) < 0.1) {
+		self->knockback = gfc_vector2d(0, 0);
 	}
-	else {
-		if (self->forward.x > 0) self->flip = gfc_vector2d(0, 0);
-		if (self->forward.x < 0) self->flip = gfc_vector2d(1, 0);
+
+	self->centerPos.x = self->position.x + (self->width / 2.0);
+	self->centerPos.y = self->position.y + (self->height / 2.0);
+
+	if (self->collision.type == ST_RECT) {
+		self->collision.s.r.x = self->position.x + ((self->width - self->collision.s.r.w) / 2.0);
+		self->collision.s.r.y = self->position.y + (self->height - self->collision.s.r.h);
 	}
-	self->centerPos = gfc_vector2d(self->position.x + (self->width / 2), self->position.y + (self->height / 2));
+	else if (self->collision.type == ST_CIRCLE) {
+		self->collision.s.c.x = self->centerPos.x;
+		self->collision.s.c.y = self->centerPos.y;
+	}
+
+	return;
 }
+
 
 void entity_manager_think_all() {
 	int i;
@@ -144,22 +190,16 @@ void entity_manager_think_all() {
 	}
 }
 
+
 void entity_manager_update_all() {
 	int i;
 	for (i = 0; i < entityManager.entityMax; i++) {
 		if (!entityManager.entityList[i]._inuse) continue;
 		entity_update(&entityManager.entityList[i]);
-		update_entity_position_on_map(get_active_room(), &entityManager.entityList[i]);
+		entity_update_grid_position( &entityManager.entityList[i]);
 	}
 }
 
-void entity_manager_free_all() {
-	int i;
-	for (i = 0; i < entityManager.entityMax; i++) {
-		if (!entityManager.entityList[i]._inuse) continue;
-		entity_free(&entityManager.entityList[i]);
-	}
-}
 
 void entity_draw(Entity* self) {
 	GFC_Vector2D offset;
@@ -181,6 +221,7 @@ void entity_draw(Entity* self) {
 	if (self->draw)self->draw(self);
 }
 
+
 void entity_manager_draw_all(Uint8 debug) {
 	int i;
 	for (i = 0; i < entityManager.entityMax; i++) {
@@ -189,6 +230,26 @@ void entity_manager_draw_all(Uint8 debug) {
 		if (debug) entity_draw_collision(&entityManager.entityList[i]);
 	}
 }
+
+
+void clear_stage() {
+	int i;
+	for (i = 0; i < entityManager.entityMax; i++) {
+		if (!entityManager.entityList[i]._inuse) continue;
+		if (entityManager.entityList[i].type == ET_PLAYER) continue;
+		entity_free(&entityManager.entityList[i]);
+	}
+}
+
+
+
+// ================================================
+//
+//	PHYSICS AND COLLISION FUNCTIONS
+//
+// ================================================
+
+
 
 Entity* check_entity_collision(Entity* self) {
 	Room* room = get_active_room();
@@ -217,15 +278,20 @@ Entity* check_entity_collision(Entity* self) {
 	return NULL;
 }
 
+
 CollisionInfo check_map_collision(Entity* self) {
 	CollisionInfo info = { 0 };
 	GFC_Vector2D nextPos = { 0 };
 	GFC_Rect bounds;
+	GFC_Vector2D totalVelocity;
 	int index = 0;
 	int buffer;
 	float check_x, check_y;
 	
 	//CIRCLE VS RECT
+
+	totalVelocity.x = self->velocity.x + self->knockback.x;
+	totalVelocity.y = self->velocity.y + self->knockback.y;
 
 	if (self->type == ET_PROJECTILE) {
 		float tilePos_x, tilePos_y;
@@ -238,8 +304,8 @@ CollisionInfo check_map_collision(Entity* self) {
 			return info;
 		}
 
-		nextPos.x = self->collision.s.c.x + self->velocity.x;
-		nextPos.y = self->collision.s.c.y + self->velocity.y;
+		nextPos.x = self->collision.s.c.x + totalVelocity.x;
+		nextPos.y = self->collision.s.c.y + totalVelocity.y;
 		
 		if (tile_at(nextPos) != 0) {
 			gridPos = world_to_grid(nextPos);
@@ -262,13 +328,14 @@ CollisionInfo check_map_collision(Entity* self) {
 	bounds = self->collision.s.r;
 	buffer = 2;
 
-	if (self->velocity.x != 0) {
-		nextPos.x = bounds.x + self->velocity.x;
+	if (totalVelocity.x != 0) {
+		nextPos.x = bounds.x + totalVelocity.x;
 		
-		if (self->velocity.x > 0) {
+		if (totalVelocity.x > 0) {
 			check_x = nextPos.x + bounds.w;
 			if (tile_at(gfc_vector2d(check_x, bounds.y+buffer)) != 0 || tile_at(gfc_vector2d(check_x, bounds.y + bounds.h - buffer)) != 0) {
 				self->velocity.x = 0;
+				self->knockback.x = 0;
 				info.right = 1;
 				info.collided = 1;
 			}
@@ -277,21 +344,23 @@ CollisionInfo check_map_collision(Entity* self) {
 			check_x = nextPos.x;
 			if (tile_at(gfc_vector2d(check_x, bounds.y + buffer)) != 0 || tile_at(gfc_vector2d(check_x, bounds.y + bounds.h - buffer)) != 0) {
 				self->velocity.x = 0;
+				self->knockback.x = 0;
 				info.left = 1;
 				info.collided = 1;
 			}
 		}	
 	}
 
-	bounds.x += self->velocity.x;
+	bounds.x += totalVelocity.x;
 
-	if (self->velocity.y != 0) {
-		nextPos.y = bounds.y + self->velocity.y;
+	if (totalVelocity.y != 0) {
+		nextPos.y = bounds.y + totalVelocity.y;
 
-		if (self->velocity.y > 0) {
+		if (totalVelocity.y > 0) {
 			check_y = nextPos.y + bounds.h;
 			if (tile_at(gfc_vector2d(bounds.x + buffer, check_y)) != 0 || tile_at(gfc_vector2d(bounds.x + bounds.w - buffer, check_y)) != 0) {
 				self->velocity.y = 0;
+				self->knockback.y = 0;
 				info.bottom = 1;
 				info.collided = 1;
 			}
@@ -300,6 +369,7 @@ CollisionInfo check_map_collision(Entity* self) {
 			check_y = nextPos.y;
 			if (tile_at(gfc_vector2d(bounds.x + buffer, check_y)) != 0 || tile_at(gfc_vector2d(bounds.x + bounds.w - buffer, check_y)) != 0) {
 				self->velocity.y = 0;
+				self->knockback.y = 0;
 				info.top = 1;
 				info.collided = 1;
 			}
@@ -309,95 +379,93 @@ CollisionInfo check_map_collision(Entity* self) {
 	return info;
 }
 
-void entity_hit(Entity* self, Entity* attacker, Uint8 damage) {
-	if (self->hit)self->hit(self,attacker, damage);
+
+void set_center(Entity* self, GFC_Vector2D center) {
+	if (!self) return;
+
+	self->centerPos = center;
+	self->position = gfc_vector2d(self->centerPos.x - (self->width / 2), self->centerPos.y - (self->height / 2));
+
 	return;
 }
 
-int apply_damage(Entity* target, Entity* attacker, Uint8 damage, int health) {
-	GFC_Vector2D bounce;
-	GFC_Vector2D attackerCenter, targetCenter;
-	
-	if (SDL_GetTicks64() - target->timeAtDamaged < target->invincibility) {
-		slog("Target invincible. Invincible Time: %u Time Since Damage: %llu", target->invincibility, target->timeAtDamaged);
-		slog("Current Health: %d", health);
-		return health;
-	}
 
-	target->timeAtDamaged = SDL_GetTicks64();
-	
-	if (attacker->type != ET_PROJECTILE) {
-		targetCenter = target->centerPos;
-		attackerCenter = attacker->centerPos;
+void entity_update_grid_position(Entity* self) {
+	Room* room = get_active_room();
+	GFC_Vector2I topLeft, bottomRight;
+	int i, j;
 
-		gfc_vector2d_sub(bounce, targetCenter, attackerCenter);
-		gfc_vector2d_normalize(&bounce);
-		gfc_vector2d_scale(target->knockback, bounce, 3);
-		gfc_vector2d_negate(attacker->knockback, target->knockback);
-		target->stun = 250;
-		target->timeAtStun = SDL_GetTicks64();
-		attacker->stun = 250;
-		attacker->timeAtStun = SDL_GetTicks64();
-	}
+	if (!self || !room || !self->_inuse) return;
 
-	if (target->type == ET_PLAYER) {
-		int temp = ((PlayerData*)target->data)->tempHealth;
-		if(temp>0){
-			temp -= damage;
-			if (temp <= 0) {
-				damage = damage - ((PlayerData*)target->data)->tempHealth;
-				((PlayerData*)target->data)->tempHealth = 0;
-			}
-			else {
-				((PlayerData*)target->data)->tempHealth -= damage;
-				return health;
+	if (self->currentTiles) {
+		for (i = 0; i < self->currentTiles->count; i++) {
+			int index = (int)(intptr_t)gfc_list_get_nth(self->currentTiles, i);
+
+			if (room->entityGrid[index]) {
+				gfc_list_delete_data(room->entityGrid[index], self);
 			}
 		}
+		gfc_list_delete(self->currentTiles);
 	}
+	self->currentTiles = gfc_list_new();
 
-	return health - damage;
-}
-
-void set_center(Entity* self, GFC_Vector2D center) {
-	self->centerPos = center;
-	self->position = gfc_vector2d(self->centerPos.x - (self->width / 2), self->centerPos.y - (self->height / 2));
-	switch (self->collision.type) {
-	case ST_RECT:
-		self->collision.s.r.x = self->position.x + ((self->width - self->collision.s.r.w) / 2.0);
-		self->collision.s.r.y = self->position.y + ((self->height - self->collision.s.r.h));
-		break;
-	case ST_CIRCLE:
-		self->collision.s.c.x = self->centerPos.x;
-		self->collision.s.c.y = self->centerPos.y;
-		break;
-	}
-}
-
-void clear_stage() {
-	int i;
-	for (i = 0; i < entityManager.entityMax; i++) {
-		if (!entityManager.entityList[i]._inuse) continue;
-		if (entityManager.entityList[i].type == ET_PLAYER) continue;
-		entity_free(&entityManager.entityList[i]);
-	}
-}
-
-void get_tiles_entity_is_in(Room* room, Entity* entity) {
-	GFC_Vector2I topLeft, bottomRight;
-	int i,j;
-	int index;
-	
-	topLeft = world_to_grid(gfc_vector2d(entity->collision.s.r.x,entity->collision.s.r.y));
-	bottomRight = world_to_grid(gfc_vector2d(entity->collision.s.r.x + entity->collision.s.r.w, entity->collision.s.r.y + entity->collision.s.r.h));
+	topLeft = world_to_grid(gfc_vector2d(self->collision.s.r.x, self->collision.s.r.y));
+	bottomRight = world_to_grid(gfc_vector2d(self->collision.s.r.x + self->collision.s.r.w, self->collision.s.r.y + self->collision.s.r.h));
 
 	for (i = topLeft.x; i <= bottomRight.x; i++) {
 		for (j = topLeft.y; j <= bottomRight.y; j++) {
-			index = i + (j * room->width);
-			gfc_list_append(entity->currentTiles, (void*)(intptr_t)index);
+			int index = i + (j * room->width);
+
+			if (index < 0 || index >= room->width * room->height) continue;
+
+			gfc_list_append(self->currentTiles, (void*)(intptr_t)index);
+
+			if (!room->entityGrid[index]) room->entityGrid[index] = gfc_list_new();
+			gfc_list_append(room->entityGrid[index], self);
 		}
 	}
+
 	return;
 }
+
+
+
+// ================================================
+//
+//	ENTITY QUERIES 
+//
+// ================================================
+
+
+
+void entity_hit(Entity* self, Entity* attacker, Uint8 damage) {
+	GFC_Vector2D bounce;
+
+	if (!self || !self->_inuse || !attacker) return;
+
+	if (SDL_GetTicks64() - self->timeAtDamaged < self->invincibility) {
+		return;
+	}
+
+	self->timeAtDamaged = SDL_GetTicks64();
+
+	gfc_vector2d_sub(bounce, self->centerPos, attacker->centerPos);
+	gfc_vector2d_normalize(&bounce);
+
+	if (attacker->type != ET_PROJECTILE) {
+		gfc_vector2d_scale(self->knockback, bounce, 3);
+		self->stun = 250;
+		self->timeAtStun = SDL_GetTicks64();
+	}
+	else {
+		gfc_vector2d_scale(self->knockback, bounce, 1);
+	}
+
+	if (self->hit)self->hit(self,attacker, damage);
+
+	return;
+}
+
 
 void entity_setup_collision_box(Entity* self, GFC_ShapeTypes shape, float tolerance) {
 	if (!self || !self->sprite) return;
@@ -420,6 +488,7 @@ void entity_setup_collision_box(Entity* self, GFC_ShapeTypes shape, float tolera
 	set_center(self, self->centerPos);
 }
 
+
 void entity_draw_collision(Entity* self) {
 	GFC_Color color;
 	GFC_Vector2D offset;
@@ -434,6 +503,7 @@ void entity_draw_collision(Entity* self) {
 
 	gf2d_draw_shape(self->collision, color, offset);
 }
+
 
 GFC_List* get_entities_in_shape(GFC_Shape shape, Entity* ignored) {
 	int i;
@@ -451,6 +521,7 @@ GFC_List* get_entities_in_shape(GFC_Shape shape, Entity* ignored) {
 
 	return entities;
 }
+
 
 Entity* get_closest_entity_to(GFC_Vector2D position, EntityType type, float maxRange, Uint8 los) {
 	int i;
