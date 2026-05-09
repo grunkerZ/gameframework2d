@@ -18,6 +18,14 @@ typedef enum {
 	ET_END
 }EntityType;
 
+typedef struct {
+	Uint8	collided;									//1 if the entity collides at all, 0 otherwise
+	Uint8	top;										//1 if the entity collides on its top edge, 0 otherwise
+	Uint8	left;										//1 if the entity collides on its left edge, 0 otherwise
+	Uint8	right;										//1 if the entity collides on its right edge, 0 otherwise
+	Uint8	bottom;										//1 if the entity collides on its bottom edge, 0 otherwise
+}CollisionInfo;
+
 typedef struct Entity_S
 {
 	Uint8			_inuse;																		//internal flag for an in use entity
@@ -43,6 +51,7 @@ typedef struct Entity_S
 
 	// === Movement ===
 
+	CollisionInfo	lastCollision;																//stores the collision information for the last collision
 	GFC_Vector2D	position;																	//position of entity on screen
 	GFC_Vector2D	centerPos;																	//the center position of the entity
 	GFC_Vector2D	velocity;																	//rate of position change per update
@@ -78,14 +87,6 @@ typedef struct Entity_S
 	
 	
 }Entity;
-
-typedef struct {
-	Uint8	collided;									//1 if the entity collides at all, 0 otherwise
-	Uint8	top;										//1 if the entity collides on its top edge, 0 otherwise
-	Uint8	left;										//1 if the entity collides on its left edge, 0 otherwise
-	Uint8	right;										//1 if the entity collides on its right edge, 0 otherwise
-	Uint8	bottom;										//1 if the entity collides on its bottom edge, 0 otherwise
-}CollisionInfo;
 
 /**
 * @brief initialize the entity sub system
@@ -202,4 +203,27 @@ void entity_hit(Entity* self, Entity* attacker, Uint8 damage);
 */
 void entity_update_grid_position(Entity* self);
 
+/*
+* @brief applies a force to an entity
+* @param self the entity to apply the force to
+* @param force the force to apply
+*/
+void entity_apply_force(Entity* self, GFC_Vector2D force);
+
+/*
+* @brief face an entity towards a target position
+* @param self the entity to rotate
+* @param target the target position to face
+*/
+void entity_look_at(Entity* self, GFC_Vector2D target);
+
+/*
+* @brief gets if the entity is visible on the camera
+* @param self the entity to check
+* @return 1 if the entity is on screen, 0 otherwise
+*/
+Uint8 entity_is_on_screen(Entity* self);
+
 #endif // !__ENTITY_H__
+
+

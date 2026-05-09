@@ -98,7 +98,7 @@ void projectile_think(Entity* self) {
 		die = 1;
 	}
 
-	info = check_map_collision(self);
+	info = self->lastCollision;
 	if (info.collided && (SDL_GetTicks64() - stats->timeAtSpawn > stats->spawnImmunity)) {
 		die = 1;
 	}
@@ -120,9 +120,10 @@ void projectile_think(Entity* self) {
 
 void projectile_update(Entity* self) {
 	GFC_Vector2D rotateVector;
+	ProjectileData* stats;
 
-	GFC_Vector2D offset = camera_get_offset();
-	ProjectileData* stats = self->data;
+	if (!self || !self->data) return;
+	stats = self->data;
 
 	if (gfc_vector2d_distance_between_less_than(self->position, stats->origin, stats->range) == false) {
 		entity_free(self);
@@ -133,15 +134,12 @@ void projectile_update(Entity* self) {
 	self->rotation = gfc_vector2d_angle(rotateVector);
 	self->rotation *= GFC_RADTODEG;
 
-	gfc_vector2d_add(self->position, self->position, self->velocity);
-	self->collision.s.c.x = self->position.x + ((self->sprite->frame_w / 2) * self->scale.x);
-	self->collision.s.c.y = self->position.y + ((self->sprite->frame_h / 2) * self->scale.y);
-
-	//slog("Projectile velocity (%f,%f)", self->velocity.x, self->velocity.y);
 	if(stats->maxFrame>0){
 		self->frame += 0.1;
 		if (self->frame >= stats->maxFrame) self->frame = 0;
 	}
+
+	return;
 }
 
 

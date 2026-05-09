@@ -45,11 +45,8 @@ Entity* hazard_spike_spawn(Entity* owner, GFC_Vector2D position, Uint32 delay) {
 
 	if (owner) self->flip = owner->flip;
 
-	self->width = self->sprite->frame_w * self->scale.x;
-	self->height = self->sprite->frame_h * self->scale.y;
-	self->position = position;
-	self->centerPos = gfc_vector2d(position.x + (self->width / 2), position.y + (self->height / 2));
 	entity_setup_collision_box(self, ST_RECT, 0.1);
+	set_center(self, position);
 
 	self->think = hazard_spike_think;
 	self->update = hazard_spike_update;
@@ -184,13 +181,6 @@ void hazard_beam_think(Entity* self) {
 	self->centerAnchor = gfc_vector2d(0, 128);
 	self->position.x = data->beamPos.x - self->centerAnchor.x;
 	self->position.y = data->beamPos.y - self->centerAnchor.y;
-
-	self->collision.type = ST_RECT;
-	self->collision.s.r.w = currentDist;
-	self->collision.s.r.h = 32;
-	self->collision.s.r.y = data->beamPos.y - 16;
-	if (data->dir.x > 0) self->collision.s.r.x = data->beamPos.x;
-	else self->collision.s.r.x = data->beamPos.x - currentDist;
 
 	return;
 }

@@ -566,7 +566,7 @@ void monster_attack_spike_stomp(Entity* self) {
 		offset = (self->width / 2) + (i * spikeWidth);
 		spikePos.x = self->centerPos.x + (offset * self->forward.x) - (spikeWidth / 2);
 
-		spikePos.y = self->position.y + self->height - 32;
+		spikePos.y = self->centerPos.y;
 
 		spike = hazard_spike_spawn(self, spikePos, delay);
 
@@ -695,7 +695,7 @@ void monster_think(Entity* self) {
 			stats->info.state = MS_CHASE;
 		}
 		else {
-			self->velocity = self->knockback;
+			self->velocity.x = 0;
 		}
 
 		break;
@@ -707,7 +707,7 @@ void monster_think(Entity* self) {
 
 	ledge = detect_ledge(self);
 
-	info = check_map_collision(self);
+	info = self->lastCollision;
 
 	if (stats->info.state == MS_WANDERING && !stats->move.isFlying) {
 		if (info.left || info.right || ledge) {
@@ -778,12 +778,6 @@ void monster_update(Entity* self) {
 		}
 	}
 
-	self->flip.x = (self->forward.x < 0) ? 1 : 0;
-
-	gfc_vector2d_add(self->position, self->position, self->velocity);
-	gfc_vector2d_add(self->centerPos, self->centerPos, self->velocity);
-	set_center(self, self->centerPos);
-
 	return;
 
 }
@@ -822,7 +816,7 @@ void monster_hit(Entity* self, Entity* attacker, Uint8 damage) {
 	gfc_vector2d_normalize(&bounce);
 
 	if (attacker->type == ET_PROJECTILE) knockbackPower = 1;
-	else knockbackPower = (attacker->type == MT_HELLHOUND) ? 3 : 2;
+	else knockbackPower = (stats->info.monster == MT_HELLHOUND) ? 3 : 2;
 
 	gfc_vector2d_scale(self->knockback, bounce, knockbackPower);
 	return;

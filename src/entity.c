@@ -68,6 +68,7 @@ Entity* entity_new() {
 		entityManager.entityList[i].scale.x = 1;
 		entityManager.entityList[i].scale.y = 1;
 		entityManager.entityList[i].sprite = gf2d_sprite_load_image("images/missing.png");
+		entityManager.entityList[i].lastCollision = check_map_collision(&entityManager.entityList[i]);
 		return &entityManager.entityList[i];
 	}
 	slog("no more available entities");
@@ -158,6 +159,17 @@ void entity_update(Entity* self) {
 
 	if (self->update)self->update(self);
 
+	self->lastCollision = check_map_collision(self);
+
+	if (self->lastCollision.left || self->lastCollision.right) {
+		self->velocity.x = 0;
+		self->knockback.x = 0;
+	}
+	if (self->lastCollision.top || self->lastCollision.bottom) {
+		self->velocity.y = 0;
+		self->knockback.y = 0;
+	}
+
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 	gfc_vector2d_add(self->position, self->position, self->knockback);
 
@@ -165,6 +177,9 @@ void entity_update(Entity* self) {
 	if (gfc_vector2d_magnitude(self->knockback) < 0.1) {
 		self->knockback = gfc_vector2d(0, 0);
 	}
+
+	if (self->left) self->flip.x = (self->forward.x > 0) ? 1 : 0;
+	else self->flip.x = (self->forward.x > 0) ? 0 : 1;
 
 	self->centerPos.x = self->position.x + (self->width / 2.0);
 	self->centerPos.y = self->position.y + (self->height / 2.0);
@@ -334,8 +349,6 @@ CollisionInfo check_map_collision(Entity* self) {
 		if (totalVelocity.x > 0) {
 			check_x = nextPos.x + bounds.w;
 			if (tile_at(gfc_vector2d(check_x, bounds.y+buffer)) != 0 || tile_at(gfc_vector2d(check_x, bounds.y + bounds.h - buffer)) != 0) {
-				self->velocity.x = 0;
-				self->knockback.x = 0;
 				info.right = 1;
 				info.collided = 1;
 			}
@@ -343,8 +356,6 @@ CollisionInfo check_map_collision(Entity* self) {
 		else {
 			check_x = nextPos.x;
 			if (tile_at(gfc_vector2d(check_x, bounds.y + buffer)) != 0 || tile_at(gfc_vector2d(check_x, bounds.y + bounds.h - buffer)) != 0) {
-				self->velocity.x = 0;
-				self->knockback.x = 0;
 				info.left = 1;
 				info.collided = 1;
 			}
@@ -359,8 +370,6 @@ CollisionInfo check_map_collision(Entity* self) {
 		if (totalVelocity.y > 0) {
 			check_y = nextPos.y + bounds.h;
 			if (tile_at(gfc_vector2d(bounds.x + buffer, check_y)) != 0 || tile_at(gfc_vector2d(bounds.x + bounds.w - buffer, check_y)) != 0) {
-				self->velocity.y = 0;
-				self->knockback.y = 0;
 				info.bottom = 1;
 				info.collided = 1;
 			}
@@ -368,8 +377,6 @@ CollisionInfo check_map_collision(Entity* self) {
 		else {
 			check_y = nextPos.y;
 			if (tile_at(gfc_vector2d(bounds.x + buffer, check_y)) != 0 || tile_at(gfc_vector2d(bounds.x + bounds.w - buffer, check_y)) != 0) {
-				self->velocity.y = 0;
-				self->knockback.y = 0;
 				info.top = 1;
 				info.collided = 1;
 			}
@@ -425,6 +432,25 @@ void entity_update_grid_position(Entity* self) {
 		}
 	}
 
+	return;
+}
+
+
+void entity_apply_force(Entity* self, GFC_Vector2D force) {
+	if (!self || !self->_inuse) return;
+	gfc_vector2d_add(self->knockback, self->knockback, force);
+	return;
+}
+
+
+void entity_look_at(Entity* self, GFC_Vector2D target) {
+	GFC_Vector2D direction;
+	if (!self || !self->_inuse) return;
+
+	gfc_vector2d_sub(direction, target, self->centerPos);
+	gfc_vector2d_normalize(&direction);
+
+	if (fabs(direction.x) > 0.1) self->forward.x = (direction.x > 0) ? 1 : -1;
 	return;
 }
 
@@ -543,6 +569,20 @@ Entity* get_closest_entity_to(GFC_Vector2D position, EntityType type, float maxR
 	}
 
 	return closest;
+}
+
+Uint8 entity_is_on_screen(Entity* self) {
+	GFC_Rect bounds;
+	GFC_Vector2D camPos;
+	GFC_Vector2D camDim;
+
+	if (!self || !self->_inuse) return 0;
+
+	camDim = camera_get_bounds();
+	camPos = camera_get_position();
+	bounds = gfc_rect(camPos.x, camPos.y, camDim.x, camDim.y);
+
+	return gfc_rect_overlap(bounds, gfc_rect(self->position.x, self->position.y, self->width, self->height));
 }
 
 /*eol@eof*/
