@@ -51,7 +51,6 @@ Entity* projectile_new(Entity* owner, ProjectileData* stats) {
 	selfStats->spawnImmunity = 300;
 	selfStats->exploded = 0;
 	selfStats->team = selfStats->parent->type;
-	selfStats->maxFrame = 0;
 
 	self->think = projectile_think;
 	self->update = projectile_update;
@@ -119,7 +118,6 @@ void projectile_think(Entity* self) {
 }
 
 void projectile_update(Entity* self) {
-	GFC_Vector2D rotateVector;
 	ProjectileData* stats;
 
 	if (!self || !self->data) return;
@@ -130,9 +128,8 @@ void projectile_update(Entity* self) {
 		return;
 	}
 
-	gfc_vector2d_negate(rotateVector, self->velocity);
-	self->rotation = gfc_vector2d_angle(rotateVector);
-	self->rotation *= GFC_RADTODEG;
+	self->rotation = gfc_vector2d_angle(self->velocity) * GFC_RADTODEG;
+	self->rotation += 90;
 
 	if(stats->maxFrame>0){
 		self->frame += 0.1;

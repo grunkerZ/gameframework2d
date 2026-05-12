@@ -466,7 +466,7 @@ void hud_update(HUD* hud, Entity* player) {
 	offset = camera_get_offset();
 	stats = player->data;
 
-	hpPercent = (float)stats->health / (float)stats->maxHealth;
+	hpPercent = (float)stats->stats.health / (float)stats->stats.maxHealth;
 
 	if (hpPercent > 0.5) hud->frame = 0;
 	else if (hpPercent > 0.25) hud->frame = 1;

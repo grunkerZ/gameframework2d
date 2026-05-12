@@ -239,17 +239,17 @@ void item_think(Item* self) {
 		else if (self->pickedUp && !self->presenting) {
 			//pickup logic
 			if (self->id == PICKUP_LIFE || self->id == PICKUP_LIFE_HALF) {
-				if (playerStats->maxHealth == playerStats->health) {
+				if (playerStats->stats.maxHealth == playerStats->stats.health) {
 					self->pickedUp = 0;
 					return;
 				}
 				else {
-					playerStats->health += self->healthMod;
-					if (playerStats->health > playerStats->maxHealth) playerStats->health = playerStats->maxHealth;
+					playerStats->stats.health += self->healthMod;
+					if (playerStats->stats.health > playerStats->stats.maxHealth) playerStats->stats.health = playerStats->stats.maxHealth;
 				}
 			}
 
-			if (self->id == PICKUP_SHIELD || self->id == PICKUP_SHIELD_HALF) playerStats->tempHealth += self->tempHealthMod;
+			if (self->id == PICKUP_SHIELD || self->id == PICKUP_SHIELD_HALF) playerStats->stats.tempHealth += self->tempHealthMod;
 			item_free(self);
 			return;
 		}

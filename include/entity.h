@@ -19,6 +19,13 @@ typedef enum {
 }EntityType;
 
 typedef struct {
+	int					start;					//the starting frame
+	int					end;					//the ending frame
+	float				speed;					//the speed of the animation
+	Uint8				loop;					//1 to loop the animation, 0 otherwise
+}FrameRange;
+
+typedef struct {
 	Uint8	collided;									//1 if the entity collides at all, 0 otherwise
 	Uint8	top;										//1 if the entity collides on its top edge, 0 otherwise
 	Uint8	left;										//1 if the entity collides on its left edge, 0 otherwise
@@ -223,6 +230,14 @@ void entity_look_at(Entity* self, GFC_Vector2D target);
 * @return 1 if the entity is on screen, 0 otherwise
 */
 Uint8 entity_is_on_screen(Entity* self);
+
+/*
+* @brief loads the frame range from json
+* @param json the json object of the file
+* @param name the name of the animation
+* @param range the FrameRange pointer to populate
+*/
+void load_frame_range(SJson* json, const char* name, FrameRange* range);
 
 #endif // !__ENTITY_H__
 

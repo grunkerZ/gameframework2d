@@ -176,7 +176,7 @@ void update_game(System* game) {
             slog("player spawned at exit");
         }
 
-        if (((PlayerData*)game->player->data)->health <= 0) {
+        if (((PlayerData*)game->player->data)->stats.health <= 0) {
             game->state = GS_DEATH;
         }
         if (game->keys[SDL_SCANCODE_P]) {
@@ -250,7 +250,7 @@ void draw_game(System* game) {
 
         draw_hud(game->hud, game->player);
 
-        if (((PlayerData*)game->player->data)->health < 0) {
+        if (((PlayerData*)game->player->data)->stats.health < 0) {
             gf2d_draw_rect_filled(game->ftb,gfc_color8(0,0,0,game->ftb_alpha));
         }
 
@@ -298,6 +298,7 @@ int main(int argc, char * argv[])
     SDL_ShowCursor(SDL_DISABLE);
     item_manager_init(1024);
     monster_def_init();
+    player_def_load("defs/player.def");
 
 
 

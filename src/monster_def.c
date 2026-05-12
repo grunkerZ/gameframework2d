@@ -5,22 +5,6 @@
 
 static GFC_List* monsterDefs = NULL;
 
-void load_frame_range(SJson* json, const char* name, FrameRange* range) {
-	SJson* animation;
-	int temp;
-
-	if (!json || !range) return;
-
-	animation = sj_object_get_value(json, name);
-	if (!animation) return;
-
-	sj_object_get_value_as_int(animation, "start", &range->start);
-	sj_object_get_value_as_int(animation, "end", &range->end);
-	sj_object_get_value_as_float(animation, "speed", &range->speed);
-	sj_object_get_value_as_int(animation, "loop", &temp);
-	range->loop = (Uint8)temp;
-}
-
 void monster_def_load(const char* filename) {
 	MonsterDef* def;
 	SJson* json;

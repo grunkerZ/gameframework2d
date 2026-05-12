@@ -105,7 +105,7 @@ void entity_free(Entity* self) {
 		self->currentTiles = NULL;
 	}
 
-	if (self->sprite) gf2d_sprite_free(self->sprite);
+	if (self->sprite && self->type != ET_MONSTER) gf2d_sprite_free(self->sprite);
 	memset(self, 0, sizeof(Entity));
 }
 
@@ -116,6 +116,25 @@ void entity_manager_free_all() {
 		if (!entityManager.entityList[i]._inuse) continue;
 		entity_free(&entityManager.entityList[i]);
 	}
+}
+
+
+void load_frame_range(SJson* json, const char* name, FrameRange* range) {
+	SJson* animation;
+	int temp;
+
+	if (!json || !range) return;
+
+	animation = sj_object_get_value(json, name);
+	if (!animation) return;
+
+	memset(range, 0, sizeof(FrameRange));
+
+	sj_object_get_value_as_int(animation, "start", &range->start);
+	sj_object_get_value_as_int(animation, "end", &range->end);
+	sj_object_get_value_as_float(animation, "speed", &range->speed);
+	sj_object_get_value_as_int(animation, "loop", &temp);
+	range->loop = (Uint8)temp;
 }
 
 
@@ -147,15 +166,6 @@ void entity_think(Entity* self) {
 
 void entity_update(Entity* self) {
 	if (!self || !self->_inuse) return;
-
-	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
-		if (self->velocity.x > 0) {
-			self->forward = gfc_vector2d(1, 0);
-		}
-		if (self->velocity.x < 0) {
-			self->forward = gfc_vector2d(-1, 0);
-		}
-	}
 
 	if (self->update)self->update(self);
 
@@ -223,7 +233,7 @@ void entity_draw(Entity* self) {
 	if (self->sprite && !self->hidden) {
 		gf2d_sprite_render(
 			self->sprite,
-			gfc_vector2d(self->position.x + offset.x + self->centerAnchor.x, self->position.y + offset.y + self->centerAnchor.y),
+			gfc_vector2d(self->centerPos.x + offset.x, self->centerPos.y + offset.y),
 			&self->scale,
 			&self->centerAnchor,
 			&self->rotation,
@@ -498,6 +508,10 @@ void entity_setup_collision_box(Entity* self, GFC_ShapeTypes shape, float tolera
 
 	self->width = self->sprite->frame_w * self->scale.x;
 	self->height = self->sprite->frame_h * self->scale.y;
+
+	self->centerAnchor.x = self->sprite->frame_w / 2.0;
+	self->centerAnchor.y = self->sprite->frame_h / 2.0;
+
 	self->collision.type = shape;
 
 	switch (shape) {

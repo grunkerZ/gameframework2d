@@ -5,6 +5,139 @@
 #include "gfc_input.h"
 #include "monster.h"
 
+static PlayerData baseStats = { 0 };
+
+void player_def_load(const char* filename) {
+	SJson* json;
+	SJson* player;
+	SJson* sub;
+	int temp;
+	const char* string;	
+
+	json = sj_load(filename);
+	if (!json) {
+		slog("ERROR: Failed to load Player Def '%s'", filename);
+		return;
+	}
+
+	player = sj_object_get_value(json, "player");
+	if (!player) {
+		slog("ERROR: Player Def '%s' has no object 'player'", filename);
+		sj_free(json);
+		return;
+	}
+
+	sub = sj_object_get_value(player, "stats");
+	if (sub) {
+		sj_object_get_value_as_int(sub, "maxHealth", &temp);
+		baseStats.stats.maxHealth = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "moveSpeed", &temp);
+		baseStats.stats.moveSpeed = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "jumps", &temp);
+		baseStats.stats.jumps = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "gravity", &temp);
+		baseStats.stats.gravity = (Uint8)temp;
+	}
+
+	sub = sj_object_get_value(player, "combat");
+	if (sub) {
+		sj_object_get_value_as_int(sub, "touchDamage", &temp);
+		baseStats.combat.touchDamage = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "damage", &temp);
+		baseStats.combat.damage = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "range", &temp);
+		baseStats.combat.range = (Uint32)temp;
+		sj_object_get_value_as_int(sub, "shotSpeed", &temp);
+		baseStats.combat.shotSpeed = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "fireRate", &temp);
+		baseStats.combat.fireRate = (Uint32)temp;
+	}
+
+	sub = sj_object_get_value(player, "projectile");
+	if (sub) {
+		int frame_w, frame_h, frames_per_line;
+		sj_object_get_value_as_int(sub, "frame_w", &frame_w);
+		sj_object_get_value_as_int(sub, "frame_h", &frame_h);
+		sj_object_get_value_as_int(sub, "frames_per_line", &frames_per_line);
+		string = sj_get_string_value(sj_object_get_value(sub, "sprite"));
+		if (string) baseStats.combat.projectileSprite = gf2d_sprite_load_all(string, frame_w, frame_h, frames_per_line, false);
+
+		slog("PLAYER DEF: Loaded Projectile Sprite Pointer: %p | Size: %ix%i", baseStats.combat.projectileSprite, baseStats.combat.projectileSprite->frame_w, baseStats.combat.projectileSprite->frame_h);
+
+		sj_object_get_value_as_int(sub, "max_frame", &baseStats.combat.projectileStats.maxFrame);
+		sj_object_get_value_as_float(sub, "scale_x", &baseStats.combat.projectileScale.x);
+		sj_object_get_value_as_float(sub, "scale_y", &baseStats.combat.projectileScale.y);
+
+		sj_object_get_value_as_int(sub, "explodes", &temp);
+		baseStats.combat.projectileStats.explodes = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "explodeTime", &temp);
+		baseStats.combat.projectileStats.explosionTime = (Uint32)temp;
+
+	}
+
+	sub = sj_object_get_value(player, "abilities");
+	if (sub) {
+		sj_object_get_value_as_int(sub, "dashCooldown", &temp);
+		baseStats.abilities.dashCooldown = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "dashDuration", &temp);
+		baseStats.abilities.dashDuration = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "slamDamage", &temp);
+		baseStats.abilities.slamDamage = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "slamCooldown", &temp);
+		baseStats.abilities.slamCooldown = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "shoveCooldown", &temp);
+		baseStats.abilities.shoveCooldown = (Uint8)temp;
+		sj_object_get_value_as_int(sub, "pullCooldown", &temp);
+		baseStats.abilities.pullCooldown = (Uint8)temp;
+	}
+
+	sub = sj_object_get_value(player, "animations");
+	if (sub) {
+		load_frame_range(sub, "idle", &baseStats.animation.idle);
+		load_frame_range(sub, "walk", &baseStats.animation.walk);
+		load_frame_range(sub, "jump", &baseStats.animation.jump);
+		load_frame_range(sub, "fall", &baseStats.animation.fall);
+		load_frame_range(sub, "land", &baseStats.animation.land);
+		load_frame_range(sub, "death", &baseStats.animation.death);
+
+		load_frame_range(sub, "attackForward", &baseStats.animation.attackForward);
+		load_frame_range(sub, "attackUp", &baseStats.animation.attackUp);
+		load_frame_range(sub, "attackDown", &baseStats.animation.attackDown);
+
+		load_frame_range(sub, "runAttackForward", &baseStats.animation.runAttackForward);
+		load_frame_range(sub, "runAttackUp", &baseStats.animation.runAttackUp);
+		load_frame_range(sub, "runAttackDown", &baseStats.animation.runAttackDown);
+
+		load_frame_range(sub, "airAttackForward", &baseStats.animation.airAttackForward);
+		load_frame_range(sub, "airAttackUp", &baseStats.animation.airAttackUp);
+		load_frame_range(sub, "airAttackDown", &baseStats.animation.airAttackDown);
+	}
+
+	sj_object_get_value_as_int(player, "frame_w", &baseStats.player_sprite_frame_w);
+	sj_object_get_value_as_int(player, "frame_h", &baseStats.player_sprite_frame_h);
+	sj_object_get_value_as_int(player, "frames_per_line", &baseStats.player_sprite_frames_per_line);
+	string = sj_get_string_value(sj_object_get_value(player, "sprite"));
+	if (string) {
+		strncpy(baseStats.player_sprite_path, string, 256);
+	}
+
+	
+
+	sj_free(json);
+	slog("Player Def '%s' loaded successfully", filename);
+
+	return;
+}
+
+void player_def_close() {
+	if (baseStats.combat.projectileSprite) {
+		gf2d_sprite_free(baseStats.combat.projectileSprite);
+		baseStats.combat.projectileSprite = NULL;
+	}
+	return;
+}
+
+
 void player_think(Entity* self);
 void player_update(Entity* self);
 void player_free(Entity* self);
@@ -25,67 +158,21 @@ Entity* player_new() {
 	
 	self->data = gfc_allocate_array(sizeof(PlayerData), 1);
 	PlayerData* stats = (PlayerData*)self->data;
+	if (!stats) {
+		slog("failed to allocate player data");
+		return NULL;
+	}	
 
-	self->sprite = gf2d_sprite_load_all("images/player/player.png",256, 256, 5, false);
-	self->frame=0;
-	self->position = gfc_vector2d(0,0);
-	self->centerPos = gfc_vector2d(self->position.x + (self->sprite->frame_w / 2), self->position.y + (self->sprite->frame_h / 2));
+	memcpy(stats, &baseStats, sizeof(PlayerData));
+	
+	stats->stats.health = stats->stats.maxHealth;
+	stats->state = PS_IDLE;
+	self->type = ET_PLAYER;
+	self->gravity = stats->stats.gravity;
+
+	self->sprite = gf2d_sprite_load_all(stats->player_sprite_path, stats->player_sprite_frame_w, stats->player_sprite_frame_h, stats->player_sprite_frames_per_line, false);
 	self->scale = gfc_vector2d(0.25, 0.25);
 	entity_setup_collision_box(self, ST_RECT, 0.15);
-	self->forward = gfc_vector2d(1, 0);
-	self->invincibility = 1000;
-	self->type = ET_PLAYER;
-	self->width = self->sprite->frame_w;
-	self->height = self->sprite->frame_h;
-
-	self->width *= self->scale.x;
-	self->height *= self->scale.y;
-	
-	
-	stats->baseMaxHealth = 6;
-	stats->baseJumps = 0;
-	stats->baseMoveSpeed = 3;
-	stats->baseHealth = 6;
-	stats->baseTouchDamage = 0;
-	stats->baseDashCooldown = 5000;
-	stats->baseFireRate = 800;
-	stats->baseRange = 1000;
-	stats->baseShotSpeed = 1;
-	stats->baseDamage = 1;
-	stats->baseGravity = 1;
-	stats->baseDashDuration = 150;
-	stats->baseTempHealth = 0;
-	stats->baseSlamDamage = 1;
-
-	stats->maxHealth = stats->baseMaxHealth;
-	stats->jumps = stats->baseJumps;
-	stats->moveSpeed = stats->baseMoveSpeed;
-	stats->health = stats->baseHealth;
-	stats->touchDamage = stats->baseTouchDamage;
-	stats->dashCooldown = stats->baseDashCooldown;
-	stats->fireRate = stats->baseFireRate;
-	stats->range = stats->baseRange;
-	stats->shotSpeed = stats->baseShotSpeed;
-	stats->damage = stats->baseDamage;
-	self->gravity = stats->baseGravity;
-	stats->dashDuration = stats->baseDashDuration;
-	stats->tempHealth = stats->baseTempHealth;
-	stats->slamDamage = stats->baseSlamDamage;
-	
-
-
-	stats->timeAtAttack = 0;
-	stats->timeAtDash = SDL_GetTicks64() - stats->dashCooldown;
-	stats->timeAtSlam = 0;
-	stats->timeAtShove = 0;
-	stats->timeAtPull = 0;
-	stats->pullDuration = 0;
-	stats->pullCooldown = 1000;
-	stats->shoveCooldown = 3000;
-	stats->slamCooldown = 5000;
-
-	stats->hookState = 0;
-	stats->hookedEntity = NULL;
 
 	stats->link = gf2d_sprite_load_image("images/player/link.png");
 	stats->grapple = gf2d_sprite_load_image("images/player/hook.png");
@@ -101,481 +188,417 @@ Entity* player_new() {
 }
 
 void player_think(Entity* self) {
-	int vy;
+	int i;
 	GFC_Vector2D dir = { 0 };
 	GFC_Vector2D projectileDir = { 0 };
 	const Uint8* keys;
 	CollisionInfo info;
 	Entity* collider;
+	Entity* hitEntity;
 	Entity* projectile = NULL;
 	PlayerData* stats;
 	GFC_Vector2D colliderCenter;
 	GFC_Vector2D playerCenter;
 	GFC_Vector2D bounce;
+	Uint64 currentTime;
+	GFC_Shape actionBox;
+	GFC_List* hitList;
+
 	if (!self) return;
 	keys=SDL_GetKeyboardState(NULL);
 	stats = (PlayerData*)self->data;
+	currentTime = SDL_GetTicks64();
+
+	if (stats->stats.health <= 0) stats->state = PS_DEAD;
+
+	if (currentTime - self->timeAtStun < self->stun) {
+		self->velocity.x = 0;
+		return;
+	}
 	
+	stats->combat.projectileStats.damage = stats->combat.damage;
+	stats->combat.projectileStats.speed = stats->combat.shotSpeed;
+	stats->combat.projectileStats.range = stats->combat.range;
+	stats->combat.projectileStats.parent = self;
 
-	stats->attacking = 0;
+	switch (stats->state) {
+	case PS_IDLE:
+	case PS_WALKING:
+	case PS_JUMPING:
+	case PS_FALLING:
 
-	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
+		stats->stats.grounded = self->lastCollision.bottom;
+
 		if (keys[SDL_SCANCODE_D]) {
-			dir.x = 1;	
+			dir.x = 1;
+			self->forward.x = 1;
 		}
 		if (keys[SDL_SCANCODE_A]) {
 			dir.x = -1;
+			self->forward.x = -1;
+		}
+
+		self->velocity.x = dir.x * stats->stats.moveSpeed;
+
+		if (keys[SDL_SCANCODE_W]) {
+			if (!self->gravity) {
+				self->velocity.y = -1 * stats->stats.moveSpeed;
+			}
+			else if (stats->stats.grounded) {
+				self->velocity.y = -7;
+				stats->state = PS_JUMPING;
+				stats->stats.grounded = 0;
+			}
+			else if (stats->stats.jumps > 0) {
+				self->velocity.y = -7;
+				stats->stats.jumps -= 1;
+				stats->state = PS_JUMPING;
+				stats->stats.grounded = 0;
+			}
 		}
 
 		if (keys[SDL_SCANCODE_S]) {
 			if (!self->gravity) dir.y = 1;
+			self->velocity.y = 1 * stats->stats.moveSpeed;
 		}
-		
-		gfc_vector2d_normalize(&dir);
-		if (keys[SDL_SCANCODE_W]) {
-			if (stats->grounded) dir.y = -7;
-			if (!self->gravity) dir.y = -1;
-			else if (stats->jumps > 0) {
-				dir.y = -7;
-				stats->jumps -= 1;
+
+		if (!stats->stats.grounded) {
+			if (self->velocity.y < 0)  stats->state = PS_JUMPING;
+			else stats->state = PS_FALLING;
+		}
+		else if (stats->stats.grounded) {
+			if (fabs(self->velocity.x) > 0.1) stats->state = PS_WALKING;
+			else stats->state = PS_IDLE;
+		}
+
+		if (keys[SDL_SCANCODE_LSHIFT] && (currentTime - stats->abilities.timeAtDash > stats->abilities.dashCooldown)) {
+			stats->state = PS_DASHING;
+			stats->abilities.timeAtDash = currentTime;
+			self->timeAtDamaged = currentTime;
+			self->velocity.x = self->forward.x * 15;
+		}
+		else if (keys[SDL_SCANCODE_S] && keys[SDL_SCANCODE_SPACE] && (currentTime - stats->abilities.timeAtSlam > stats->abilities.slamCooldown)) {
+			stats->state = PS_SLAMMING;
+			stats->abilities.timeAtSlam = currentTime;
+			self->velocity.y = 15;
+			self->velocity.x = 0;
+		}
+		else if (keys[SDL_SCANCODE_SPACE] && SDL_GetTicks64() - stats->abilities.timeAtShove > stats->abilities.shoveCooldown) {
+			stats->state = PS_SHOVING;
+			stats->abilities.timeAtShove = currentTime;
+		}
+		else if (keys[SDL_SCANCODE_F] && (SDL_GetTicks64() - stats->abilities.timeAtPull > stats->abilities.pullCooldown)) {
+			Entity* other = get_closest_entity_to(self->centerPos, ET_MONSTER, 1000, 1);
+			if (other) {
+				stats->state = PS_GRAPPLING;
+				stats->abilities.timeAtPull = SDL_GetTicks64();
+				stats->abilities.hookDst = other->centerPos;
+				stats->abilities.hookPos = self->centerPos;
+				stats->abilities.hookState = HS_SHOOTING;
 			}
 		}
+		break;
 
-		
-		dir.x *= stats->moveSpeed;
-		if (!self->gravity) dir.y *= stats->moveSpeed;
-
-		if(SDL_GetTicks64() - stats->timeAtDash > stats->dashDuration) self->velocity.x = dir.x;
-
-		if (!self->gravity) self->velocity.y = dir.y;
-		if (self->gravity) self->velocity.y += dir.y;
-
-		if (keys[SDL_SCANCODE_LSHIFT]) {
-			//slog("LSHIFT PRESSED");
-			//slog("COOLDOWN: %llu | TIMEATDASH %llu | NOW-THEN %llu", stats->dashCooldown, stats->timeAtDash, SDL_GetTicks64() - stats->timeAtDash);
-			if (SDL_GetTicks64() - stats->timeAtDash > stats->dashCooldown) {
-				//slog("Check Passed, before velocity: (%f,%f)", self->velocity.x, self->velocity.y);
-				self->timeAtDamaged = SDL_GetTicks64();
-				self->velocity.x += self->forward.x * 15;
-				//slog("Check Passed, after velocity: (%f,%f)", self->velocity.x, self->velocity.y);
-				stats->timeAtDash = SDL_GetTicks64();
-				//slog("New time set");
-			}
-
+	case PS_DASHING:
+		if (currentTime - stats->abilities.timeAtDash > stats->abilities.dashDuration) {
+			stats->state = PS_FALLING;
 		}
+		break;
 
-		else if (keys[SDL_SCANCODE_S] && keys[SDL_SCANCODE_SPACE]) {
-			if (SDL_GetTicks64() - stats->timeAtSlam > stats->slamCooldown) {
-				self->timeAtDamaged = SDL_GetTicks64();
-				self->velocity.y = 15;
-				stats->timeAtSlam = SDL_GetTicks64();
-				stats->slamming = 1;
-			}
-		}
+	case PS_SLAMMING:
+		if (self->lastCollision.bottom) {
+			actionBox.type = ST_RECT;
+			actionBox.s.r.w = self->width + 64;
+			actionBox.s.r.h = 48;
+			actionBox.s.r.x = self->centerPos.x - (actionBox.s.r.w / 2);
+			actionBox.s.r.y = self->centerPos.y;
 
-		else if (keys[SDL_SCANCODE_SPACE]) {
-			GFC_Shape shoveBox;
-			GFC_List* hitList;
-			Entity* hitEntity;
-			GFC_Vector2D direction;
-			int i;
-			slog("shove key pressed");
-			slog("time difference: %llu | cooldown: %lu", SDL_GetTicks64() - stats->timeAtShove, stats->shoveCooldown);
-
-			if (SDL_GetTicks64() - stats->timeAtShove > stats->shoveCooldown) {
-				slog("time check passed, making box");
-				shoveBox.type = ST_RECT;
-				shoveBox.s.r.w = 96;
-				shoveBox.s.r.h = 128;
-				shoveBox.s.r.x = self->centerPos.x;
-				if (self->forward.x < 0) shoveBox.s.r.x -= 96;
-				shoveBox.s.r.y = self->position.y - 32;
-
-
-				hitList = get_entities_in_shape(shoveBox, self);
-
-				if (hitList) {
-					for (i = 0; i < hitList->count; i++) {
-						hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
-						if (hitEntity->type == ET_MONSTER) {
-							gfc_vector2d_sub(direction, hitEntity->centerPos, self->centerPos);
-							gfc_vector2d_normalize(&direction);
-							gfc_vector2d_scale(hitEntity->knockback, direction, 5);
-
-							hitEntity->stun = 250;
-							hitEntity->timeAtStun = SDL_GetTicks64();
-						}
-					}
-					gfc_list_delete(hitList);
-				}
-
-				stats->timeAtShove = SDL_GetTicks64();
-			}
-		}
-
-		else if (keys[SDL_SCANCODE_F]) {
-			slog("grapple key pressed");
-			slog("time diff: %llu | cooldown: %llu", SDL_GetTicks64() - stats->timeAtPull, stats->pullCooldown);
-			if (SDL_GetTicks64() - stats->timeAtPull > stats->pullCooldown) {
-				slog("time check passed");
-				Entity* other = get_closest_entity_to(self->centerPos, ET_MONSTER, 1000,1);
-				if(other){
-					stats->timeAtPull = SDL_GetTicks64();
-					stats->hookDst = other->centerPos;
-					stats->hookPos = self->centerPos;
-					stats->hookState = 1;
-					slog("hookState: %u", stats->hookState);
-				}
-			}
-		}
-
-	}
-	else {
-		self->velocity = self->knockback;
-	}
-
-	collider = check_entity_collision(self);
-	if (collider) {
-		if (collider->type == ET_MONSTER) {
-			if (stats->slamming && self->centerPos.y < collider->centerPos.y) {
-				GFC_Shape shockwave;
-				GFC_List* hitList;
-				Entity* hitEntity;
-				int i;
-
-				shockwave.type = ST_RECT;
-				shockwave.s.r.w = self->width + 64;
-				shockwave.s.r.h = 48;
-				shockwave.s.r.x = self->centerPos.x - (shockwave.s.r.w / 2);
-				shockwave.s.r.y = self->centerPos.y;
-
-				hitList = get_entities_in_shape(shockwave, self);
-
-				if (hitList) {
-					for (i = 0; i < hitList->count; i++) {
-						hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
-						if (hitEntity->type == ET_MONSTER) {
-							entity_hit(hitEntity, self, stats->slamDamage);
-						}
-					}
-					gfc_list_delete(hitList);
-				}
-				stats->slamming = 0;
-				self->timeAtDamaged = SDL_GetTicks64();
-			}
-			else if(stats->touchDamage>0){
-				entity_hit(collider, self, stats->touchDamage);
-			}
-			
-		}
-	}
-	
-	
-
-	info = check_map_collision(self);
-	if (info.bottom) {
-		if (stats->grounded == 0 && self->velocity.y >= 0) {
-			stats->landing = 1;
-		}
-		stats->grounded = 1;
-	}
-	else {
-		stats->landing = 0;
-		stats->grounded = 0;
-	}
-
-	stats->projectileStats.damage = stats->damage;
-	stats->projectileStats.speed = stats->shotSpeed;
-	stats->projectileStats.range = stats->range;
-	stats->projectileStats.parent = self;
-
-	if (keys[SDL_SCANCODE_UP]) {
-		stats->attacking = 2;
-		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
-			stats->timeAtAttack = SDL_GetTicks64();
-			projectile = projectile_new(self,&stats->projectileStats);
-			projectileDir.y = -stats->projectileStats.speed;
-		}
-		
-	}
-	else if (keys[SDL_SCANCODE_DOWN]) {
-		stats->attacking = 3;
-		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
-			stats->timeAtAttack = SDL_GetTicks64();
-			projectile = projectile_new(self, &stats->projectileStats);
-			projectileDir.y = stats->projectileStats.speed;
-		}
-	}
-	else if (keys[SDL_SCANCODE_LEFT]) {
-		stats->attacking = 1;
-		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
-			stats->timeAtAttack = SDL_GetTicks64();
-			projectile = projectile_new(self, &stats->projectileStats);
-			projectileDir.x = -stats->projectileStats.speed;
-		}
-	}
-	else if (keys[SDL_SCANCODE_RIGHT]) {
-		stats->attacking = 1;
-		if (SDL_GetTicks64() - stats->timeAtAttack >= 800) {
-			stats->timeAtAttack = SDL_GetTicks64();
-			projectile = projectile_new(self, &stats->projectileStats);
-			projectileDir.x = stats->projectileStats.speed;
-		}
-	}
-	if (projectile) {
-		gfc_vector2d_normalize(&projectileDir);
-		gfc_vector2d_scale(projectile->velocity, projectileDir, 5);
-	}
-
-	if (stats->slamming) {
-		stats->timeAtSlam = SDL_GetTicks64();
-		if (info.bottom) {
-			GFC_Shape shockwave;
-			GFC_List* hitList;
-			Entity* hitEntity;
-			int i;
-
-			shockwave.type = ST_RECT;
-			shockwave.s.r.w = self->width + 64;
-			shockwave.s.r.h = 48;
-			shockwave.s.r.x = self->centerPos.x - (shockwave.s.r.w / 2);
-			shockwave.s.r.y = self->centerPos.y;
-
-			hitList = get_entities_in_shape(shockwave,self);
-
+			hitList = get_entities_in_shape(actionBox, self);
 			if (hitList) {
 				for (i = 0; i < hitList->count; i++) {
 					hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
-					if (hitEntity->type == ET_MONSTER) {
-						entity_hit(hitEntity, self, stats->slamDamage);
-					}
+					if (hitEntity->type == ET_MONSTER) entity_hit(hitEntity, self, stats->abilities.slamDamage);
 				}
 				gfc_list_delete(hitList);
 			}
-
-			stats->slamming = 0;
+			stats->state = PS_IDLE;
+			stats->stats.landing = 1;
 		}
-	}
+		break;
 
-	if (stats->hookState == 1) {
-		slog("HookState 1 Block:");
-		slog("Hook Pos: (%f,%f)", stats->hookPos.x, stats->hookPos.y);
-		GFC_Vector2D direction;
-		GFC_Shape grabBox;
-		GFC_List* hitList;
-		Entity* hitEntity;
-		int i;
+	case PS_SHOVING:
+		actionBox.type = ST_RECT;
+		actionBox.s.r.w = 96;
+		actionBox.s.r.h = 128;
+		actionBox.s.r.x = self->centerPos.x;
+		if (self->forward.x < 0) actionBox.s.r.x -= 96;
+		actionBox.s.r.y = self->position.y - 32;
 
-		grabBox.type = ST_CIRCLE;
-		grabBox.s.c.x = stats->hookPos.x;
-		grabBox.s.c.y = stats->hookPos.y;
-		grabBox.s.c.r = 32;
 
-		if (SDL_GetTicks64() - stats->timeAtPull > 1000) {
-			stats->timeAtPull = SDL_GetTicks64();
-			stats->hookState = 2;
-		}
+		hitList = get_entities_in_shape(actionBox, self);
 
-		gfc_vector2d_sub(direction,stats->hookDst,stats->hookPos);
-		gfc_vector2d_normalize(&direction);
-		gfc_vector2d_scale(direction, direction, 3);
-		gfc_vector2d_add(stats->hookPos, stats->hookPos, direction);
-
-		hitList = get_entities_in_shape(grabBox, self);
 		if (hitList) {
+			GFC_Vector2D bounce;
 			for (i = 0; i < hitList->count; i++) {
 				hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
-				if (hitEntity->type != ET_MONSTER) continue;
-				if(!stats->hookedEntity) stats->hookedEntity = hitEntity;
-				else {
-					if (gfc_vector2d_magnitude_between(hitEntity->centerPos, stats->hookPos) < gfc_vector2d_magnitude_between(stats->hookedEntity->centerPos, stats->hookPos)) {
-						stats->hookedEntity = hitEntity;
-					}
+				if (hitEntity->type == ET_MONSTER) {
+					gfc_vector2d_sub(bounce, hitEntity->centerPos, self->centerPos);
+					gfc_vector2d_normalize(&bounce);
+					gfc_vector2d_scale(bounce, bounce, 5);
+					entity_apply_force(hitEntity, bounce);
 				}
 			}
 			gfc_list_delete(hitList);
 		}
-		if (stats->hookedEntity) {
-			stats->hookPos = stats->hookedEntity->centerPos;
-			stats->hookState = 2;
-			stats->timeAtPull = SDL_GetTicks64();
+
+		stats->state = PS_IDLE;
+		break;
+
+	case PS_GRAPPLING:
+		if (stats->abilities.hookState == HS_SHOOTING) {
+			GFC_Vector2D direction;
+			GFC_Shape grabBox;
+			GFC_List* hitList;
+			Entity* hitEntity;
+			int i;
+
+			grabBox.type = ST_CIRCLE;
+			grabBox.s.c.x = stats->abilities.hookPos.x;
+			grabBox.s.c.y = stats->abilities.hookPos.y;
+			grabBox.s.c.r = 32;
+
+			if (SDL_GetTicks64() - stats->abilities.timeAtPull > 1000) {
+				stats->abilities.timeAtPull = SDL_GetTicks64();
+				stats->abilities.hookState = HS_REELING;
+			}
+
+			gfc_vector2d_sub(direction, stats->abilities.hookDst, stats->abilities.hookPos);
+			gfc_vector2d_normalize(&direction);
+			gfc_vector2d_scale(direction, direction, 3);
+			gfc_vector2d_add(stats->abilities.hookPos, stats->abilities.hookPos, direction);
+
+			hitList = get_entities_in_shape(grabBox, self);
+			if (hitList) {
+				for (i = 0; i < hitList->count; i++) {
+					hitEntity = (Entity*)gfc_list_get_nth(hitList, i);
+					if (hitEntity->type != ET_MONSTER) continue;
+					if (!stats->abilities.hookedEntity) stats->abilities.hookedEntity = hitEntity;
+					else {
+						if (gfc_vector2d_magnitude_between(hitEntity->centerPos, stats->abilities.hookPos) < gfc_vector2d_magnitude_between(stats->abilities.hookedEntity->centerPos, stats->abilities.hookPos)) {
+							stats->abilities.hookedEntity = hitEntity;
+						}
+					}
+				}
+				gfc_list_delete(hitList);
+			}
+			if (stats->abilities.hookedEntity) {
+				stats->abilities.hookPos = stats->abilities.hookedEntity->centerPos;
+				stats->abilities.hookState = HS_REELING;
+				stats->abilities.timeAtPull = SDL_GetTicks64();
+			}
+			if (gfc_vector2d_distance_between_less_than(stats->abilities.hookPos, stats->abilities.hookDst, 10)) {
+				stats->abilities.hookState = HS_REELING;
+				stats->abilities.timeAtPull = SDL_GetTicks64();
+			}
 		}
-		if (gfc_vector2d_distance_between_less_than(stats->hookPos, stats->hookDst, 10)) {
-			stats->hookState = 2;
-			stats->timeAtPull = SDL_GetTicks64();
+
+		if (stats->abilities.hookState == HS_REELING) {
+			GFC_Vector2D direction;
+
+			if (stats->abilities.hookedEntity) {
+				if (stats->abilities.hookedEntity->_inuse) {
+					set_center(stats->abilities.hookedEntity, stats->abilities.hookPos);
+					stats->abilities.hookedEntity->stun = 16;
+					stats->abilities.hookedEntity->timeAtStun = SDL_GetTicks64();
+					stats->abilities.pullDuration = SDL_GetTicks64();
+				}
+				else {
+					stats->abilities.hookedEntity = NULL;
+				}
+			}
+
+			gfc_vector2d_sub(direction, self->centerPos, stats->abilities.hookPos);
+			gfc_vector2d_normalize(&direction);
+			gfc_vector2d_scale(direction, direction, 3);
+			gfc_vector2d_add(stats->abilities.hookPos, stats->abilities.hookPos, direction);
+
+			if (gfc_vector2d_distance_between_less_than(stats->abilities.hookPos, self->centerPos, 96)) {
+				stats->abilities.hookedEntity = NULL;
+				stats->abilities.timeAtPull = SDL_GetTicks64();
+				stats->abilities.hookState = HS_INACTIVE;
+			}
+			else if (stats->abilities.hookedEntity && stats->abilities.pullDuration - stats->abilities.timeAtPull > 1500) {
+				stats->abilities.hookedEntity = NULL;
+				stats->abilities.timeAtPull = SDL_GetTicks64();
+				stats->abilities.hookState = HS_INACTIVE;
+			}
 		}
+
+		if (stats->abilities.hookState == HS_INACTIVE) {
+			stats->state = PS_IDLE;
+		}
+		break;
+
+	case PS_DEAD:
+		self->velocity = gfc_vector2d(0, 0);
+		return;
 	}
 
-	if (stats->hookState == 2) {
-		GFC_Vector2D direction;
+	stats->combat.attackDir = PA_NONE;
 
-		if (stats->hookedEntity) {
-			if (stats->hookedEntity->_inuse) {
-				set_center(stats->hookedEntity, stats->hookPos);
-				stats->hookedEntity->stun = 16;
-				stats->hookedEntity->timeAtStun = SDL_GetTicks64();
-				stats->pullDuration = SDL_GetTicks64();
+	if (keys[SDL_SCANCODE_UP]) {
+		stats->combat.attackDir = PA_UP;
+	}
+	else if (keys[SDL_SCANCODE_DOWN]) {
+		stats->combat.attackDir = PA_DOWN;
+	}
+	else if (keys[SDL_SCANCODE_LEFT]) {
+		stats->combat.attackDir = PA_FORWARD;
+		self->forward.x = -1;
+	}
+	else if(keys[SDL_SCANCODE_RIGHT]) {
+		stats->combat.attackDir = PA_FORWARD;
+		self->forward.x = 1;
+	}
+
+	if (stats->state != PS_SLAMMING && stats->state != PS_DEAD && stats->state != PS_DASHING) {
+		if (stats->combat.attackDir != PA_NONE && (currentTime - stats->combat.timeAtAttack >= stats->combat.fireRate)) {
+			GFC_Vector2D spawnPos;
+			float gunHeightOffset = self->height / 3.0;
+			projectileDir = gfc_vector2d(0, 0);
+
+			if (stats->combat.attackDir == PA_UP) {
+				projectileDir.y = -1;
+				spawnPos.x = self->centerPos.x;
+				spawnPos.y = self->collision.s.r.y;
 			}
-			else {
-				stats->hookedEntity = NULL;
+			else if (stats->combat.attackDir == PA_DOWN) {
+				projectileDir.y = 1;
+				spawnPos.x = self->centerPos.x;
+				spawnPos.y = self->collision.s.r.y + self->collision.s.r.h;
+			}
+			else if (keys[SDL_SCANCODE_LEFT]) {
+				projectileDir.x = -1;
+				spawnPos.x = self->collision.s.r.x;
+				spawnPos.y = self->position.y + gunHeightOffset;
+			}
+			else if (keys[SDL_SCANCODE_RIGHT]) {
+				projectileDir.x = 1;
+				spawnPos.x = self->collision.s.r.x + self->collision.s.r.w;
+				spawnPos.y = self->position.y + gunHeightOffset;
+			}
+
+			stats->combat.timeAtAttack = currentTime;
+			projectile = projectile_new(self, &stats->combat.projectileStats);
+			if (projectile) {
+
+				projectile->sprite = stats->combat.projectileSprite;
+				projectile->scale = stats->combat.projectileScale;
+
+				entity_setup_collision_box(projectile, ST_CIRCLE, 0);
+
+				slog("PLAYER FIRE: Assigned Sprite: %p | Width: %f | Scale: (%f, %f)", projectile->sprite, projectile->width, projectile->scale.x, projectile->scale.y);
+				
+				set_center(projectile, spawnPos);
+
+				gfc_vector2d_normalize(&projectileDir);
+				gfc_vector2d_scale(projectile->velocity, projectileDir, stats->combat.shotSpeed);
 			}
 		}
 
-		gfc_vector2d_sub(direction, self->centerPos, stats->hookPos);
-		gfc_vector2d_normalize(&direction);
-		gfc_vector2d_scale(direction, direction, 3);
-		gfc_vector2d_add(stats->hookPos, stats->hookPos, direction);
-
-		if (gfc_vector2d_distance_between_less_than(stats->hookPos, self->centerPos, 96)) {
-			stats->hookedEntity = NULL;
-			stats->timeAtPull = SDL_GetTicks64();
-			stats->hookState = 0;
-		}
-		else if (stats->hookedEntity && stats->pullDuration - stats->timeAtPull > 1500) {
-			stats->hookedEntity = NULL;
-			stats->timeAtPull = SDL_GetTicks64();
-			stats->hookState = 0;
-		}
 	}
 
 }
 
 void player_update(Entity* self) {
-	const Uint8* keys = SDL_GetKeyboardState(NULL);
-	if (!self) return;
-	PlayerData* stats = (PlayerData*)self->data;
-	GFC_Vector2D offset = camera_get_offset();
+	PlayerData* stats;
+	FrameRange* range;
+	Uint64 currentTime;
+	static FrameRange* lastRange = NULL;
 
-	// ====================
-	//
-	// ANIMATION
-	//
-	// ====================
+	if (!self || !self->data) return;
+	stats = (PlayerData*)self->data;
 
-	if (stats->attacking > 0 && stats->grounded && !stats->landing) {
-		if (self->velocity.x == 0) {
+	currentTime = SDL_GetTicks64();
+	range = &stats->animation.idle;
 
-			// === IDLE GROUND ATTACKS ===
-
-			switch (stats->attacking) {
-			case 1: //FORWARD
-				if (self->frame < 10 || self->frame > 21) self->frame = 10;
-				self->frame += 0.1;
-				if (self->frame >= 21) self->frame = 10;
-				break;
-			case 2: //UP
-				if (self->frame < 25 || self->frame > 30) self->frame = 25;
-				self->frame += 0.1;
-				if (self->frame >= 30) self->frame = 25;
-				break;
-			case 3: //DOWN
-				if (self->frame < 35 || self->frame > 40) self->frame = 35;
-				self->frame += 0.1;
-				if (self->frame >= 40) self->frame = 35;
-				break;
-			}
-		}
-
-		else {
-
-			// === RUNNING GROUND ATTACKS ===
-
-			switch (stats->attacking) {
-			case 1: //FORWARD
-				if (self->frame < 55 || self->frame > 64) self->frame = 55;
-				self->frame += 0.1;
-				if (self->frame >= 64) self->frame = 55;
-				break;
-			case 2: //UP
-				if (self->frame < 65 || self->frame > 74) self->frame = 65;
-				self->frame += 0.1;
-				if (self->frame >= 74) self->frame = 65;
-				break;
-			case 3: //DOWN
-				if (self->frame < 75 || self->frame > 84) self->frame = 75;
-				self->frame += 0.1;
-				if (self->frame >= 84) self->frame = 75;
-				break;
-			}
-		}
+	switch (stats->state) {
+	case PS_IDLE:
+		range = &stats->animation.idle;
+		break;
+	case PS_WALKING:
+		range = &stats->animation.walk;
+		break;
+	case PS_JUMPING:
+		range = &stats->animation.jump;
+		break;
+	case PS_FALLING:
+		range = &stats->animation.fall;
+		break;
+	case PS_DASHING:
+		range = &stats->animation.walk;
+		break;
+	case PS_SLAMMING:
+		range = &stats->animation.fall;
+		break;
+	case PS_DEAD:
+		range = &stats->animation.death;
+		break;
+	case PS_SHOVING:
+		range = &stats->animation.walk;
+		break;
 	}
-	else if (stats->attacking > 0 && !stats->landing) {
 
-		// === AERIAL ATTACKS ===
-
-	}
-	else if (stats->landing) {
-
-		// === LANDING ===
-
-		if ((self->frame < 85) || (self->frame > 99)) self->frame = 99;
-		self->frame -= 0.5;
-		if (self->frame <= 85 || self->velocity.x!=0) {
-			self->frame = 85;
-			stats->landing = 0;
+	if (stats->combat.attackDir != PA_NONE) {
+		if (stats->state == PS_WALKING) {
+			if (stats->combat.attackDir == PA_UP) range = &stats->animation.runAttackUp;
+			else if (stats->combat.attackDir == PA_DOWN) range = &stats->animation.runAttackDown;
+			else if (stats->combat.attackDir == PA_FORWARD) range = &stats->animation.runAttackForward;
 		}
-	}
-	else if (stats->attacking == 0 && stats->grounded && !stats->landing) {
-		if (self->velocity.x == 0) {
-
-			// === IDLE ANIMATION ===
-
-			if (self->frame < 0 || self->frame > 5) self->frame = 0;
-			self->frame += 0.1;
-			if (self->frame >= 5) self->frame = 0;
-
+		else if (stats->stats.grounded) {
+			if (stats->combat.attackDir == PA_UP) range = &stats->animation.attackUp;
+			else if (stats->combat.attackDir == PA_DOWN) range = &stats->animation.attackDown;
+			else if (stats->combat.attackDir == PA_FORWARD) range = &stats->animation.attackForward;
 		}
 		else {
-
-			// === RUNNING ANIMATION ===
-
-			if (self->frame < 45 || self->frame > 54) self->frame = 45;
-			self->frame += 0.1;
-			if (self->frame >= 54) self->frame = 45;
-
+			if (stats->combat.attackDir == PA_UP) range = &stats->animation.airAttackUp;
+			else if (stats->combat.attackDir == PA_DOWN) range = &stats->animation.airAttackDown;
+			else if (stats->combat.attackDir == PA_FORWARD) range = &stats->animation.airAttackForward;
 		}
 	}
-	else {
 
-		// === JUMPING ANIMATION ===
-
-		if(self->velocity.y < 0) {
-			if (self->frame < 85 || self->frame > 124) self->frame = 85;
-			self->frame += 0.3;
-			if (self->frame > 98) self->frame = 105;
-		}
-
-		// === FREEFALL ===
-
-		else{
-			if (self->frame < 105 || self->frame >= 124) self->frame = 105;
-			self->frame += 0.1;
-			if (self->frame >= 124) self->frame = 105;
-		}
-
+	if (stats->stats.landing) {
+		range = &stats->animation.land;
 	}
 
-	if (SDL_GetTicks64() - self->timeAtDamaged < self->invincibility && stats->health > 0) {
-		if (((SDL_GetTicks64() / 200) % 2) == 0) self->hidden = 1;
-		else self->hidden = 0;
+	if (range != lastRange) {
+		self->frame = range->start;
+		lastRange = range;
+	}
+
+	self->frame += range->speed;
+
+	if (self->frame >= range->end) {
+		if (range->loop) {
+			self->frame = range->start;
+		}
+		else {
+			self->frame = range->end;
+			if (stats->stats.landing) stats->stats.landing = 0;
+			if (stats->state == PS_DEAD) {
+
+			}
+		}
+	}
+
+	if (currentTime - self->timeAtDamaged < self->invincibility && stats->stats.health > 0) {
+		self->hidden = (currentTime / 200) % 2 == 0;
 	}
 	else {
 		self->hidden = 0;
 	}
 
-	gfc_vector2d_add(self->position, self->position, self->velocity);
-	gfc_vector2d_add(self->centerPos, self->centerPos, self->velocity);
-
-	set_center(self, self->centerPos);
-
-	if (keys[SDL_SCANCODE_LEFT]) {
-		self->forward = gfc_vector2d(-1, 0);
-		self->flip = gfc_vector2d(1, 0);
-	}
-	else if (keys[SDL_SCANCODE_RIGHT]) {
-		self->forward = gfc_vector2d(1, 0);
-		self->flip = gfc_vector2d(0, 0);
-	}
+	return;
 }
 
 void player_hit(Entity* self, Entity* attacker, Uint8 damage) {
@@ -591,17 +614,17 @@ void player_hit(Entity* self, Entity* attacker, Uint8 damage) {
 	self->timeAtDamaged = SDL_GetTicks64();
 
 
-	if (stats->tempHealth > 0) {
-		if (damage > stats->tempHealth) {
-			stats->health -= (damage - stats->tempHealth);
-			stats->tempHealth = 0;
+	if (stats->stats.tempHealth > 0) {
+		if (damage > stats->stats.tempHealth) {
+			stats->stats.health -= (damage - stats->stats.tempHealth);
+			stats->stats.tempHealth = 0;
 		}
 		else {
-			stats->tempHealth -= damage;
+			stats->stats.tempHealth -= damage;
 		}
 	}
 	else{
-		stats->health -= damage;
+		stats->stats.health -= damage;
 	}
 
 	if (attacker->type != ET_PROJECTILE) {
@@ -644,29 +667,22 @@ void player_calculate_stats(Entity* self) {
 
 	slog("===PLAYER STATS UPDATED===");
 	slog("PREVIOUS STATS:");
-	slog("Max Health: %u", stats->maxHealth);
-	slog("Mid Air Jumps: %u", stats->jumps);
-	slog("Touch Damage: %u", stats->touchDamage);
-	slog("Dash Cooldown: %lu", stats->dashCooldown);
-	slog("Fire Rate: %lu", stats->fireRate);
-	slog("Range: %lu", stats->range);
-	slog("Shot Speed: %u", stats->shotSpeed);
-	slog("Projectile Damage: %u", stats->damage);
+	slog("Max Health: %u", stats->stats.maxHealth);
+	slog("Mid Air Jumps: %u", stats->stats.jumps);
+	slog("Touch Damage: %u", stats->combat.touchDamage);
+	slog("Dash Cooldown: %lu", stats->abilities.dashCooldown);
+	slog("Fire Rate: %lu", stats->combat.fireRate);
+	slog("Range: %lu", stats->combat.range);
+	slog("Shot Speed: %u", stats->combat.shotSpeed);
+	slog("Projectile Damage: %u", stats->combat.damage);
 	slog("Flight: %u", self->gravity);
-	slog("Dash Duration: %lu", stats->dashDuration);
+	slog("Dash Duration: %lu", stats->abilities.dashDuration);
 
 	//reset to base stats
-	stats->maxHealth = stats->baseMaxHealth;
-	stats->jumps = stats->baseJumps;
-	stats->moveSpeed = stats->baseMoveSpeed;
-	stats->touchDamage = stats->baseTouchDamage;
-	stats->dashCooldown = stats->baseDashCooldown;
-	stats->fireRate = stats->baseFireRate;
-	stats->range = stats->baseRange;
-	stats->shotSpeed = stats->baseShotSpeed;
-	stats->damage = stats->baseDamage;
-	self->gravity = stats->baseGravity;
-	stats->dashDuration = stats->baseDashDuration;
+	stats->stats = baseStats.stats;
+	stats->combat = baseStats.combat;
+	stats->abilities = baseStats.abilities;
+	self->gravity = baseStats.stats.gravity;
 
 
 	slog("current inventory:");
@@ -676,18 +692,20 @@ void player_calculate_stats(Entity* self) {
 		item = get_item(i);
 		slog("Item ID: %i | Amount: %i", i, stats->inventory[i]);
 		for (j = 0; j < stats->inventory[i];j++) {
-			//stats
-			stats->maxHealth += item->maxHealthMod;
-			stats->jumps += item->jumpsMod;
-			stats->moveSpeed += item->moveSpeedMod;
-			stats->health += item->healthMod;
-			stats->touchDamage += item->touchDamageMod;
-			stats->dashCooldown += item->dashCooldownMod;
-			stats->fireRate += item->fireRateMod;
-			stats->range += item->rangeMod;
-			stats->shotSpeed += item->shotSpeedMod;
-			stats->damage += item->damageMod;
-			stats->dashDuration += item->dashDurationMod;
+
+			stats->stats.maxHealth += item->maxHealthMod;
+			stats->stats.jumps += item->jumpsMod;
+			stats->stats.moveSpeed += item->moveSpeedMod;
+			stats->stats.health += item->healthMod;
+
+			stats->combat.touchDamage += item->touchDamageMod;
+			stats->combat.fireRate += item->fireRateMod;
+			stats->combat.range += item->rangeMod;
+			stats->combat.shotSpeed += item->shotSpeedMod;
+			stats->combat.damage += item->damageMod;
+
+			stats->abilities.dashCooldown += item->dashCooldownMod;
+			stats->abilities.dashDuration += item->dashDurationMod;
 		}
 
 		//flags
@@ -695,17 +713,19 @@ void player_calculate_stats(Entity* self) {
 		
 	}
 
+	if (stats->stats.health > stats->stats.maxHealth) stats->stats.health = stats->stats.maxHealth;
+
 	slog("UPDATED STATS:");
-	slog("Max Health: %u", stats->maxHealth);
-	slog("Mid Air Jumps: %u", stats->jumps);
-	slog("Touch Damage: %u", stats->touchDamage);
-	slog("Dash Cooldown: %lu", stats->dashCooldown);
-	slog("Fire Rate: %lu", stats->fireRate);
-	slog("Range: %u", stats->range);
-	slog("Shot Speed: %u", stats->shotSpeed);
-	slog("Projectile Damage: %u", stats->damage);
-	slog("Flight: %u", !self->gravity);
-	slog("Dash Duration: %lu", stats->dashDuration);
+	slog("Max Health: %u", stats->stats.maxHealth);
+	slog("Mid Air Jumps: %u", stats->stats.jumps);
+	slog("Touch Damage: %u", stats->combat.touchDamage);
+	slog("Dash Cooldown: %lu", stats->abilities.dashCooldown);
+	slog("Fire Rate: %lu", stats->combat.fireRate);
+	slog("Range: %lu", stats->combat.range);
+	slog("Shot Speed: %u", stats->combat.shotSpeed);
+	slog("Projectile Damage: %u", stats->combat.damage);
+	slog("Flight: %u", self->gravity);
+	slog("Dash Duration: %lu", stats->abilities.dashDuration);
 	slog("===END STAT UPDATE===");
 	return;
 }
@@ -730,13 +750,13 @@ void player_draw(Entity* self) {
 	int i;
 
 
-	if(stats->hookState>0){
-		gfc_vector2d_sub(chain, stats->hookPos, self->centerPos);
+	if(stats->abilities.hookState>0){
+		gfc_vector2d_sub(chain, stats->abilities.hookPos, self->centerPos);
 
 		rotation = gfc_vector2d_angle(chain);
 		rotation *= GFC_RADTODEG;
 
-		linkNum = gfc_vector2d_magnitude_between(self->centerPos, stats->hookPos) / (stats->link->frame_h * linkScale.y);
+		linkNum = gfc_vector2d_magnitude_between(self->centerPos, stats->abilities.hookPos) / (stats->link->frame_h * linkScale.y);
 
 		gfc_vector2d_normalize(&chain);
 		for (i = 0; i < linkNum; i++) {
@@ -759,7 +779,7 @@ void player_draw(Entity* self) {
 		}
 		gf2d_sprite_render(
 			stats->grapple,
-			gfc_vector2d(stats->hookPos.x + offset.x, stats->hookPos.y + offset.y),
+			gfc_vector2d(stats->abilities.hookPos.x + offset.x, stats->abilities.hookPos.y + offset.y),
 			&hookScale,
 			NULL,
 			&rotation,
@@ -772,8 +792,10 @@ void player_draw(Entity* self) {
 }
 
 int player_get_health() {
-	return ((PlayerData*)player->data)->health;
+	return ((PlayerData*)player->data)->stats.health;
 }
+
+
 
 
 /*eol@eof*/

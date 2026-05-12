@@ -193,43 +193,43 @@ void console_execute(const char* cmd_line) {
 			value = atoi(args[3]);
 			if(strcmp(args[1], "max_health") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->maxHealth += value;
+					stats->stats.maxHealth += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->maxHealth -= value;
+					stats->stats.maxHealth -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->maxHealth = value;
+					stats->stats.maxHealth = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
 				}
-				if (stats->health > stats->maxHealth) stats->health = stats->maxHealth;
+				if (stats->stats.health > stats->stats.maxHealth) stats->stats.health = stats->stats.maxHealth;
 			}
 			else if (strcmp(args[1], "health") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->health += value;
+					stats->stats.health += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->health -= value;
+					stats->stats.health -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->health = value;
+					stats->stats.health = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
 				}
-				if (stats->health > stats->maxHealth) stats->health = stats->maxHealth;
+				if (stats->stats.health > stats->stats.maxHealth) stats->stats.health = stats->stats.maxHealth;
 			}
 			else if (strcmp(args[1], "move_speed") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->moveSpeed += value;
+					stats->stats.moveSpeed += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->moveSpeed -= value;
+					stats->stats.moveSpeed -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->moveSpeed = value;
+					stats->stats.moveSpeed = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -237,13 +237,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "touch_damage") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->touchDamage += value;
+					stats->combat.touchDamage += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->touchDamage -= value;
+					stats->combat.touchDamage -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->touchDamage = value;
+					stats->combat.touchDamage = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -251,13 +251,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "jumps") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->jumps += value;
+					stats->stats.jumps += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->jumps -= value;
+					stats->stats.jumps -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->jumps = value;
+					stats->stats.jumps = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -265,13 +265,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "shot_speed") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->shotSpeed += value;
+					stats->combat.shotSpeed += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->shotSpeed -= value;
+					stats->combat.shotSpeed -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->shotSpeed = value;
+					stats->combat.shotSpeed = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -279,13 +279,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "range") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->range += value;
+					stats->combat.range += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->range -= value;
+					stats->combat.range -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->range = value;
+					stats->combat.range = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -293,13 +293,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "damage") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->damage += value;
+					stats->combat.damage += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->damage -= value;
+					stats->combat.damage -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->damage = value;
+					stats->combat.damage = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -307,13 +307,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "temp_health") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->tempHealth += value;
+					stats->stats.tempHealth += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->tempHealth -= value;
+					stats->stats.tempHealth -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->tempHealth = value;
+					stats->stats.tempHealth = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -321,13 +321,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "fire_rate") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->fireRate += value;
+					stats->combat.fireRate += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->fireRate -= value;
+					stats->combat.fireRate -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->fireRate = value;
+					stats->combat.fireRate = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -335,13 +335,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "dash_duration") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->dashDuration += value;
+					stats->abilities.dashDuration += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->dashDuration -= value;
+					stats->abilities.dashDuration -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->dashDuration = value;
+					stats->abilities.dashDuration = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -349,13 +349,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "slam_damage") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->slamDamage += value;
+					stats->abilities.slamDamage += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->slamDamage -= value;
+					stats->abilities.slamDamage -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->slamDamage = value;
+					stats->abilities.slamDamage = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -363,13 +363,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "slam_cooldown") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->slamCooldown += value;
+					stats->abilities.slamCooldown += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->slamCooldown -= value;
+					stats->abilities.slamCooldown -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->slamCooldown = value;
+					stats->abilities.slamCooldown = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -377,13 +377,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "shove_cooldown") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->shoveCooldown += value;
+					stats->abilities.shoveCooldown += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->shoveCooldown -= value;
+					stats->abilities.shoveCooldown -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->shoveCooldown = value;
+					stats->abilities.shoveCooldown = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -391,13 +391,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "pull_cooldown") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->pullCooldown += value;
+					stats->abilities.pullCooldown += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->pullCooldown -= value;
+					stats->abilities.pullCooldown -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->pullCooldown = value;
+					stats->abilities.pullCooldown = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -405,13 +405,13 @@ void console_execute(const char* cmd_line) {
 			}
 			else if (strcmp(args[1], "dash_cooldown") == 0) {
 				if (strcmp(args[2], "add") == 0) {
-					stats->dashCooldown += value;
+					stats->abilities.dashCooldown += value;
 				}
 				else if (strcmp(args[2], "sub") == 0) {
-					stats->dashCooldown -= value;
+					stats->abilities.dashCooldown -= value;
 				}
 				else if (strcmp(args[2], "set") == 0) {
-					stats->dashCooldown = value;
+					stats->abilities.dashCooldown = value;
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);
@@ -444,8 +444,8 @@ void console_execute(const char* cmd_line) {
 			slog("no active player to change stats");
 		}
 		else if (argc == 1) {
-			stats->health = 0;
-			stats->tempHealth = 0;
+			stats->stats.health = 0;
+			stats->stats.tempHealth = 0;
 		}
 		else {
 			slog("too many args for 'kill'");

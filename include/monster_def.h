@@ -58,12 +58,4 @@ MonsterDef* get_monster_def_by_name(const char* name);
 */
 void monster_def_close();
 
-/*
-* @brief loads the frame range from json
-* @param json the json object of the file
-* @param name the name of the animation
-* @param range the FrameRange pointer to populate
-*/
-void load_frame_range(SJson* json, const char* name, FrameRange* range);
-
 #endif //__MONSTER_DEF_H__

@@ -28,13 +28,6 @@ typedef enum {
 }MonsterState;
 
 typedef struct {
-	int					start;					//the starting frame
-	int					end;					//the ending frame
-	float				speed;					//the speed of the animation
-	Uint8				loop;					//1 to loop the animation, 0 otherwise
-}FrameRange;
-
-typedef struct {
 
 	// === MONSTER INFORMATION & IDENTITY ===
 	struct {

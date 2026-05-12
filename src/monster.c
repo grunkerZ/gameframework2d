@@ -778,6 +778,15 @@ void monster_update(Entity* self) {
 		}
 	}
 
+	if (SDL_GetTicks64() - self->timeAtStun > self->stun) {
+		if (self->velocity.x > 0) {
+			self->forward = gfc_vector2d(1, 0);
+		}
+		if (self->velocity.x < 0) {
+			self->forward = gfc_vector2d(-1, 0);
+		}
+	}
+
 	return;
 
 }
