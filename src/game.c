@@ -15,10 +15,13 @@
 #include "monster_def.h"
 
 typedef enum {
+    GS_NONE,
     GS_MAINMENU,
     GS_PLAYING,
     GS_DEATH,
-    GS_PAUSED
+    GS_PAUSED,
+    GS_SHOP,
+    GS_END
 }GameState;
 
 typedef struct {
@@ -32,6 +35,7 @@ typedef struct {
     GenericMenu*        mainMenu;           //the main menu pointer
     GenericMenu*        deathMenu;          //the death menu pointer
     GenericMenu*        pauseMenu;          //the pause menu pointer
+    GenericMenu*        shopMenu;           //the shop menu pointer
     Floor*              floor;              //the current floor
     Entity*             player;             //the player pointer
     Sprite*             mouse;              //the mouse pointer
@@ -40,8 +44,10 @@ typedef struct {
     HUD*                hud;
     GFC_Rect            ftb;                //fade to black rect
     float               ftb_alpha;
+    Uint8               shopOpen;
 }System;
 
+Uint8 openShopRequest;
 
 void update_game(System* game) {
     switch (game->state) {
@@ -116,7 +122,20 @@ void update_game(System* game) {
 
             menu_update(game->deathMenu);
             if (game->deathMenu->Menu.death.restartButton.clicked) game->done = 1;
-            if (game->deathMenu->Menu.death.menuButton.clicked) game->state = GS_MAINMENU;
+            if (game->deathMenu->Menu.death.menuButton.clicked) {
+
+                item_manager_free_all();
+                entity_manager_free_all();
+                game->player = NULL;
+
+                if (game->floor) {
+                    free_world(game->floor);
+                    game->floor = NULL;
+                }
+                game->currentStage = NULL;
+
+                game->state = GS_MAINMENU;
+            }
         }
         
         break;
@@ -124,17 +143,16 @@ void update_game(System* game) {
     case GS_PAUSED:
         menu_update(game->pauseMenu);
         if (game->pauseMenu->Menu.pause.menuButton.clicked) {
-            if (game->player) {
-                entity_free(game->player);
-                game->player = NULL;
-            }
+            item_manager_free_all();
+            entity_manager_free_all();
+            game->player = NULL;
+
             if (game->floor) {
                 free_world(game->floor);
                 game->floor = NULL;
             }
-            if (game->currentStage) {
-                game->currentStage = NULL;
-            }
+            game->currentStage = NULL;
+
             game->paused = 0;
             game->state = GS_MAINMENU;
         }
@@ -144,6 +162,17 @@ void update_game(System* game) {
         }
         break;
 
+    case GS_SHOP:
+        shop_menu_update(game->shopMenu);
+
+        if (game->shopMenu->Menu.shop.leaveButton.clicked) {
+            game->shopOpen = 0;
+            openShopRequest = 0;
+            game->state = GS_PLAYING;
+        }
+
+        break;
+
     case GS_PLAYING:
 
         entity_manager_think_all();
@@ -151,6 +180,11 @@ void update_game(System* game) {
         item_manager_think_all();
         hud_update(game->hud, game->player);
         world_update();
+
+        if (game->currentStage && !game->currentStage->cleared && room_is_clear()) {
+            game->currentStage->cleared = 1;
+            spawn_room_reward(game->player->centerPos);
+        }
 
         collider = check_entity_collision(game->player);
         if (collider && collider->type == ET_DOOR) {
@@ -171,10 +205,13 @@ void update_game(System* game) {
                 slog("stage cleared of entities");
                 floor_update_active_rooms(game->floor, game->currentStage->gridPos.x, game->currentStage->gridPos.y);
                 slog("active rooms updated");
-                load_stage(game->floor, game->currentStage);
-                slog("stage loaded");
+
                 set_active_room(game->currentStage->room);
                 slog("active room set to current stage room");
+
+                load_stage(game->floor, game->currentStage);
+                slog("stage loaded");
+                
                 spawn_at_door_exit(game->player, game->currentStage->room, exitSide);
                 slog("player spawned at exit");
             }
@@ -186,6 +223,10 @@ void update_game(System* game) {
         if (game->keys[SDL_SCANCODE_P]) {
             game->paused = 1;
             game->state = GS_PAUSED;
+        }
+        else if (openShopRequest) {
+            game->shopOpen = 1;
+            game->state = GS_SHOP;
         }
         break;
     }
@@ -242,6 +283,12 @@ void draw_game(System* game) {
         draw_mouse(game->pauseMenu,game->mouse,game->mx,game->my,game->mouseScale);
 
         console_draw();
+        break;
+
+    case GS_SHOP:
+        menu_draw(game->shopMenu);
+
+        draw_mouse(game->shopMenu, game->mouse, game->mx, game->my, game->mouseScale);
         break;
     case GS_PLAYING:
         room_draw(game->currentStage->room);
@@ -315,6 +362,7 @@ int main(int argc, char * argv[])
     game->mainMenu = main_menu_init();
     game->deathMenu = death_menu_init();
     game->pauseMenu = pause_menu_init();
+    game->shopMenu = shop_menu_init();
 
     slog("press [escape] to quit");
 

@@ -3,6 +3,7 @@
 #include "gf2d_draw.h"
 #include "camera.h"
 #include "player.h"
+#include "simple_font.h"
 
 GenericMenu* menu_new() {
 	GenericMenu* menu;
@@ -139,7 +140,7 @@ GenericMenu* main_menu_init() {
 		return NULL;
 	}
 
-	self->menuType = MT_MAIN;
+	self->menuType = MENU_MAIN;
 
 	self->background = gf2d_sprite_load_all("images/ui/main/main_bg_sheet.png",2048,1228,4,false);
 	self->bgScale = gfc_vector2d(0.5859375, 0.5863192182);
@@ -188,7 +189,7 @@ GenericMenu* death_menu_init() {
 		return NULL;
 	}
 
-	self->menuType = MT_DEATH;
+	self->menuType = MENU_DEATH;
 	self->background = gf2d_sprite_load_image("images/ui/death/death_bg.png");
 	self->bgScale = gfc_vector2d(1, 1);
 
@@ -222,7 +223,7 @@ GenericMenu* pause_menu_init() {
 		return NULL;
 	}
 
-	self->menuType = MT_PAUSE;
+	self->menuType = MENU_PAUSE;
 	self->background = gf2d_sprite_load_image("images/ui/pause/pause_bg.png");
 	self->bgScale = gfc_vector2d(1, 1);
 
@@ -264,7 +265,7 @@ GenericMenu* pause_menu_init() {
 	return self;
 }
 
-void button_draw(Button* button, Uint8 dropShadow) {
+void button_draw(Button* button, Uint8 dropShadow, GFC_Color* color) {
 	Sprite* activeSprite;
 	GFC_Vector2D drawPos;
 	GFC_Rect shadow;
@@ -310,7 +311,7 @@ void button_draw(Button* button, Uint8 dropShadow) {
 			NULL,
 			NULL,
 			NULL,
-			NULL,
+			color,
 			NULL,
 			0);
 	}
@@ -320,6 +321,8 @@ void button_draw(Button* button, Uint8 dropShadow) {
 }
 
 void menu_draw(GenericMenu* menu) {
+	int i;
+
 	if (menu->background) {
 		gf2d_sprite_render(
 			menu->background,
@@ -332,11 +335,11 @@ void menu_draw(GenericMenu* menu) {
 			NULL,
 			menu->frame);
 	}
-	else if (menu->menuType == MT_PAUSE) {
+	else if (menu->menuType == MENU_PAUSE) {
 		gf2d_draw_rect_filled(gfc_rect(0, 0, 1200, 720), gfc_color8(0, 0, 0, 150));
 	}
 	switch (menu->menuType) {
-		case MT_MAIN:
+		case MENU_MAIN:
 			if (menu->Menu.start.title) {
 				gf2d_sprite_render(
 					menu->Menu.start.title,
@@ -349,30 +352,71 @@ void menu_draw(GenericMenu* menu) {
 					NULL,
 					0);
 			}
-			button_draw(&menu->Menu.start.startButton, 1);
-			button_draw(&menu->Menu.start.continueButton, 1);
-			button_draw(&menu->Menu.start.optionsButton, 1);
-			button_draw(&menu->Menu.start.quitButton, 1);
-			button_draw(&menu->Menu.start.extrasButton, 1);
-			button_draw(&menu->Menu.start.creditsButton, 1);
+			button_draw(&menu->Menu.start.startButton, 1, NULL);
+			button_draw(&menu->Menu.start.continueButton, 1, NULL);
+			button_draw(&menu->Menu.start.optionsButton, 1, NULL);
+			button_draw(&menu->Menu.start.quitButton, 1, NULL);
+			button_draw(&menu->Menu.start.extrasButton, 1, NULL);
+			button_draw(&menu->Menu.start.creditsButton, 1, NULL);
 			break;
 
-		case MT_DEATH:
-			button_draw(&menu->Menu.death.restartButton, 1);
-			button_draw(&menu->Menu.death.menuButton, 1);
+		case MENU_DEATH:
+			button_draw(&menu->Menu.death.restartButton, 1, NULL);
+			button_draw(&menu->Menu.death.menuButton, 1, NULL);
 			break;
-		case MT_PAUSE:
-			button_draw(&menu->Menu.pause.resumeButton,0);
-			button_draw(&menu->Menu.pause.menuButton,0);
-			button_draw(&menu->Menu.pause.optionsButton,0);
-			
+		case MENU_PAUSE:
+			button_draw(&menu->Menu.pause.resumeButton,0, NULL);
+			button_draw(&menu->Menu.pause.menuButton,0, NULL);
+			button_draw(&menu->Menu.pause.optionsButton,0, NULL);
+			break;
+		case MENU_SHOP:
+			for (i = 0; i < 3; i++) {
+				GFC_Vector2D itemPos;
+				GFC_Vector2D pricePos;
+				Sprite* itemSprite;
+				GFC_Color txtColor;
+				int cost;
+				char priceTxt[16];
+				ItemID id = menu->Menu.shop.stock[i];
+				Button* btn = &menu->Menu.shop.buyButton[i];
+				Font* font;
+
+				if (id == ITEM_NONE) {
+					GFC_Color color = gfc_color8(100, 100, 100, 255);
+					button_draw(btn, 0, &color);
+					continue;
+				}
+
+				button_draw(btn, 1, NULL);
+
+				itemPos = gfc_vector2d(btn->bounds.s.r.x + 50, btn->bounds.s.r.y - 80);
+				itemSprite = gf2d_sprite_load_image(get_item_sprite_path(id));
+
+				if (itemSprite) {
+					GFC_Vector2D scale = gfc_vector2d(0.25, 0.25);
+					gf2d_sprite_render(itemSprite, itemPos, &scale, NULL, NULL, NULL, NULL, NULL, 0);
+					gf2d_sprite_free(itemSprite);
+				}
+
+				cost = 25;
+				txtColor = (player_get_chips() >= cost) ? gfc_color8(0, 255, 0, 255) : gfc_color8(255, 0, 0, 255);
+				
+				sprintf(priceTxt, "$%d", cost);
+				pricePos = gfc_vector2d(btn->bounds.s.r.x + 70, btn->bounds.s.r.y - 30);
+				font = simple_font_load("fonts/minecraft.ttf", 25);
+				simple_font_draw(font, priceTxt, pricePos, gfc_color_to_sdl(txtColor));
+			}
+
+			button_draw(&menu->Menu.shop.rerollButton, 1, NULL);
+			button_draw(&menu->Menu.shop.leaveButton, 1, NULL);
+			break;
 	}
 }
 
 void menu_update(GenericMenu* menu) {
 	Uint8 anyHovered = 0;
 	switch (menu->menuType) {
-		case MT_MAIN:
+		case MENU_MAIN:
 			menu->frame += 0.075;
 			if (menu->frame >= 16) menu->frame = 0;
 			anyHovered |= button_update(&menu->Menu.start.startButton);
@@ -382,11 +426,11 @@ void menu_update(GenericMenu* menu) {
 			anyHovered |= button_update(&menu->Menu.start.extrasButton);
 			anyHovered |= button_update(&menu->Menu.start.creditsButton);
 			break;
-		case MT_DEATH:
+		case MENU_DEATH:
 			anyHovered |= button_update(&menu->Menu.death.restartButton);
 			anyHovered |= button_update(&menu->Menu.death.menuButton);
 			break;
-		case MT_PAUSE:
+		case MENU_PAUSE:
 			anyHovered |= button_update(&menu->Menu.pause.resumeButton);
 			anyHovered |= button_update(&menu->Menu.pause.menuButton);
 			anyHovered |= button_update(&menu->Menu.pause.optionsButton);
@@ -396,6 +440,7 @@ void menu_update(GenericMenu* menu) {
 }
 
 void menu_free(GenericMenu* self) {
+	int i;
 	if (!self) return;
 
 	if (self->background) {
@@ -403,7 +448,7 @@ void menu_free(GenericMenu* self) {
 	}
 
 	switch (self->menuType) {
-	case MT_MAIN:
+	case MENU_MAIN:
 		if(self->Menu.start.title) gf2d_sprite_free(self->Menu.start.title);
 		button_free(&self->Menu.start.startButton);
 		button_free(&self->Menu.start.continueButton);
@@ -412,14 +457,21 @@ void menu_free(GenericMenu* self) {
 		button_free(&self->Menu.start.extrasButton);
 		button_free(&self->Menu.start.creditsButton);
 		break;
-	case MT_DEATH:
+	case MENU_DEATH:
 		button_free(&self->Menu.death.restartButton);
 		button_free(&self->Menu.death.menuButton);
 		break;
-	case MT_PAUSE:
+	case MENU_PAUSE:
 		button_free(&self->Menu.pause.resumeButton);
 		button_free(&self->Menu.pause.menuButton);
 		button_free(&self->Menu.pause.optionsButton);
+		break;
+	case MENU_SHOP:
+		for (i = 0; i < 3; i++) {
+			button_free(&self->Menu.shop.buyButton[i]);
+		}
+		button_free(&self->Menu.shop.rerollButton);
+		button_free(&self->Menu.shop.leaveButton);
 		break;
 	}
 	free(self);
@@ -557,5 +609,128 @@ float get_cooldown_percent(Uint32 timeAt, Uint32 cooldown) {
 		return 1.0 - ((float)(currentTime - timeAt) / ((float)cooldown));
 	}
 }
+
+GenericMenu* shop_menu_init() {
+	GFC_Vector2D buttonPos;
+	int i;
+	GenericMenu* menu = menu_new();
+	GFC_Vector2D scale;
+	GFC_Vector2D maxScale;
+	float scaleAmount;
+
+	if (!menu) return;
+	menu->menuType = MENU_SHOP;
+
+	menu->background = gf2d_sprite_load_all("images/ui/shop/shop_background.png",1200, 700,7,false);
+	menu->bgScale = gfc_vector2d(1, 1);
+
+	scale = gfc_vector2d(0.2, 0.2);
+	maxScale.x = scale.x + 0.005;
+	maxScale.y = scale.y + 0.005;
+	scaleAmount = 0.01;
+
+	buttonPos = gfc_vector2d(50, 550);
+	button_init(&menu->Menu.shop.leaveButton, "images/ui/shop/shop_leave.png", "images/ui/shop/shop_leave.png", buttonPos, ST_RECT, 0);
+	menu->Menu.shop.leaveButton.scale = scale;
+	menu->Menu.shop.leaveButton.defaultScale = scale;
+	menu->Menu.shop.leaveButton.maxScale = maxScale;
+	menu->Menu.shop.leaveButton.scaleAmount = scaleAmount;
+
+	menu->Menu.shop.leaveButton.bounds = gfc_shape_rect(buttonPos.x, buttonPos.y, menu->Menu.shop.leaveButton.spriteWidth * scale.x, menu->Menu.shop.leaveButton.spriteHeight * scale.y);
+
+	buttonPos.x += 250;
+	button_init(&menu->Menu.shop.rerollButton, "images/ui/shop/shop_reroll.png", "images/ui/shop/shop_reroll.png", buttonPos, ST_RECT, 0);
+	menu->Menu.shop.rerollButton.scale = scale;
+	menu->Menu.shop.rerollButton.maxScale = maxScale;
+	menu->Menu.shop.rerollButton.scaleAmount = scaleAmount;
+	menu->Menu.shop.rerollButton.defaultScale = scale;
+
+	menu->Menu.shop.rerollButton.bounds = gfc_shape_rect(buttonPos.x, buttonPos.y, menu->Menu.shop.rerollButton.spriteWidth * scale.x, menu->Menu.shop.rerollButton.spriteHeight * scale.y);
+
+	buttonPos = gfc_vector2d(45, 350);
+	scale = gfc_vector2d(0.1, 0.1);
+	maxScale.x = scale.x += 0.005;
+	maxScale.y = scale.y += 0.005;
+	for (i = 0; i < 3; i++) {
+		button_init(&menu->Menu.shop.buyButton[i], "images/ui/shop/shop_buy.png", "images/ui/shop/shop_buy.png", buttonPos, ST_RECT, 0);
+		menu->Menu.shop.buyButton[i].scale = scale;
+		menu->Menu.shop.buyButton[i].maxScale = maxScale;
+		menu->Menu.shop.buyButton[i].scaleAmount = scaleAmount;
+		menu->Menu.shop.buyButton[i].defaultScale = scale;
+
+		menu->Menu.shop.buyButton[i].bounds = gfc_shape_rect(buttonPos.x, buttonPos.y, menu->Menu.shop.buyButton[i].spriteWidth * scale.x, menu->Menu.shop.buyButton[i].spriteHeight * scale.y);
+
+
+		menu->Menu.shop.stock[i] = get_random_item_id(ITEM);
+		menu->Menu.shop.costs[i] = 25;
+
+		buttonPos.x += 150;
+	}
+
+	menu->Menu.shop.rerollsLeft = 3;
+	menu->Menu.shop.rerollCost = 10;
+
+	return menu;
+}
+
+void shop_menu_reroll(GenericMenu* menu) {
+	int i;
+	if (!menu) return;
+
+	if (menu->Menu.shop.rerollButton.clicked && (player_get_chips() >= menu->Menu.shop.rerollCost) && (menu->Menu.shop.rerollsLeft > 0)) {
+		player_mod_chips(-menu->Menu.shop.rerollCost);
+		menu->Menu.shop.rerollsLeft--;
+		menu->Menu.shop.rerollCost *= 1.2;
+
+		for (i = 0; i < 3; i++) {
+			menu->Menu.shop.stock[i] = get_random_item_id(ITEM);
+		}
+
+		slog("SHOP: Rerolled");
+	}
+	return;
+}
+
+void shop_menu_buy(GenericMenu* menu, int index) {
+	ItemID id = menu->Menu.shop.stock[index];
+	int cost = 25;
+
+	if (!menu || index < 0 || index > 2) return;
+
+	if (player_get_chips() >= cost) {
+		player_mod_chips(-cost);
+		player_add_item(id);
+
+		menu->Menu.shop.stock[index] = ITEM_NONE;
+		slog("SHOP: ka-ching");
+	}
+	else {
+		slog("SHOP: broke");
+	}
+
+	return;
+}
+
+void shop_menu_update(GenericMenu* menu) {
+	int i;
+	if (!menu || menu->menuType != MENU_SHOP) return;
+
+	menu->frame += 0.1;
+	if (menu->frame >= 45) menu->frame = 0;
+
+	button_update(&menu->Menu.shop.leaveButton);
+	button_update(&menu->Menu.shop.rerollButton);
+	for (i = 0; i < 3; i++) {
+		button_update(&menu->Menu.shop.buyButton[i]);
+		if (menu->Menu.shop.buyButton[i].clicked) {
+			shop_menu_buy(menu, i);
+		}
+	}
+	if (menu->Menu.shop.rerollButton.clicked) {
+		shop_menu_reroll(menu);
+	}
+}
+
+
 
 /*eol@eof*/

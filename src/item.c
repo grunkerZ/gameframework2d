@@ -138,6 +138,24 @@ Item* item_new() {
 	return NULL;
 }
 
+const char* get_item_sprite_path(ItemID id) {
+	switch (id) {
+	case PICKUP_SHIELD_HALF: return "images/placeholder/shield_half.png";
+	case PICKUP_SHIELD: return "images/placeholder/shield.png";
+	case PICKUP_LIFE_HALF: return "images/placeholder/life_half.png";
+	case PICKUP_LIFE: return "images/placeholder/life.png";
+	case PICKUP_CHIP: return "images/ui/chip.png";
+	case ITEM_HAIR_TRIGGER: return "images/items/hair_trigger.png";
+	case ITEM_COMBAT_BOOTS: return "images/items/combat_boots.png";
+	case ITEM_COMMANDO_BANDANA: return "images/items/commando_bandana.png";
+	case ITEM_REINFORCED_RIBCAGE: return"images/items/reinforced_ribcage.png";
+	case ITEM_SULFUR_TIPPED_ROUNDS: return "images/items/sulfur_tipped_rounds.png";
+	case ITEM_LEAD_HALO: return "images/items/lead_halo.png";
+	case ITEM_FORBIDDEN_KNOWLEDGE: return "images/items/forbidden_knowledge.png";
+	default: return "images/missing.png";
+	}
+}
+
 Item* item_create(ItemID id) {
 	Item* self = item_new();
 	if (!self) return NULL;
@@ -145,54 +163,44 @@ Item* item_create(ItemID id) {
 	*self = itemManager->itemList[id];
 
 	self->scale = gfc_vector2d(0.25, 0.25);
+	self->sprite = gf2d_sprite_load_image(get_item_sprite_path(id));
+
 
 	switch (id) {
 	case PICKUP_SHIELD_HALF:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/shield_half.png");
 		self->presentTime = 0;
 		break;
 	case PICKUP_SHIELD:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/shield.png");
 		self->presentTime = 0;
 		break;
 	case PICKUP_LIFE_HALF:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/life_half.png");
 		self->presentTime = 0;
 		break;
 	case PICKUP_LIFE:
-		self->sprite = gf2d_sprite_load_image("images/placeholder/life.png");
 		self->presentTime = 0;
 		break;
 	case PICKUP_CHIP:
-		self->sprite = gf2d_sprite_load_image("images/ui/chip.png");
 		self->presentTime = 0;
 		break;
 	case ITEM_HAIR_TRIGGER:
-		self->sprite = gf2d_sprite_load_image("images/items/hair_trigger.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_COMBAT_BOOTS:
-		self->sprite = gf2d_sprite_load_image("images/items/combat_boots.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_COMMANDO_BANDANA:
-		self->sprite = gf2d_sprite_load_image("images/items/commando_bandana.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_REINFORCED_RIBCAGE:
-		self->sprite = gf2d_sprite_load_image("images/items/reinforced_ribcage.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_SULFUR_TIPPED_ROUNDS:
-		self->sprite = gf2d_sprite_load_image("images/items/sulfur_tipped_rounds.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_LEAD_HALO:
-		self->sprite = gf2d_sprite_load_image("images/items/lead_halo.png");
 		self->presentTime = 4000;
 		break;
 	case ITEM_FORBIDDEN_KNOWLEDGE:
-		self->sprite = gf2d_sprite_load_image("images/items/forbidden_knowledge.png");
 		self->presentTime = 4000;
 		break;
 	}
@@ -376,6 +384,10 @@ void spawn_random_chest_loot(GFC_Vector2D position) {
 
 	Item* item = item_create(id);
 	if (item) item->position = position;
+}
+
+void get_random_item_id_from_pool(ItemPool pool) {
+
 }
 
 /*eol@eof*/

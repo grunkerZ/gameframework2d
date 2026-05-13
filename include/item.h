@@ -28,6 +28,16 @@ typedef enum {
 	ITEM_MAX,
 }ItemID;
 
+typedef enum {
+	POOL_NONE,
+	POOL_CHEST,
+	POOL_MONSTERDROP,
+	POOL_BOSSDROP,
+	POOL_SHOP,
+	POOL_CLEAR,
+	POOL_END
+}ItemPool;
+
 typedef struct {
 	Uint8			_inuse;								//1 if the item is in use, 0 otherwise
 	Uint8			id;									//the enum id of the item
@@ -132,5 +142,18 @@ ItemID get_random_item_id(ItemID type);
 * @param position the position to spawn the loot
 */
 void spawn_random_chest_loot(GFC_Vector2D position);
+
+/*
+* @brief get a random item id from a item pool
+* @param pool the item pool to grab from
+*/
+void get_random_item_id_from_pool(ItemPool pool);
+
+/*
+* @brief gets the sprite path for an object
+* @param id the item id the path belongs to
+* @returns the filepath, or missing if no path exists
+*/
+const char* get_item_sprite_path(ItemID id);
 
 #endif //__ITEM_H__

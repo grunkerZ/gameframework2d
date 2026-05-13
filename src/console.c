@@ -10,6 +10,7 @@
 #include "simple_font.h"
 #include "gf2d_draw.h"
 #include "hazards.h"
+#include "map_object.h"
 
 static int _open = 0;
 static GFC_String* consoleText;
@@ -128,6 +129,9 @@ void console_execute(const char* cmd_line) {
 			else {
 				slog("unknown hazard: '%s'", args[2]);
 			}
+		}
+		else if (argc >= 2 && strcmp(args[1], "obj") == 0) {
+			if (strcmp(args[2], "shop") == 0) obj_spawn_shop(position);
 		}
 	}
 	else if (strcmp(args[0], "give") == 0) {

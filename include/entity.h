@@ -15,6 +15,7 @@ typedef enum {
 	ET_PROJECTILE,
 	ET_DOOR,
 	ET_HAZARD,
+	ET_OBJECT,
 	ET_END
 }EntityType;
 

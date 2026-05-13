@@ -84,6 +84,7 @@ typedef struct Floor_S{
 	Uint32			seed;				//the seed for randomness
 	Uint32			width;				//the width of the floor map
 	Uint32			height;				//the height of the floor map
+	Uint8			numShopRooms;
 }Floor;
 
 
@@ -372,5 +373,17 @@ TileType tile_type_at(GFC_Vector2D position);
 * @brief updates the game world
 */
 void world_update();
+
+/*
+* @brief checks if the room is clear
+* @returns 1 if the room is clear of enemies, 0 if not
+*/
+Uint8 room_is_clear();
+
+/*
+* @brief spawns a room clear reward at a position
+* @param position the position to spawn the reward
+*/
+void spawn_room_reward(GFC_Vector2D position);
 
 #endif // !__WORLD_H__

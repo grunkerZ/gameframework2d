@@ -803,6 +803,20 @@ int player_get_health() {
 	return ((PlayerData*)player->data)->stats.health;
 }
 
+int player_get_chips() {
+	return ((PlayerData*)player->data)->stats.chips;
+}
+
+void player_mod_chips(int mod) {
+	((PlayerData*)player->data)->stats.chips += mod;
+	return;
+}
+
+void player_add_item(ItemID item) {
+	((PlayerData*)player->data)->inventory[item]++;
+	player_calculate_stats(get_player_entity());
+	return;
+}
 
 
 

@@ -3,7 +3,8 @@
 
 	#include "gfc_shape.h"
 	#include "gf2d_sprite.h"
-	#include "Entity.h"
+	#include "entity.h"
+	#include "item.h"
 
 	typedef struct {
 		GFC_Shape		bounds;				//the bounds of the button
@@ -50,10 +51,24 @@
 		Button		menuButton;			//return to main menu
 	}PauseMenu;
 
+	typedef struct {
+		Button	buyButton[3];
+		Button	rerollButton;
+		Button	leaveButton;
+		ItemID	stock[3];
+		Uint32	costs[3];
+		int		rerollCost;
+		Uint8	rerollsLeft;
+		Uint8	soldOut;
+	}ShopMenu;
+
 	typedef enum {
-		MT_MAIN,
-		MT_DEATH,
-		MT_PAUSE
+		MENU_NONE,
+		MENU_MAIN,
+		MENU_DEATH,
+		MENU_PAUSE,
+		MENU_SHOP,
+		MENU_END
 	}MenuType;
 
 	typedef struct {
@@ -67,6 +82,7 @@
 			MainMenu	start;
 			DeathMenu	death;
 			PauseMenu	pause;
+			ShopMenu	shop;
 		}Menu;
 	}GenericMenu;
 
@@ -155,7 +171,7 @@
 	* @brief frees previously allocated button
 	* @param button the button to free
 	*/
-	void button_draw(Button* button);
+	void button_draw(Button* button, Uint8 dropShadow);
 
 	/*
 	* @brief draws the mouse to the screen
@@ -193,5 +209,17 @@
 	* @returns the percent cooled down an ability is
 	*/
 	float get_cooldown_percent(Uint32 timeAt, Uint32 cooldown);
+
+	/*
+	* @brief init the shop menu
+	* @param menu the menu pointer to init
+	*/
+	GenericMenu* shop_menu_init();
+
+	/*
+	* @brief updates the shop menu
+	* @param menu the menu to update
+	*/
+	void shop_menu_update(GenericMenu* menu);
 
 	#endif //SIMPLE_UI_H__

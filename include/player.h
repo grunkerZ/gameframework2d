@@ -156,4 +156,23 @@ int player_get_health();
 */
 void player_def_load(const char* filename);
 
+/*
+* @brief get the amount of chips the player has
+* @returns the amount of chips the player has
+*/
+int player_get_chips();
+
+/*
+* @brief add or remove chips from the player
+* @param mod the amount to add/remove
+*/
+void player_mod_chips(int mod);
+
+/*
+* @brief add an item to the players inventory
+* @param item the item id to add
+*/
+void player_add_item(ItemID item);
+
+
 #endif // !__PLAYER_H__

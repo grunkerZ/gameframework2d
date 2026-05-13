@@ -5,6 +5,7 @@
 #include "monster.h"
 #include "item.h"
 #include "player.h"
+#include "map_object.h"
 
 /*
 * ===================
@@ -46,6 +47,8 @@ Floor* floor_create(Uint8 complexity, Uint8 difficulty, Uint8 specialRooms, Uint
 	else {
 		floor->numItemRooms = 0;
 	}
+
+	floor->numShopRooms = 1;
 
 	floor->blueprint = gfc_allocate_array(sizeof(Uint8), floor->width * floor->height);
 	floor->floorMap = gfc_allocate_array(sizeof(Stage*), floor->width * floor->height);
@@ -163,10 +166,23 @@ Stage** floor_generate(Floor* floor) {
 		int index = rand() % itemCandidates;
 		GFC_Vector2I pos = itemSpots[index];
 
-		slog("Placing Special Rooms...");
+		slog("Placing Item Rooms...");
 
 		floor->blueprint[floor_get_room_index(floor, pos.x, pos.y)] = RT_ITEM;
 		floor->numItemRooms--;
+
+		itemSpots[index] = itemSpots[itemCandidates - 1];
+		itemCandidates--;
+	}
+
+	while (floor->numShopRooms > 0 && itemCandidates > 0) {
+		int index = rand() % itemCandidates;
+		GFC_Vector2I pos = itemSpots[index];	
+
+		slog("Placing Shop Rooms...");
+
+		floor->blueprint[floor_get_room_index(floor, pos.x, pos.y)] = RT_SHOP;
+		floor->numShopRooms--;
 
 		itemSpots[index] = itemSpots[itemCandidates - 1];
 		itemCandidates--;
@@ -187,6 +203,7 @@ Stage** floor_generate(Floor* floor) {
 			else if (floor->blueprint[i] == RT_STANDARD) filename = "maps/standard/standard1.map";
 			else if (floor->blueprint[i] == RT_EXIT) filename = "maps/exit/exit1.map";
 			else if (floor->blueprint[i] == RT_ITEM) filename = "maps/item/item1.map";
+			else if (floor->blueprint[i] == RT_SHOP) filename = "maps/shop/shop1.map";
 			stage = stage_create(floor, NULL, gridPos, filename);
 			floor->floorMap[i] = stage;
 
@@ -760,6 +777,9 @@ Stage* stage_create(Floor* floor, Room* room, GFC_Vector2I gridPos, const char* 
 	if (stage->type == RT_ITEM) {
 		stage->cleared = 1;
 	}
+	if (stage->type == RT_SHOP) {
+		stage->cleared = 1;
+	}
 
 	if (floor_get_room_type(floor, gridPos.x, gridPos.y - 1) != RT_EMPTY && floor_get_room_type(floor, gridPos.x, gridPos.y - 1) != RT_SECRET) stage->doors |= DOOR_NORTH;
 	else if (floor_get_room_type(floor, gridPos.x, gridPos.y - 1) == RT_SECRET) stage->doors |= DOOR_NORTH_HIDDEN;
@@ -933,6 +953,13 @@ void load_stage(Floor* floor, Stage* stage) {
 
 	stage_make_doors(floor, stage);
 
+	if (stage->type == RT_SHOP) {
+		GFC_Vector2I center;
+		center.x = stage->room->width / 2;
+		center.y = stage->room->height - 2;
+		obj_spawn_shop(grid_to_world(center));
+	}
+
 	if (!stage->cleared) {
 		room_spawn_monsters(stage);
 	}
@@ -1008,6 +1035,10 @@ void free_world(Floor* floor) {
 		}
 	}
 	floor_free(floor);
+
+	activeRoom = NULL;
+
+	return;
 }
 
 GFC_Vector2I get_door_position(Room* room, Doors side) {

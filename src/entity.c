@@ -225,9 +225,31 @@ void entity_manager_think_all() {
 
 
 void entity_manager_update_all() {
+	Entity* self;
+	Entity* other;
+	GFC_Vector2D bounce;
 	int i;
 	for (i = 0; i < entityManager.entityMax; i++) {
-		if (!entityManager.entityList[i]._inuse) continue;
+		self = &entityManager.entityList[i];
+		if (!self || !self->_inuse || self->immovable) continue;
+
+		other = check_entity_collision(self);
+
+		if (other && other->type != ET_PROJECTILE && self->type != ET_PROJECTILE) {
+			gfc_vector2d_sub(bounce, self->centerPos, other->centerPos);
+
+			if (gfc_vector2d_magnitude(bounce) < 0.1) bounce = gfc_vector2d(1, 0);
+
+			gfc_vector2d_normalize(&bounce);
+			gfc_vector2d_scale(bounce, bounce, 2);
+			gfc_vector2d_add(self->knockback, self->knockback, bounce);
+
+			if (!other->immovable) {
+				gfc_vector2d_scale(bounce, bounce, -1);
+				gfc_vector2d_add(other->knockback, other->knockback, bounce);
+			}
+		}
+
 		entity_update(&entityManager.entityList[i]);
 		entity_update_grid_position( &entityManager.entityList[i], get_active_room());
 	}
@@ -530,9 +552,6 @@ void entity_hit(Entity* self, Entity* attacker, Uint8 damage) {
 		gfc_vector2d_scale(self->knockback, bounce, 3);
 		self->stun = 250;
 		self->timeAtStun = SDL_GetTicks64();
-	}
-	else {
-		gfc_vector2d_scale(self->knockback, bounce, 1);
 	}
 
 	if (self->hit)self->hit(self,attacker, damage);
