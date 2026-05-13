@@ -44,6 +44,51 @@ typedef struct {
 	Uint8			beamHit;
 }BeamData;
 
+typedef struct {
+	int				health;
+	float			explosionRadius;
+	Uint8			exploded;
+}BarrelData;
+
+typedef struct {
+	Uint32			cooldown;
+	Uint32			timeAtJump;
+	Uint8			bouncing;
+}JumpPadData;
+
+typedef enum {
+	SF_ATTACHED,
+	SF_SHAKING,
+	SF_FALLING,
+	SF_IMPACT,
+	SF_END
+}SpikeFallState;
+
+typedef struct {
+	float			fallChance;
+	Uint32			lastRollTime;
+	SpikeFallState	state;
+	Uint32			stateStartTime;
+}FallingSpikeData;
+
+typedef enum {
+	DP_STABLE,
+	DP_CRUMBLING,
+	DP_GONE,
+	DP_END
+}DecayingState;
+
+typedef struct {
+	Uint32			timeAtTrigger;
+	Uint32			timeAtGone;
+	Uint32			decayTime;
+	Uint32			respawnTime;
+	DecayingState	state;
+}DecayingPlatformData;
+
+typedef struct {
+	Uint8 opening;
+}ChestData;
 
 /*
 * @brief spawns a spike hazard
@@ -62,5 +107,40 @@ Entity* hazard_spike_spawn(Entity* owner, GFC_Vector2D position, Uint32 delay);
 * @return NULL on error, otherwise the spawned beam
 */
 Entity* hazard_beam_spawn(Entity* owner, Uint32 duration, float maxLength);
+
+/*
+* @brief spawns an explosive barrel
+* @param position the position to spawn it at
+* @returns NULL on error, otherwise the spawned hazard
+*/
+Entity* hazard_barrel_spawn(GFC_Vector2D position);
+
+/*
+* @brief spawns a jump pad
+* @param position the position to spawn it at
+* @returns NULL on error, otherwise the spawned hazard
+*/
+Entity* hazard_jump_pad_spawn(GFC_Vector2D position);
+
+/*
+* @brief spawns a falling spike hazard
+* @param position the position to spawn it at
+* @returns NULL on error, otherwise the spawned hazard
+*/
+Entity* hazard_spike_fall_spawn(GFC_Vector2D position);
+
+/*
+* @brief spawns a decaying platform
+* @param position the position to spawn it at
+* @returns NULL on error, otherwise the spawned hazard
+*/
+Entity* hazard_decaying_platform_spawn(GFC_Vector2D position);
+
+/*
+* @brief spawns a chest hazard
+* @param position the position to spawn it
+* @returns NULL on error, otherwise the spawned hazard
+*/
+Entity* hazard_chest_spawn(GFC_Vector2D position);
 
 #endif //__HAZARDS_H__

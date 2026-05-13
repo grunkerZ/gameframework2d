@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include "simple_font.h"
 #include "gf2d_draw.h"
+#include "hazards.h"
 
 static int _open = 0;
 static GFC_String* consoleText;
@@ -97,22 +98,35 @@ void console_execute(const char* cmd_line) {
 
 		if(argc >=3 && strcmp(args[1], "monster")==0) {
 			if (strcmp(args[2], "damned") == 0) {
-				monster_spawn(MT_DAMNED, position);
+				monster_spawn_by_name(args[2], position);
 			}
 			else if (strcmp(args[2], "fiend") == 0) {
-				monster_spawn(MT_FIEND, position);
+				monster_spawn_by_name(args[2], position);
 			}
 			else if (strcmp(args[2], "imp") == 0) {
-				monster_spawn(MT_IMP, position);
+				monster_spawn_by_name(args[2], position);
 			}
 			else if (strcmp(args[2], "hellhound") == 0) {
-				monster_spawn(MT_HELLHOUND, position);
+				monster_spawn_by_name(args[2], position);
 			}
 			else if (strcmp(args[2], "repenter") == 0) {
-				monster_spawn(MT_REPENTER, position);
+				monster_spawn_by_name(args[2], position);
+			}
+			else if (strcmp(args[2], "mimic") == 0) {
+				monster_spawn_by_name(args[2], position);
 			}
 			else {
 				slog("unknown monster: '%s'", args[2]);
+			}
+		}
+		else if (argc >= 2 && strcmp(args[1], "hazard") == 0) {
+			if (strcmp(args[2], "barrel") == 0) hazard_barrel_spawn(position);
+			else if (strcmp(args[2], "pad") == 0) hazard_jump_pad_spawn(position);
+			else if (strcmp(args[2], "spike") == 0) hazard_spike_fall_spawn(position);
+			else if (strcmp(args[2], "decay") == 0) hazard_decaying_platform_spawn(position);
+			else if (strcmp(args[2], "chest") == 0) hazard_chest_spawn(position);
+			else {
+				slog("unknown hazard: '%s'", args[2]);
 			}
 		}
 	}

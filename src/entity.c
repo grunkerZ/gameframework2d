@@ -9,6 +9,8 @@
 
 #define CLAMP(x,min,max) ((x)<(min) ? (min) : ((x)> (max) ? (max) : (x)))
 
+Uint8 entity_check_solids(GFC_Vector2D position, Entity* self);
+
 // ================================================
 //
 //	ENTITY MANAGER FUNCTIONS
@@ -180,12 +182,18 @@ void entity_update(Entity* self) {
 		self->knockback.y = 0;
 	}
 
-	gfc_vector2d_add(self->position, self->position, self->velocity);
-	gfc_vector2d_add(self->position, self->position, self->knockback);
+	if (self->immovable) self->velocity.x = 0;
+	if (self->immovable && !self->gravity) self->velocity.y = 0;
 
-	gfc_vector2d_scale(self->knockback, self->knockback, 0.9);
-	if (gfc_vector2d_magnitude(self->knockback) < 0.1) {
-		self->knockback = gfc_vector2d(0, 0);
+	gfc_vector2d_add(self->position, self->position, self->velocity);
+
+	if(!self->immovable) {
+		gfc_vector2d_add(self->position, self->position, self->knockback);
+
+		gfc_vector2d_scale(self->knockback, self->knockback, 0.9);
+		if (gfc_vector2d_magnitude(self->knockback) < 0.1) {
+			self->knockback = gfc_vector2d(0, 0);
+		}
 	}
 
 	if (self->left) self->flip.x = (self->forward.x > 0) ? 1 : 0;
@@ -221,7 +229,7 @@ void entity_manager_update_all() {
 	for (i = 0; i < entityManager.entityMax; i++) {
 		if (!entityManager.entityList[i]._inuse) continue;
 		entity_update(&entityManager.entityList[i]);
-		entity_update_grid_position( &entityManager.entityList[i]);
+		entity_update_grid_position( &entityManager.entityList[i], get_active_room());
 	}
 }
 
@@ -259,11 +267,30 @@ void entity_manager_draw_all(Uint8 debug) {
 
 void clear_stage() {
 	int i;
+	Entity* player;
+	Room* room = get_active_room();
+
+	if (room && room->entityGrid) {
+		for (i = 0; i < (room->width * room->height); i++) {
+			if (room->entityGrid[i]) {
+				gfc_list_clear(room->entityGrid[i]);
+			}
+		}
+	}
+
 	for (i = 0; i < entityManager.entityMax; i++) {
 		if (!entityManager.entityList[i]._inuse) continue;
 		if (entityManager.entityList[i].type == ET_PLAYER) continue;
 		entity_free(&entityManager.entityList[i]);
 	}
+
+	player = get_player_entity();
+
+	if (player && room) {
+		entity_update_grid_position(player, room);
+	}
+
+	return;
 }
 
 
@@ -332,7 +359,7 @@ CollisionInfo check_map_collision(Entity* self) {
 		nextPos.x = self->collision.s.c.x + totalVelocity.x;
 		nextPos.y = self->collision.s.c.y + totalVelocity.y;
 		
-		if (tile_at(nextPos) != 0) {
+		if (tile_at(nextPos) != 0 || entity_check_solids(nextPos, self)) {
 			gridPos = world_to_grid(nextPos);
 			tilePos_x = gridPos.x * tileDim.x;
 			tilePos_y = gridPos.y * tileDim.y;
@@ -358,14 +385,20 @@ CollisionInfo check_map_collision(Entity* self) {
 		
 		if (totalVelocity.x > 0) {
 			check_x = nextPos.x + bounds.w;
-			if (tile_at(gfc_vector2d(check_x, bounds.y+buffer)) != 0 || tile_at(gfc_vector2d(check_x, bounds.y + bounds.h - buffer)) != 0) {
+
+			//slog("MAP COLLISION: Checking X-Right at %f | Velocity: %f", check_x, totalVelocity.x);
+
+			if (tile_at(gfc_vector2d(check_x, bounds.y+buffer)) != 0 || entity_check_solids(gfc_vector2d(check_x, bounds.y + buffer), self) || tile_at(gfc_vector2d(check_x, bounds.y + bounds.h - buffer)) != 0 || entity_check_solids(gfc_vector2d(check_x, bounds.y + bounds.h - buffer), self)) {
 				info.right = 1;
 				info.collided = 1;
 			}
 		}
 		else {
 			check_x = nextPos.x;
-			if (tile_at(gfc_vector2d(check_x, bounds.y + buffer)) != 0 || tile_at(gfc_vector2d(check_x, bounds.y + bounds.h - buffer)) != 0) {
+
+			//slog("MAP COLLISION: Checking X-Left at %f | Velocity: %f", check_x, totalVelocity.x);
+
+			if (tile_at(gfc_vector2d(check_x, bounds.y + buffer)) != 0 || entity_check_solids(gfc_vector2d(check_x, bounds.y + buffer), self) || tile_at(gfc_vector2d(check_x, bounds.y + bounds.h - buffer)) != 0 || entity_check_solids(gfc_vector2d(check_x, bounds.y + bounds.h - buffer), self)) {
 				info.left = 1;
 				info.collided = 1;
 			}
@@ -379,14 +412,20 @@ CollisionInfo check_map_collision(Entity* self) {
 
 		if (totalVelocity.y > 0) {
 			check_y = nextPos.y + bounds.h;
-			if (tile_at(gfc_vector2d(bounds.x + buffer, check_y)) != 0 || tile_at(gfc_vector2d(bounds.x + bounds.w - buffer, check_y)) != 0) {
+
+			//slog("MAP COLLISION: Checking Y-Top at %f | Velocity: %f", check_y, totalVelocity.y);
+
+			if (tile_at(gfc_vector2d(bounds.x + buffer, check_y)) != 0 || entity_check_solids(gfc_vector2d(bounds.x + buffer, check_y), self) || tile_at(gfc_vector2d(bounds.x + bounds.w - buffer, check_y)) != 0 || entity_check_solids(gfc_vector2d(bounds.x + bounds.w - buffer, check_y), self)) {
 				info.bottom = 1;
 				info.collided = 1;
 			}
 		}
 		else {
 			check_y = nextPos.y;
-			if (tile_at(gfc_vector2d(bounds.x + buffer, check_y)) != 0 || tile_at(gfc_vector2d(bounds.x + bounds.w - buffer, check_y)) != 0) {
+
+			//slog("MAP COLLISION: Checking Y-Bottom at %f | Velocity: %f", check_y, totalVelocity.y);
+
+			if (tile_at(gfc_vector2d(bounds.x + buffer, check_y)) != 0 || entity_check_solids(gfc_vector2d(bounds.x + buffer, check_y), self) || tile_at(gfc_vector2d(bounds.x + bounds.w - buffer, check_y)) != 0 || entity_check_solids(gfc_vector2d(bounds.x + bounds.w - buffer, check_y), self)) {
 				info.top = 1;
 				info.collided = 1;
 			}
@@ -407,8 +446,7 @@ void set_center(Entity* self, GFC_Vector2D center) {
 }
 
 
-void entity_update_grid_position(Entity* self) {
-	Room* room = get_active_room();
+void entity_update_grid_position(Entity* self, Room* room) {
 	GFC_Vector2I topLeft, bottomRight;
 	int i, j;
 
@@ -597,6 +635,47 @@ Uint8 entity_is_on_screen(Entity* self) {
 	bounds = gfc_rect(camPos.x, camPos.y, camDim.x, camDim.y);
 
 	return gfc_rect_overlap(bounds, gfc_rect(self->position.x, self->position.y, self->width, self->height));
+}
+
+Uint8 is_solid(Entity* self) {
+	return self->solid;
+}
+
+Uint8 entity_check_solids(GFC_Vector2D position, Entity* self) {
+	int i;
+	Entity* other;
+
+	for (i = 0; i < entityManager.entityMax; i++) {
+		other = &entityManager.entityList[i];
+		if (!other->_inuse || other == self || !is_solid(other)) continue;
+
+		if (is_solid(other)) {
+			if (gfc_point_in_rect(position, other->collision.s.r)) {
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
+Entity* get_closest_interactable(GFC_Vector2D position, float maxRange) {
+	int i;
+	Entity* closest = NULL;
+	for (i = 0; i < entityManager.entityMax; i++) {
+		if (!entityManager.entityList[i]._inuse || !entityManager.entityList[i].interaction) continue;
+		if (maxRange) {
+			if (!gfc_vector2d_distance_between_less_than(entityManager.entityList[i].centerPos, position, maxRange)) continue;
+		}
+
+		if (!closest) closest = &entityManager.entityList[i];
+		else if (gfc_vector2d_magnitude_between(entityManager.entityList[i].centerPos, position) < gfc_vector2d_magnitude_between(closest->centerPos, position)) {
+			closest = &entityManager.entityList[i];
+		}
+
+	}
+
+	return closest;
 }
 
 /*eol@eof*/

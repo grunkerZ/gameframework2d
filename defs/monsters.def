@@ -6,6 +6,7 @@
 		"defs/monsters/imp.def",
 		"defs/monsters/fiend.def",
 		"defs/monsters/hellhound.def",
-		"defs/monsters/repenter.def"
+		"defs/monsters/repenter.def",
+		"defs/monsters/mimic.def"
 	]
 }

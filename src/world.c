@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "monster.h"
 #include "item.h"
+#include "player.h"
 
 /*
 * ===================
@@ -796,6 +797,7 @@ void stage_make_doors(Floor* floor, Stage* stage) {
 		slog("target index: %i", targetIndex);
 		door = door_new(DOOR_NORTH, targetIndex, grid_to_world(stage->room->doorPosition[0]));
 		slog("new door successfully made");
+		entity_update_grid_position(door, stage->room);
 	}
 	if (stage->doors & DOOR_SOUTH) {
 		slog("Attempting to carve south door");
@@ -803,6 +805,7 @@ void stage_make_doors(Floor* floor, Stage* stage) {
 		stage->room->tileMap[index] = RT_EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x, stage->gridPos.y + 1);
 		door = door_new(DOOR_SOUTH, targetIndex, grid_to_world(stage->room->doorPosition[1]));
+		entity_update_grid_position(door, stage->room);
 	}
 	if (stage->doors & DOOR_EAST) {
 		slog("Attempting to carve east door");
@@ -810,6 +813,7 @@ void stage_make_doors(Floor* floor, Stage* stage) {
 		stage->room->tileMap[index] = RT_EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x + 1, stage->gridPos.y);
 		door = door_new(DOOR_EAST, targetIndex, grid_to_world(stage->room->doorPosition[2]));
+		entity_update_grid_position(door, stage->room);
 	}
 	if (stage->doors & DOOR_WEST) {
 		slog("Attempting to carve west door");
@@ -817,58 +821,127 @@ void stage_make_doors(Floor* floor, Stage* stage) {
 		stage->room->tileMap[index] = RT_EMPTY;
 		targetIndex = floor_get_room_index(floor, stage->gridPos.x - 1, stage->gridPos.y);
 		door = door_new(DOOR_WEST, targetIndex, grid_to_world(stage->room->doorPosition[3]));
+		entity_update_grid_position(door, stage->room);
 	}
 	room_tile_layer_build(stage->room);
 	return;
 }
 
-void load_stage(Floor* floor, Stage* stage) {
-	SpawnPoint chosen;
-	MonsterType monster;
+void room_spawn_monsters(Stage* stage) {
 	Uint8 budget;
 	Uint8 numSpawnLocations;
-	Uint8 cheapest;
-	ItemID id;
-	Item* item;
-	int randomIndex, i;
+	MonsterType monster;
+	SpawnPoint chosen;
+	int randomIndex;
 
+	if (!stage || !stage->room || stage->cleared) return;
+	slog("stage not cleared, starting monster spawns");
+
+	budget = stage->difficulty * 5;
+	numSpawnLocations = stage->room->numSpawnLocations;
+	slog("Budget: %u | Spawn Locations: %u", budget, numSpawnLocations);
+
+	srand(stage->seed + stage->mapIndex);
+
+	while (budget > 0 && numSpawnLocations > 0) {
+		randomIndex = rand() % numSpawnLocations;
+		slog("random spawn index: %i", randomIndex);
+
+		chosen = stage->room->spawnPoints[randomIndex];
+		monster = get_valid_monster(chosen.type, budget);
+		slog("Monster Type: %d", monster);
+
+		if (monster != MT_NONE) {
+			monster_spawn(monster, grid_to_world(chosen.gridPos));
+			budget -= get_monster_cost(monster);
+		}
+		stage->room->spawnPoints[randomIndex] = stage->room->spawnPoints[numSpawnLocations - 1];
+		numSpawnLocations--;
+	}
+}
+
+void room_spawn_items(Stage* stage) {
+	int i;
+	if (!stage || !stage->room || !stage->room->itemPos) return;
+
+	for (i = 0; i < stage->room->numItems; i++) {
+		ItemID id = get_random_item_id(ITEM);
+		Item* item = item_create(id);
+		slog("item ID: %i", id);
+		if (item) {
+			item->position = grid_to_world(stage->room->itemPos[i]);
+		}
+		slog("item placed at (%f,%f)", item->position.x, item->position.y);
+	}
+}
+
+Uint8 room_is_clear() {
+	Room* room = get_active_room();
+	int i, j;
+
+	if (!room || !room->entityGrid) return 1;
+
+	for (i = 0; i < room->width * room->height; i++) {
+		GFC_List* list = room->entityGrid[i];
+		if (!list) continue;
+
+		for (j = 0; j < list->count; j++) {
+			Entity* entity = (Entity*)gfc_list_get_nth(list, j);
+			if (entity && entity->_inuse && entity->type == ET_MONSTER) {
+				return 0;
+			}
+		}
+	}
+
+	return 1;
+}
+
+void room_update_locks() {
+	Room* room = get_active_room();
+	Entity* player = get_player_entity();
+	int i, j;
+	Uint8 clear = room_is_clear();
+
+	if (!room || !room->entityGrid) return;
+
+	for (i = 0; i < room->width * room->height; i++) {
+		GFC_List* list = room->entityGrid[i];
+		if (!list) continue;
+
+		for (j = 0; j < list->count; j++) {
+			Entity* entity = (Entity*)gfc_list_get_nth(list, j);
+
+			if (entity && entity->_inuse && entity->type == ET_DOOR) {
+				DoorData* dData = (DoorData*)entity->data;
+				if (!dData) continue;
+
+				if (!clear || dData->exitLock) {
+					dData->locked = 1;
+					entity->solid = 1;
+				}
+				else {
+					dData->locked = 0;
+					entity->solid = 0;
+				}
+			}
+		}
+	}
+}
+
+void load_stage(Floor* floor, Stage* stage) {
 	if (!stage) return;
 
-	stage_make_doors(floor,stage);
-	
-	if(!stage->cleared){
-		slog("stage not cleared, starting monster spawns");
-		budget = stage->difficulty * 5;
-		numSpawnLocations = stage->room->numSpawnLocations;
-		slog("Budget: %u | Spawn Locations: %u", budget, numSpawnLocations);
-		srand(stage->seed + stage->mapIndex);
+	stage_make_doors(floor, stage);
 
-		while (budget > 0 && numSpawnLocations > 0) {
-			randomIndex = rand() % numSpawnLocations;
-			slog("random spawn index: %i", randomIndex);
-			chosen = stage->room->spawnPoints[randomIndex];
-			monster = get_valid_monster(chosen.type, budget);
-			slog("Monster Type: %d", monster);
-			if (monster != MT_NONE) {
-				monster_spawn(monster, grid_to_world(chosen.gridPos));
-				budget -= get_monster_cost(monster);
-			}
-			stage->room->spawnPoints[randomIndex] = stage->room->spawnPoints[numSpawnLocations - 1];
-			numSpawnLocations--;
-		}
+	if (!stage->cleared) {
+		room_spawn_monsters(stage);
 	}
-	
+
 	if (stage->cleared && !stage->visited) {
-		if (stage->room->itemPos) {
-			for (i = 0; i < stage->room->numItems; i++) {
-				id = get_random_item_id(ITEM);
-				slog("item ID: %i", id);
-				item = item_create(id);
-				item->position = grid_to_world(stage->room->itemPos[i]);
-				slog("item placed at (%f,%f)", item->position.x, item->position.y);
-			}
-		}
+		room_spawn_items(stage);
 	}
+
+	entity_manager_update_all();
 
 	stage->visited = 1;
 
@@ -960,20 +1033,23 @@ void spawn_at_door_exit(Entity* player, Room* room, Doors exitSide) {
 	
 	switch (exitSide) {
 	case DOOR_NORTH:
-		exitPos.y += 1;
+		exitPos.y += 2;
 		break;
 	case DOOR_SOUTH:
-		exitPos.y -= 1;
+		exitPos.y -= 2;
 		break;
 	case DOOR_EAST:
-		exitPos.x -= 1;
+		exitPos.x -= 2;
 		break;
 	case DOOR_WEST:
-		exitPos.x += 1;
+		exitPos.x += 2;
 		break;
 	}
 
 	set_center(player, grid_to_world(exitPos));
+	
+	player->velocity.x = 0;
+	player->velocity.y = 0;
 }
 
 void set_active_room(Room* room) {
@@ -1015,6 +1091,20 @@ TileType tile_type_at(GFC_Vector2D position) {
 	return room_get_tile_type(room, tile);
 }
 
+void world_update() {
+	Room* room = get_active_room();
+	if (!room) return;
 
+	room_update_locks();
+
+	return;
+}
+
+void spawn_room_reward(GFC_Vector2D position) {
+	int roll = rand() % 100;
+	if (roll < 40) item_create(PICKUP_CHIP)->position = position;
+	else if (roll > 75) spawn_random_chest_loot(position);
+	else slog("Room cleared, no reward");
+}
 
 /*eol@eof*/

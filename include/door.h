@@ -19,6 +19,7 @@ typedef struct {
 	Uint32			targetRoom; //the index of the room the door leads too
 	Uint8			locked; //1 if the door is locked and needs to be opened, 0 otherwise
 	Doors			side;
+	Uint8			exitLock;
 }DoorData;
 
 /*

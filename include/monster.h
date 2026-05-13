@@ -12,6 +12,7 @@ typedef enum {
 	MT_HELLHOUND,
 	MT_FIEND,
 	MT_REPENTER,
+	MT_MIMIC,
 	MT_END
 }MonsterType;
 

@@ -81,6 +81,8 @@ typedef struct Entity_S
 
 	GFC_Shape		collision;																	//the collision box of the entity
 	GFC_List*		currentTiles;																//holds the tiles that the entity exists in
+	Uint8			solid;																		//1 if the entity is solid and cannot be moved through, 0 otherwise
+	Uint8			immovable;																	//1 if the entity can't be moved, 0 otherwise
 
 
 	// === Behavior ===
@@ -90,6 +92,7 @@ typedef struct Entity_S
 	void			(*free)(struct Entity_S* self);												//cleanup custon allocated data
 	void			(*draw)(struct Entity_S* self);												//draw entity
 	void			(*hit)(struct Entity_S* self, struct Entity_S* attacker, Uint8 damage);		//logic for when an entity is hit
+	void			(*interaction)(struct Entity_S* self, struct Entity_S* interactor);			//logic for an entities interaction
 	
 	
 	
@@ -208,7 +211,7 @@ void entity_hit(Entity* self, Entity* attacker, Uint8 damage);
 * @param room the room the entity is in
 * @param entity the entity to update
 */
-void entity_update_grid_position(Entity* self);
+void entity_update_grid_position(Entity* self, Room* room);
 
 /*
 * @brief applies a force to an entity
@@ -238,6 +241,14 @@ Uint8 entity_is_on_screen(Entity* self);
 * @param range the FrameRange pointer to populate
 */
 void load_frame_range(SJson* json, const char* name, FrameRange* range);
+
+/*
+* @brief gets the closest entity to a position within a range with an interaction
+* @param position the position to check
+* @param maxRange the max range from the position to check
+* @return NULL if no entity is found, else the closest interactable entity
+*/
+Entity* get_closest_interactable(GFC_Vector2D position, float maxRange);
 
 #endif // !__ENTITY_H__
 

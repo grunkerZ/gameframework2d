@@ -320,14 +320,14 @@ void monster_move_to(Entity* self, GFC_Vector2D targetPos) {
 }
 
 MonsterDef* monster_get_primary_def_for_type(MonsterType type) {
-	const char* names[] = { "none", "damned1", "imp", "hellhound", "fiend", "repenter" };
+	const char* names[] = { "none", "damned1", "imp", "hellhound", "fiend", "repenter", "mimic"};
 	if (type <= MT_NONE || type >= MT_END) return NULL;;
 
 	return get_monster_def_by_name(names[type]);
 }
 
 void monster_spawn(MonsterType monster, GFC_Vector2D position) {
-	const char* names[] = { "none", "damned1", "imp", "hellhound", "fiend", "repenter" };
+	const char* names[] = { "none", "damned1", "imp", "hellhound", "fiend", "repenter", "mimic"};
 	const char* damnedVariants[] = { "damned1", "damned2", "damned3" };
 	const char* nameToSpawn;
 
@@ -366,6 +366,8 @@ MonsterType get_valid_monster(Uint8 spawnType, Uint8 budget) {
 	int numCandidates = 0;
 
 	for (i = MT_NONE + 1; i < MT_END; i++) {
+		if (get_monster_cost(i) == 255) continue;
+
 		if (get_monster_cost(i) <= budget && get_monster_spawn_type(i) == spawnType) {
 			candidates[numCandidates] = i;
 			numCandidates++;
@@ -442,6 +444,7 @@ Entity* monster_spawn_by_name(const char* name, GFC_Vector2D position) {
 	}
 	else if (strcmp(name, "repenter") == 0) stats->info.monster = MT_REPENTER;
 	else if (strcmp(name, "hellhound") == 0) stats->info.monster = MT_HELLHOUND;
+	else if (strcmp(name, "mimic") == 0) stats->info.monster = MT_MIMIC;
 
 	stats->on_attack = monster_get_action_by_name(def->on_attack);
 	stats->on_death = monster_get_action_by_name(def->on_death);
@@ -607,7 +610,11 @@ void monster_think(Entity* self) {
 
 	switch (stats->info.state) {
 	case MS_IDLE:
-		if (dist < stats->ai.aggroRange) {
+		if (stats->info.monster == MT_MIMIC) {
+			return;
+		}
+
+		else if (dist < stats->ai.aggroRange) {
 			stats->info.state = MS_CHASE;
 			break;
 		}
@@ -642,6 +649,9 @@ void monster_think(Entity* self) {
 			canAttack = world_to_grid(playerPos).y == world_to_grid(self->centerPos).y;
 		}
 
+		if (stats->info.monster == MT_MIMIC) {
+			return;
+		}
 		if (dist <= stats->ai.stopDistance && stats->ai.hasLOS && canAttack) {
 			if (SDL_GetTicks64() - stats->combat.timeAtLastAttack > stats->combat.attackCooldown) {
 				slog("MONSTER '%s' AATTACKING: Dist %f | LOS %d | Cooldown %llu/%u", stats->info.name, dist, stats->ai.hasLOS, SDL_GetTicks64() - stats->combat.timeAtLastAttack, stats->combat.attackCooldown);
@@ -665,6 +675,9 @@ void monster_think(Entity* self) {
 
 	case MS_ATTACK_PREP:
 		self->velocity.x = 0;
+		if (stats->info.monster == MT_MIMIC) {
+			return;
+		}
 		if (SDL_GetTicks64() - stats->combat.timeAtLastAttack > stats->combat.attackDelay) {
 			slog("MONSTER '%s' PREP DONE -> ATTACKING", stats->info.name);
 			stats->info.state = MS_ATTACKING;
@@ -681,7 +694,7 @@ void monster_think(Entity* self) {
 			stats->info.state = MS_CHASE;
 			stats->combat.timeAtLastAttack = SDL_GetTicks64();
 		}
-		else if (stats->info.monster != MT_FIEND) {
+		else if (stats->info.monster != MT_FIEND && stats->info.monster != MT_MIMIC) {
 			if (check_map_collision(self).bottom && self->velocity.y >= 0) {
 				stats->info.state = MS_CHASE;
 				stats->combat.timeAtLastAttack = SDL_GetTicks64();
@@ -702,6 +715,11 @@ void monster_think(Entity* self) {
 
 	case MS_DEATH:
 		self->velocity = gfc_vector2d(0, 0);
+
+		if (rand() % 100 < 30) {
+			Item* chip = item_create(PICKUP_CHIP);
+			if (chip) chip->position = self->centerPos;
+		}
 		break;
 	}
 
@@ -750,6 +768,69 @@ void monster_update(Entity* self) {
 		range = &stats->animation.idle;
 		break;
 	}
+
+	if (stats->info.monster == MT_MIMIC) {
+
+		if (stats->info.state == MS_CHASE) {
+			range = &stats->animation.walk;
+		}
+		if (self->frame == (float)range->start) {
+			slog("MIMIC: Forcing frame from %f to %d",self->frame, range->start);
+			self->frame = range->start;
+		}
+
+
+		if (stats->info.state == MS_DEATH) {
+			if (self->frame > (float)range->start) {
+				self->frame = (float)range->start;
+			}
+
+			self->frame -= range->speed;
+
+			if (self->frame <= (float)range->end) {
+				entity_free(self);
+				return;
+			}
+		}
+		else if (stats->info.state == MS_IDLE) {
+			if (self->frame < (float)range->start || self->frame > (float)range->end) {
+				self->frame = (float)range->start;
+			}
+
+			self->frame += range->speed;
+			if (self->frame >= (float)range->end) {
+				stats->info.state = MS_CHASE;
+				range = &stats->animation.walk;
+				self->frame = (float)range->end;
+				stats->combat.timeAtLastAttack = SDL_GetTicks64();
+			}
+		}
+		else if (stats->info.state == MS_CHASE) {
+			if (self->lastCollision.bottom) {
+				self->velocity.x = 0;
+				self->frame = (float)range->end;
+
+				if (SDL_GetTicks64() - stats->combat.timeAtLastAttack > stats->combat.attackSpeed) {
+					slog("MIMIC: Triggering Hop | Start Frame: %d", range->start);
+					self->velocity.y = -3.5;
+					self->frame = (float)range->start;
+					stats->combat.timeAtLastAttack = SDL_GetTicks64();
+				}
+			}
+			else {
+				self->frame += range->speed;
+				if (self->frame >= (float)range->end) {
+					self->frame = (float)range->start;
+				}
+			}
+		}
+		else {
+			stats->info.state = MS_IDLE;
+		}
+
+		return;
+	}
+
 
 	if (self->frame < (float)range->start || self->frame >= (float)range->end) {
 		if (range->loop || self->frame < (float)range->start) {

@@ -54,6 +54,9 @@ void item_manager_init(Uint32 maxItems) {
 	itemManager->itemList[PICKUP_LIFE].id = PICKUP_LIFE;
 	itemManager->itemList[PICKUP_LIFE].healthMod = 2;
 
+	itemManager->itemList[PICKUP_CHIP].id = PICKUP_CHIP;
+	itemManager->itemList[PICKUP_CHIP].name = "Casino Chip";
+
 
 	itemManager->itemList[ITEM_HAIR_TRIGGER].id = ITEM_HAIR_TRIGGER;
 	itemManager->itemList[ITEM_HAIR_TRIGGER].name = "Hair Trigger";
@@ -160,6 +163,10 @@ Item* item_create(ItemID id) {
 		self->sprite = gf2d_sprite_load_image("images/placeholder/life.png");
 		self->presentTime = 0;
 		break;
+	case PICKUP_CHIP:
+		self->sprite = gf2d_sprite_load_image("images/ui/chip.png");
+		self->presentTime = 0;
+		break;
 	case ITEM_HAIR_TRIGGER:
 		self->sprite = gf2d_sprite_load_image("images/items/hair_trigger.png");
 		self->presentTime = 4000;
@@ -217,42 +224,50 @@ void item_think(Item* self) {
 	}
 
 	if (self->pickedUp && self->presentTime > 0) {
-		if(!self->presenting){
+		if (!self->presenting) {
+			slog("ITEM: Player picked up a Fancy item");
 			self->timeAtPickup = SDL_GetTicks64();
 			playerStats->inventory[self->id]++;
 			player_calculate_stats(player);
 			self->scale = gfc_vector2d(1, 1);
 			self->presenting = 1;
 		}
-		if (self->presentTime>0) {
-			if (SDL_GetTicks64() - self->timeAtPickup > self->presentTime) {
-				item_free(self);
-				return;
-			}
-			else {
-				screen = camera_get_bounds();
-				offset = camera_get_offset();
-				self->position.x = (screen.x / 2) - ((self->sprite->frame_w * self->scale.x) / 2) - offset.x;
-				self->position.y = (screen.y * 0.1) - offset.y;
-			}
-		}
-		else if (self->pickedUp && !self->presenting) {
-			//pickup logic
-			if (self->id == PICKUP_LIFE || self->id == PICKUP_LIFE_HALF) {
-				if (playerStats->stats.maxHealth == playerStats->stats.health) {
-					self->pickedUp = 0;
-					return;
-				}
-				else {
-					playerStats->stats.health += self->healthMod;
-					if (playerStats->stats.health > playerStats->stats.maxHealth) playerStats->stats.health = playerStats->stats.maxHealth;
-				}
-			}
 
-			if (self->id == PICKUP_SHIELD || self->id == PICKUP_SHIELD_HALF) playerStats->stats.tempHealth += self->tempHealthMod;
+		if (SDL_GetTicks64() - self->timeAtPickup > self->presentTime) {
 			item_free(self);
 			return;
 		}
+		else {
+			screen = camera_get_bounds();
+			offset = camera_get_offset();
+			self->position.x = (screen.x / 2) - ((self->sprite->frame_w * self->scale.x) / 2) - offset.x;
+			self->position.y = (screen.y * 0.1) - offset.y;
+		}
+	}
+		
+	else {
+		slog("ITEM: Player picked up regular pickup | Pickup: %d", self->id);
+		if (self->id == PICKUP_LIFE || self->id == PICKUP_LIFE_HALF) {
+			if (playerStats->stats.maxHealth == playerStats->stats.health) {
+				self->pickedUp = 0;
+				return;
+			}
+			else {
+				playerStats->stats.health += self->healthMod;
+				if (playerStats->stats.health > playerStats->stats.maxHealth) playerStats->stats.health = playerStats->stats.maxHealth;
+			}
+		}
+
+		if (self->id == PICKUP_SHIELD || self->id == PICKUP_SHIELD_HALF) playerStats->stats.tempHealth += self->tempHealthMod;
+
+		if (self->id == PICKUP_CHIP) {
+			slog("Player just picked up chip(s) | Previous Chips : %i", playerStats->stats.chips);
+			playerStats->stats.chips += 1;
+			slog("Chip Calculation Done | Current Chips : %i", playerStats->stats.chips);
+		}
+
+		item_free(self);
+		return;
 	}
 	return;
 }
@@ -350,6 +365,17 @@ ItemID get_random_item_id(ItemID type) {
 		return (rand() % (ITEM_END - ITEM - 1)) + (ITEM + 1);
 	default: return ITEM_NONE;
 	}
+}
+
+void spawn_random_chest_loot(GFC_Vector2D position) {
+	ItemID id;
+	int roll = rand() % 100;
+
+	if (roll < 15) id = get_random_item_id(ITEM);
+	else id = get_random_item_id(PICKUP);
+
+	Item* item = item_create(id);
+	if (item) item->position = position;
 }
 
 /*eol@eof*/

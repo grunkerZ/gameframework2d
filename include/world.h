@@ -368,4 +368,9 @@ void room_remove_entity(Room* room, Entity* entity);
 */
 TileType tile_type_at(GFC_Vector2D position);
 
+/*
+* @brief updates the game world
+*/
+void world_update();
+
 #endif // !__WORLD_H__

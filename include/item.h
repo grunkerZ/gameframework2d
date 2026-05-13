@@ -12,6 +12,7 @@ typedef enum {
 		PICKUP_SHIELD,
 		PICKUP_LIFE_HALF,
 		PICKUP_LIFE,
+		PICKUP_CHIP,
 	PICKUP_END,
 
 	ITEM,
@@ -125,5 +126,11 @@ Item* get_item(ItemID id);
 * @returns ITEM_NONE if type is invalid, otherwise a random itemID
 */
 ItemID get_random_item_id(ItemID type);
+
+/*
+* @brief spawns a random chest loot roll
+* @param position the position to spawn the loot
+*/
+void spawn_random_chest_loot(GFC_Vector2D position);
 
 #endif //__ITEM_H__

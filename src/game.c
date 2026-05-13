@@ -150,30 +150,34 @@ void update_game(System* game) {
         entity_manager_update_all();
         item_manager_think_all();
         hud_update(game->hud, game->player);
+        world_update();
 
         collider = check_entity_collision(game->player);
         if (collider && collider->type == ET_DOOR) {
-            slog("player collided with a door");
-            exitSide = get_opposite_side(((DoorData*)collider->data)->side);
-            slog("Player exits on side: %i", exitSide);
-            slog("Target Room Index: %i", ((DoorData*)collider->data)->targetRoom);
-            game->currentStage = game->floor->floorMap[((DoorData*)collider->data)->targetRoom];
-            slog("current stage set to door target room");
-            clear_stage();
-            item_manager_free_all();
-            if (game->player->currentTiles) {
-                gfc_list_delete(game->player->currentTiles);
-                game->player->currentTiles = NULL;
+            DoorData* dData = collider->data;
+            if(!dData->locked){
+                slog("player collided with a door");
+                exitSide = get_opposite_side(((DoorData*)collider->data)->side);
+                slog("Player exits on side: %i", exitSide);
+                slog("Target Room Index: %i", ((DoorData*)collider->data)->targetRoom);
+                game->currentStage = game->floor->floorMap[((DoorData*)collider->data)->targetRoom];
+                slog("current stage set to door target room");
+                clear_stage();
+                item_manager_free_all();
+                if (game->player->currentTiles) {
+                    gfc_list_delete(game->player->currentTiles);
+                    game->player->currentTiles = NULL;
+                }
+                slog("stage cleared of entities");
+                floor_update_active_rooms(game->floor, game->currentStage->gridPos.x, game->currentStage->gridPos.y);
+                slog("active rooms updated");
+                load_stage(game->floor, game->currentStage);
+                slog("stage loaded");
+                set_active_room(game->currentStage->room);
+                slog("active room set to current stage room");
+                spawn_at_door_exit(game->player, game->currentStage->room, exitSide);
+                slog("player spawned at exit");
             }
-            slog("stage cleared of entities");
-            floor_update_active_rooms(game->floor, game->currentStage->gridPos.x, game->currentStage->gridPos.y);
-            slog("active rooms updated");
-            load_stage(game->floor, game->currentStage);
-            slog("stage loaded");
-            set_active_room(game->currentStage->room);
-            slog("active room set to current stage room");
-            spawn_at_door_exit(game->player, game->currentStage->room, exitSide);
-            slog("player spawned at exit");
         }
 
         if (((PlayerData*)game->player->data)->stats.health <= 0) {
@@ -294,7 +298,7 @@ int main(int argc, char * argv[])
     simple_font_init();
     console_init();
     game->hud = hud_init();
-    entity_manager_init(1024);
+    entity_manager_init(2048);
     SDL_ShowCursor(SDL_DISABLE);
     item_manager_init(1024);
     monster_def_init();

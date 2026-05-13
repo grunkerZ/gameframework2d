@@ -45,6 +45,7 @@ typedef struct {
 		Uint8					grounded;				//1 if the player is touching the ground, 0 otherwise
 		Uint8					landing;				//1 if the player is grounded and was not grounded last update, 0 otherwise
 		Uint8					gravity;				//0 if the player is flying, 1 otherwise
+		Uint32					chips;					//currency
 	}stats;
 
 

@@ -271,7 +271,15 @@ void player_think(Entity* self) {
 			else stats->state = PS_IDLE;
 		}
 
-		if (keys[SDL_SCANCODE_LSHIFT] && (currentTime - stats->abilities.timeAtDash > stats->abilities.dashCooldown)) {
+
+		if (keys[SDL_SCANCODE_E]) {
+			Entity* interactable;
+			interactable = get_closest_interactable(self->centerPos, 80);
+			if (interactable && interactable->interaction) {
+				interactable->interaction(interactable, self);
+			}
+		}
+		else if (keys[SDL_SCANCODE_LSHIFT] && (currentTime - stats->abilities.timeAtDash > stats->abilities.dashCooldown)) {
 			stats->state = PS_DASHING;
 			stats->abilities.timeAtDash = currentTime;
 			self->timeAtDamaged = currentTime;
