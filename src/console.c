@@ -11,6 +11,7 @@
 #include "gf2d_draw.h"
 #include "hazards.h"
 #include "map_object.h"
+#include "save_manager.h"
 
 static int _open = 0;
 static GFC_String* consoleText;
@@ -444,6 +445,7 @@ void console_execute(const char* cmd_line) {
 				}
 				else if (strcmp(args[2], "set") == 0) {
 					stats->stats.chips = value;
+					save_manager_bank_chips(value);
 				}
 				else {
 					slog("unknown action: '%s'", args[1]);

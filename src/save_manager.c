@@ -30,6 +30,7 @@ typedef struct {
     GFC_Rect            ftb;                //fade to black rect
     float               ftb_alpha;
     Uint8               shopOpen;
+    Uint8               revive;
 }LocalSystem;
 
 typedef struct {
@@ -245,6 +246,7 @@ void save_manager_save_all(void* system) {
     slog("SAVE SYSTEM: Beginning Full Serialization...");
 
     sj_object_insert(meta_json, "lifetime_chips", sj_new_int(save_manager_get_meta()->lifetimeChips));
+
     sj_object_insert(save_root, "meta", meta_json);
 
     sj_object_insert(player_json, "hp", sj_new_int(pData->stats.health));
@@ -404,6 +406,10 @@ Uint8 save_manager_is_unlocked(Uint8 upgrade_id) {
 void save_manager_bank_chips(Uint32 amount) {
     current_meta_data.lifetimeChips += amount;
     slog("META: Banked %u chips. New Lifetime Total: %u", amount, current_meta_data.lifetimeChips);
+}
+
+Uint32 save_manager_get_lifetime_chips() {
+    return current_meta_data.lifetimeChips;
 }
 
 /*eol@eof*/

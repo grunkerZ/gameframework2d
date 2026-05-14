@@ -46,6 +46,7 @@ typedef struct {
     GFC_Rect            ftb;                //fade to black rect
     float               ftb_alpha;
     Uint8               shopOpen;
+    Uint8               revive;
 }System;
 
 Uint8 openShopRequest;
@@ -98,12 +99,17 @@ void update_game(System* game) {
             gridPos.y = game->currentStage->room->height - 2;
             set_center(game->player, grid_to_world(gridPos));
             ((PlayerData*)game->player->data)->newRun = 1;
+            if (save_manager_get_lifetime_chips() > THRESHOLD_FRACTURED_SOUL) {
+                game->revive = 1;
+            }
             player_calculate_stats(game->player);
             game->state = GS_PLAYING;
         }
         break;
 
     case GS_DEATH:
+        save_manager_clear_run();
+        save_manager_save_all(game);
         if(game->player){
             if (game->player->frame < 125) {
                 game->player->frame = 125;
@@ -174,6 +180,10 @@ void update_game(System* game) {
                 set_center(game->player, grid_to_world(gridPos));
                 ((PlayerData*)game->player->data)->newRun = 1;
                 player_calculate_stats(game->player);
+                if (save_manager_get_lifetime_chips() > THRESHOLD_FRACTURED_SOUL) {
+                    game->revive = 1;
+                }
+                ((PlayerData*)game->player->data)->stats.health = ((PlayerData*)game->player->data)->stats.maxHealth;
                 game->state = GS_PLAYING;
             }
             if (game->deathMenu->Menu.death.menuButton.clicked) {
@@ -229,7 +239,7 @@ void update_game(System* game) {
         break;
 
     case GS_PLAYING:
-        slog("DEBUG: Player Health: %d/%d | State: %d | Pos Y: %f", ((PlayerData*)game->player)->stats.health, ((PlayerData*)game->player)->stats.maxHealth, ((PlayerData*)game->player)->state, game->player->position.y);
+        //slog("DEBUG: Player Health: %d/%d | State: %d | Pos Y: %f", ((PlayerData*)game->player->data)->stats.health, ((PlayerData*)game->player->data)->stats.maxHealth, ((PlayerData*)game->player->data)->state, game->player->position.y);
         entity_manager_think_all();
         entity_manager_update_all();
         item_manager_think_all();
@@ -269,12 +279,41 @@ void update_game(System* game) {
                 
                 spawn_at_door_exit(game->player, game->currentStage->room, exitSide);
                 slog("player spawned at exit");
+                save_manager_save_all(game);
             }
         }
 
         if (((PlayerData*)game->player->data)->stats.health <= 0) {
-            slog("GAME - Switching to death State. Player Health: %d", ((PlayerData*)game->player->data)->stats.health);
-            game->state = GS_DEATH;
+            if (game->revive) {
+                GFC_Shape shockwave;
+                GFC_List* hitList;
+                GFC_Vector2D bounce;
+                Entity* ent;
+                int i;
+                game->revive--;
+                ((PlayerData*)game->player->data)->stats.health = ((PlayerData*)game->player->data)->stats.maxHealth * 0.25;
+                shockwave.s.c.x = game->player->centerPos.x;
+                shockwave.s.c.y = game->player->centerPos.y;
+                shockwave.s.c.r = 128;
+                hitList = get_entities_in_shape(shockwave, game->player);
+                if (hitList) {
+                    for (i = 0; i < hitList->count; i++) {
+                        ent = (Entity*)gfc_list_get_nth(hitList, i);
+                        if (ent && ent->type == ET_MONSTER) {
+                            gfc_vector2d_sub(bounce, ent->centerPos, game->player->centerPos);
+                            gfc_vector2d_normalize(&bounce);
+                            gfc_vector2d_scale(bounce, bounce, 6);
+                            entity_apply_force(ent, bounce);
+                            game->player->timeAtDamaged = SDL_GetTicks64();
+                        }
+                    }
+                }
+
+            }
+            else {
+                slog("GAME - Switching to death State. Player Health: %d", ((PlayerData*)game->player->data)->stats.health);
+                game->state = GS_DEATH;
+            }
         }
         if (game->keys[SDL_SCANCODE_P]) {
             game->paused = 1;

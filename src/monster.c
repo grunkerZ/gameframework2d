@@ -5,6 +5,7 @@
 #include "world.h"
 #include "monster_def.h"
 #include "hazards.h"
+#include "save_manager.h"
 
 void monster_think(Entity* self);
 void monster_update(Entity* self);
@@ -715,11 +716,6 @@ void monster_think(Entity* self) {
 
 	case MS_DEATH:
 		self->velocity = gfc_vector2d(0, 0);
-
-		if (rand() % 100 < 30) {
-			Item* chip = item_create(PICKUP_CHIP);
-			if (chip) chip->position = self->centerPos;
-		}
 		break;
 	}
 
@@ -788,6 +784,14 @@ void monster_update(Entity* self) {
 			self->frame -= range->speed;
 
 			if (self->frame <= (float)range->end) {
+				int i = 0;
+				for(i=0;i<3;i++){
+					Item* chip = item_create(PICKUP_CHIP);
+					if (chip) {
+						chip->position = self->centerPos;
+						chip->position.x += rand() % 5;
+					}
+				}
 				entity_free(self);
 				return;
 			}
@@ -848,7 +852,22 @@ void monster_update(Entity* self) {
 			slog("MONSTER '%s' END OF RANGE: State '%d' | Final Frame %f", stats->info.name, stats->info.state, self->frame);
 			if (stats->info.state == MS_DEATH) {
 				if(self->frame >= (float)range->end){
+					int dropChance = 15;
 					slog("MONSTER '%s' DEATH ANIMATION END | Final Frame %f", stats->info.name, self->frame);
+
+					if (save_manager_is_unlocked(UPGRADE_CHIP_LUCK)) {
+						slog("UPGRADES: Coin Droprate increased by 20%");
+						dropChance = 35;
+					}
+
+					if (rand() % 100 < dropChance) {
+						Item* chip = item_create(PICKUP_CHIP);
+						if (chip) {
+							chip->position = self->centerPos;
+							chip->position.x += rand() % 5;
+						}
+					}
+
 					entity_free(self);
 					return;
 				}

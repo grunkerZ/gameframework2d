@@ -69,4 +69,10 @@ Uint8 save_manager_is_unlocked(Uint8 upgrade_id);
 */
 void save_manager_bank_chips(Uint32 amount);
 
+/*
+* @brief gets the lifetime chips of the current save
+*/
+Uint32 save_manager_get_lifetime_chips();
+
+
 #endif // !__SAVE_MANAGER_H__

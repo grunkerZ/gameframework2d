@@ -552,6 +552,13 @@ void entity_hit(Entity* self, Entity* attacker, Uint8 damage) {
 		return;
 	}
 
+	if (attacker->type == ET_PLAYER && save_manager_is_unlocked(UPGRADE_REAPER)) {
+		if (rand() % 100 < 7.5) {
+			slog("UPGRADES: Enemy Reaped. Chips awarded.");
+			player_mod_chips(5);
+		}
+	}
+
 	self->timeAtDamaged = SDL_GetTicks64();
 
 	gfc_vector2d_sub(bounce, self->centerPos, attacker->centerPos);

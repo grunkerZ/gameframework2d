@@ -726,7 +726,8 @@ void player_calculate_stats(Entity* self) {
 		
 	}
 
-	if (stats->stats.health > stats->stats.maxHealth) stats->stats.health = stats->stats.maxHealth;
+	if (stats->stats.health > stats->stats.maxHealth || stats->newRun) stats->stats.health = stats->stats.maxHealth;
+
 
 	slog("UPDATED STATS:");
 	slog("Max Health: %u", stats->stats.maxHealth);
