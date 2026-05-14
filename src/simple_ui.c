@@ -410,6 +410,13 @@ void menu_draw(GenericMenu* menu) {
 			button_draw(&menu->Menu.shop.rerollButton, 1, NULL);
 			button_draw(&menu->Menu.shop.leaveButton, 1, NULL);
 			break;
+		case MENU_EDITOR:
+			button_draw(&menu->Menu.editor.nextModeButton, 1, NULL);
+			button_draw(&menu->Menu.editor.prevModeButton, 1, NULL);
+			button_draw(&menu->Menu.editor.nextSetButton, 1, NULL);
+			button_draw(&menu->Menu.editor.prevSetButton, 1, NULL);
+			button_draw(&menu->Menu.editor.saveButton, 1, NULL);
+			break;
 	}
 }
 
@@ -434,6 +441,13 @@ void menu_update(GenericMenu* menu) {
 			anyHovered |= button_update(&menu->Menu.pause.resumeButton);
 			anyHovered |= button_update(&menu->Menu.pause.menuButton);
 			anyHovered |= button_update(&menu->Menu.pause.optionsButton);
+			break;
+		case MENU_EDITOR:
+			anyHovered |= button_update(&menu->Menu.editor.nextModeButton);
+			anyHovered |= button_update(&menu->Menu.editor.prevModeButton);
+			anyHovered |= button_update(&menu->Menu.editor.nextSetButton);
+			anyHovered |= button_update(&menu->Menu.editor.prevSetButton);
+			anyHovered |= button_update(&menu->Menu.editor.saveButton);
 			break;
 	}
 	menu->hovering = anyHovered;
@@ -472,6 +486,13 @@ void menu_free(GenericMenu* self) {
 		}
 		button_free(&self->Menu.shop.rerollButton);
 		button_free(&self->Menu.shop.leaveButton);
+		break;
+	case MENU_EDITOR:
+		button_free(&self->Menu.editor.nextModeButton);
+		button_free(&self->Menu.editor.prevModeButton);
+		button_free(&self->Menu.editor.nextSetButton);
+		button_free(&self->Menu.editor.prevSetButton);
+		button_update(&self->Menu.editor.saveButton);
 		break;
 	}
 	free(self);
@@ -729,6 +750,45 @@ void shop_menu_update(GenericMenu* menu) {
 	if (menu->Menu.shop.rerollButton.clicked) {
 		shop_menu_reroll(menu);
 	}
+}
+
+GenericMenu* editor_menu_init() {
+	GenericMenu* menu = menu_new();
+	GFC_Vector2D pos = gfc_vector2d(930, 320);
+	GFC_Vector2D scale = gfc_vector2d(1, 1);
+
+	if (!menu) return NULL;
+	menu->menuType = MENU_EDITOR;
+
+	button_init(&menu->Menu.editor.nextSetButton, "images/ui/editor/prevSet.png", "images/ui/editor/prevSet.png", pos, ST_RECT, 0);
+	menu->Menu.editor.nextSetButton.scale = scale;
+	menu->Menu.editor.nextSetButton.bounds.s.r = gfc_rect(pos.x, pos.y, 100, 40);
+
+	pos.x = 1060;
+
+	button_init(&menu->Menu.editor.prevSetButton, "images/ui/editor/nextSet.png", "images/ui/editor/nextSet.png", pos, ST_RECT, 0);
+	menu->Menu.editor.prevSetButton.scale = scale;
+	menu->Menu.editor.prevSetButton.bounds.s.r = gfc_rect(pos.x, pos.y, 100, 40);
+
+	pos = gfc_vector2d(930,400);
+
+	button_init(&menu->Menu.editor.nextModeButton, "images/ui/editor/prevMode.png", "images/ui/editor/prevMode.png", pos, ST_RECT, 0);
+	menu->Menu.editor.nextModeButton.scale = scale;
+	menu->Menu.editor.nextModeButton.bounds.s.r = gfc_rect(pos.x, pos.y, 100, 40);
+
+	pos.x = 1060;
+
+	button_init(&menu->Menu.editor.prevModeButton, "images/ui/editor/nextMode.png", "images/ui/editor/nextMode.png", pos, ST_RECT, 0);
+	menu->Menu.editor.prevModeButton.scale = scale;
+	menu->Menu.editor.prevModeButton.bounds.s.r = gfc_rect(pos.x, pos.y, 100, 40);
+
+	pos = gfc_vector2d(930, 600);
+
+	button_init(&menu->Menu.editor.saveButton, "images/ui/editor/save.png", "images/ui/editor/save.png", pos, ST_RECT, 0);
+	menu->Menu.editor.saveButton.scale = scale;
+	menu->Menu.editor.saveButton.bounds.s.r = gfc_rect(pos.x, pos.y, 100, 40);
+
+	return menu;
 }
 
 

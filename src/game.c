@@ -14,6 +14,7 @@
 #include "console.h"
 #include "monster_def.h"
 #include "save_manager.h"
+#include "editor.h"
 
 typedef enum {
     GS_NONE,
@@ -22,6 +23,7 @@ typedef enum {
     GS_DEATH,
     GS_PAUSED,
     GS_SHOP,
+    GS_EDITOR,
     GS_END
 }GameState;
 
@@ -69,6 +71,9 @@ void update_game(System* game) {
             else {
                 slog("Main Menu - No Saved Run");
             }
+        }
+        if (game->mainMenu->Menu.start.extrasButton.clicked) {
+            game->state = GS_EDITOR;
         }
         if (game->mainMenu->Menu.start.startButton.clicked) {
             save_manager_clear_run();
@@ -238,6 +243,10 @@ void update_game(System* game) {
 
         break;
 
+    case GS_EDITOR:
+        editor_update();
+        break;
+
     case GS_PLAYING:
         //slog("DEBUG: Player Health: %d/%d | State: %d | Pos Y: %f", ((PlayerData*)game->player->data)->stats.health, ((PlayerData*)game->player->data)->stats.maxHealth, ((PlayerData*)game->player->data)->state, game->player->position.y);
         entity_manager_think_all();
@@ -385,6 +394,10 @@ void draw_game(System* game) {
 
         draw_mouse(game->shopMenu, game->mouse, game->mx, game->my, game->mouseScale);
         break;
+    case GS_EDITOR:
+        editor_draw();
+        editor_draw_ui();
+        break;
     case GS_PLAYING:
         room_draw(game->currentStage->room);
 
@@ -439,12 +452,14 @@ int main(int argc, char * argv[])
     gf2d_sprite_init(1024);
     simple_font_init();
     console_init();
+    editor_init();
     game->hud = hud_init();
     entity_manager_init(2048);
     SDL_ShowCursor(SDL_DISABLE);
     item_manager_init(1024);
     monster_def_init();
     player_def_load("defs/player.def");
+    
 
 
 
@@ -519,6 +534,7 @@ int main(int argc, char * argv[])
     menu_free(game->pauseMenu);
     free(game);
     console_free();
+    editor_free();
     simple_font_close();
     slog("---==== END ====---");
     return 0;

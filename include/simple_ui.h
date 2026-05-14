@@ -62,12 +62,21 @@
 		Uint8	soldOut;
 	}ShopMenu;
 
+	typedef struct {
+		Button saveButton;
+		Button nextModeButton;
+		Button prevModeButton;
+		Button nextSetButton;
+		Button prevSetButton;
+	}EditorMenu;
+
 	typedef enum {
 		MENU_NONE,
 		MENU_MAIN,
 		MENU_DEATH,
 		MENU_PAUSE,
 		MENU_SHOP,
+		MENU_EDITOR,
 		MENU_END
 	}MenuType;
 
@@ -77,12 +86,14 @@
 		GFC_Vector2D	bgScale;
 		Uint8			hovering;
 		float			frame;
+
 		union
 		{
 			MainMenu	start;
 			DeathMenu	death;
 			PauseMenu	pause;
 			ShopMenu	shop;
+			EditorMenu  editor;
 		}Menu;
 	}GenericMenu;
 
@@ -221,5 +232,15 @@
 	* @param menu the menu to update
 	*/
 	void shop_menu_update(GenericMenu* menu);
+
+	/*
+	* @brief inits the editor menu
+	* @return NULL on error, otherwise the init menu
+	*/
+	GenericMenu* editor_menu_init();
+
+
+
+
 
 	#endif //SIMPLE_UI_H__
