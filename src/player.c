@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "gfc_input.h"
 #include "monster.h"
+#include "save_manager.h"
 
 static PlayerData baseStats = { 0 };
 
@@ -692,6 +693,10 @@ void player_calculate_stats(Entity* self) {
 	stats->abilities = baseStats.abilities;
 	self->gravity = baseStats.stats.gravity;
 
+	if (save_manager_is_unlocked(UPGRADE_START_CHIPS) && stats->newRun) {
+		stats->stats.chips = 50;
+		stats->newRun = 0;
+	}
 
 	slog("current inventory:");
 	//check inventory and add buffs and set flags
@@ -808,6 +813,9 @@ int player_get_chips() {
 }
 
 void player_mod_chips(int mod) {
+	if (mod > 0) {
+		save_manager_bank_chips(mod);
+	}
 	((PlayerData*)player->data)->stats.chips += mod;
 	return;
 }

@@ -4,7 +4,18 @@
 #include "simple_json.h"
 #include "item.h"
 
-#define MAX_UPGRADES 3
+#define MAX_UPGRADES 5
+#define UPGRADE_START_CHIPS 0
+#define UPGRADE_CHIP_LUCK 1
+#define UPGRADE_FRACTURED_SOUL 2
+#define UPGRADE_TORMENTED 3
+#define UPGRADE_REAPER 4
+
+#define THRESHOLD_START_CHIPS 500
+#define THRESHOLD_CHIP_LUCK 1000
+#define THRESHOLD_FRACTURED_SOUL 1500
+#define THRESHOLD_TORMENTED 3000
+#define THRESHOLD_REAPER 5000
 
 typedef struct {
 	Uint8		unlockedUpgrades[MAX_UPGRADES];
@@ -44,5 +55,18 @@ Uint8 save_manager_load_all(void* system);
 * @brief clears the current saved run data
 */
 void save_manager_clear_run();
+
+/*
+* @brief checks if a persistant upgrade is unlocked
+* @param upgrade_id the id of the upgrade
+* @return 1 if unlocked, 0 if not
+*/
+Uint8 save_manager_is_unlocked(Uint8 upgrade_id);
+
+/*
+* @brief add chips to the lifetime total
+* @param amount the amount to add
+*/
+void save_manager_bank_chips(Uint32 amount);
 
 #endif // !__SAVE_MANAGER_H__

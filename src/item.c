@@ -263,14 +263,19 @@ void item_think(Item* self) {
 			else {
 				playerStats->stats.health += self->healthMod;
 				if (playerStats->stats.health > playerStats->stats.maxHealth) playerStats->stats.health = playerStats->stats.maxHealth;
+				self->pickedUp = 1;
 			}
 		}
 
-		if (self->id == PICKUP_SHIELD || self->id == PICKUP_SHIELD_HALF) playerStats->stats.tempHealth += self->tempHealthMod;
+		if ((self->id == PICKUP_SHIELD || self->id == PICKUP_SHIELD_HALF) && !self->pickedUp) {
+			playerStats->stats.tempHealth += self->tempHealthMod;
+			self->pickedUp = 1;
+		}
 
-		if (self->id == PICKUP_CHIP) {
+		if (self->id == PICKUP_CHIP && !self->pickedUp) {
 			slog("Player just picked up chip(s) | Previous Chips : %i", playerStats->stats.chips);
-			playerStats->stats.chips += 1;
+			player_mod_chips(1);
+			self->pickedUp = 1;
 			slog("Chip Calculation Done | Current Chips : %i", playerStats->stats.chips);
 		}
 

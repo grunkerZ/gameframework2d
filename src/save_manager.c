@@ -6,6 +6,8 @@
 #include "simple_ui.h"
 #include "player.h"
 
+static MetaData current_meta_data = { 0 };
+
 
 typedef struct {
     int                 mx;                 //the x coordinate of the mouse
@@ -44,6 +46,10 @@ typedef struct {
 extern LocalEntityManager entityManager;
 
 extern LocalItemManager itemManager[];
+
+MetaData* save_manager_get_meta() {
+    return &current_meta_data;
+}
 
 SJson* save_manager_serialize_entities() {
     SJson* entity_array = sj_array_new();
@@ -238,7 +244,7 @@ void save_manager_save_all(void* system) {
 
     slog("SAVE SYSTEM: Beginning Full Serialization...");
 
-    sj_object_insert(meta_json, "lifetime_chips", sj_new_int(100));
+    sj_object_insert(meta_json, "lifetime_chips", sj_new_int(save_manager_get_meta()->lifetimeChips));
     sj_object_insert(save_root, "meta", meta_json);
 
     sj_object_insert(player_json, "hp", sj_new_int(pData->stats.health));
@@ -274,7 +280,7 @@ void save_manager_save_all(void* system) {
 Uint8 save_manager_load_all(void* system) {
     LocalSystem* game = (LocalSystem*)system;
     SJson* save_root = sj_load("save.json");
-    SJson* run_json, * player_json, * world_json, * inv_array, * cleared_array;
+    SJson* meta_json, * run_json, * player_json, * world_json, * inv_array, * cleared_array;
     PlayerData* pData;
     Uint32 seed;
     int tempHp, tempMaxHp;
@@ -285,6 +291,18 @@ Uint8 save_manager_load_all(void* system) {
     if (!save_root) {
         slog("SAVE LOAD: No save found");
         return 0;
+    }
+
+    meta_json = sj_object_get_value(save_root, "meta");
+    if (meta_json) {
+        current_meta_data.lifetimeChips = 0;
+        sj_object_get_value_as_uint32(meta_json, "lifetime_chips", &current_meta_data.lifetimeChips);
+        SJson* upgrades = sj_object_get_value(meta_json, "upgrades");
+        for (i = 0; i < MAX_UPGRADES; i++) {
+            int val = 0;
+            sj_get_integer_value(sj_array_get_nth(upgrades, i), &val);
+            current_meta_data.unlockedUpgrades[i] = (Uint8)val;
+        }
     }
 
     run_json = sj_object_get_value(save_root, "current_run");
@@ -366,6 +384,26 @@ void save_manager_clear_run() {
     sj_free(save_root);
 
     return;
+}
+
+
+
+Uint8 save_manager_is_unlocked(Uint8 upgrade_id) {
+    Uint32 chips = current_meta_data.lifetimeChips;
+
+    switch (upgrade_id) {
+    case UPGRADE_START_CHIPS: return (chips >= THRESHOLD_START_CHIPS);
+    case UPGRADE_CHIP_LUCK: return (chips >= THRESHOLD_CHIP_LUCK);
+    case UPGRADE_FRACTURED_SOUL: return (chips >= THRESHOLD_FRACTURED_SOUL);
+    case UPGRADE_TORMENTED: return (chips >= THRESHOLD_TORMENTED);
+    case UPGRADE_REAPER: return (chips >= THRESHOLD_REAPER);
+    }
+    return 0;
+}
+
+void save_manager_bank_chips(Uint32 amount) {
+    current_meta_data.lifetimeChips += amount;
+    slog("META: Banked %u chips. New Lifetime Total: %u", amount, current_meta_data.lifetimeChips);
 }
 
 /*eol@eof*/

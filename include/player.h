@@ -110,6 +110,7 @@ typedef struct {
 
 
 	int					inventory[ITEM_MAX];			//the item inventory of the player
+	Uint8				newRun;							//1 if it is a new run, 0 otherwise
 	Sprite*				link;							//the sprite for the grapple links
 	Sprite*				grapple;						//the sprite for the grapple head
 	

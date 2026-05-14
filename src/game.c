@@ -97,6 +97,8 @@ void update_game(System* game) {
             gridPos.x = game->currentStage->room->width / 2;
             gridPos.y = game->currentStage->room->height - 2;
             set_center(game->player, grid_to_world(gridPos));
+            ((PlayerData*)game->player->data)->newRun = 1;
+            player_calculate_stats(game->player);
             game->state = GS_PLAYING;
         }
         break;
@@ -170,6 +172,8 @@ void update_game(System* game) {
                 gridPos.x = game->currentStage->room->width / 2;
                 gridPos.y = game->currentStage->room->height - 2;
                 set_center(game->player, grid_to_world(gridPos));
+                ((PlayerData*)game->player->data)->newRun = 1;
+                player_calculate_stats(game->player);
                 game->state = GS_PLAYING;
             }
             if (game->deathMenu->Menu.death.menuButton.clicked) {

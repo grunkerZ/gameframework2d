@@ -6,6 +6,7 @@
 #include "gf2d_draw.h"
 #include "player.h"
 #include "monster.h"
+#include "save_manager.h"
 
 #define CLAMP(x,min,max) ((x)<(min) ? (min) : ((x)> (max) ? (max) : (x)))
 
@@ -538,6 +539,14 @@ void entity_hit(Entity* self, Entity* attacker, Uint8 damage) {
 	GFC_Vector2D bounce;
 
 	if (!self || !self->_inuse || !attacker) return;
+
+	if (self->type == ET_PLAYER && save_manager_is_unlocked(UPGRADE_TORMENTED)) {
+		Uint8 oldDamage = damage;
+		if (damage > 2) damage -= 2;
+		else damage = 1;
+
+		slog("UPGRADES: Damage Reduced from %d to %d", oldDamage, damage);
+	}
 
 	if (SDL_GetTicks64() - self->timeAtDamaged < self->invincibility) {
 		return;

@@ -435,6 +435,20 @@ void console_execute(const char* cmd_line) {
 					slog("unknown action: '%s'", args[1]);
 				}
 			}
+			else if (strcmp(args[1], "chips") == 0) {
+				if (strcmp(args[2], "add") == 0) {
+					player_mod_chips(value);
+				}
+				else if (strcmp(args[2], "sub") == 0) {
+					player_mod_chips(-value);
+				}
+				else if (strcmp(args[2], "set") == 0) {
+					stats->stats.chips = value;
+				}
+				else {
+					slog("unknown action: '%s'", args[1]);
+				}
+			}
 		}
 	}
 	else if (strcmp(args[0], "flag") == 0) {
