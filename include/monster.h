@@ -130,7 +130,7 @@ void monster_move_to(Entity* self, GFC_Vector2D targetPos);
 * @param monster the type of monster to spawn
 * @param position the position of the monster
 */
-void monster_spawn(MonsterType monster, GFC_Vector2D position);
+Entity* monster_spawn(MonsterType monster, GFC_Vector2D position);
 
 /*
 * @brief gets a random valid monster

@@ -13,6 +13,7 @@
 #include "simple_font.h"
 #include "console.h"
 #include "monster_def.h"
+#include "save_manager.h"
 
 typedef enum {
     GS_NONE,
@@ -60,7 +61,16 @@ void update_game(System* game) {
     case GS_MAINMENU:
         menu_update(game->mainMenu);
         if (game->mainMenu->Menu.start.quitButton.clicked) game->done = 1;
+        if (game->mainMenu->Menu.start.continueButton.clicked) {
+            if (save_manager_load_all(game)) {
+                game->state = GS_PLAYING;
+            }
+            else {
+                slog("Main Menu - No Saved Run");
+            }
+        }
         if (game->mainMenu->Menu.start.startButton.clicked) {
+            save_manager_clear_run();
             slog("GAME START! Attempting floor generation");
             game->floor = floor_create(10,2,1,1,rand());
             if (!game->floor) {
@@ -121,7 +131,47 @@ void update_game(System* game) {
             }
 
             menu_update(game->deathMenu);
-            if (game->deathMenu->Menu.death.restartButton.clicked) game->done = 1;
+            if (game->deathMenu->Menu.death.restartButton.clicked) {
+
+                item_manager_free_all();
+                entity_manager_free_all();
+                game->player = NULL;
+
+                if (game->floor) {
+                    free_world(game->floor);
+                    game->floor = NULL;
+                }
+                game->currentStage = NULL;
+
+                save_manager_clear_run();
+                slog("GAME START! Attempting floor generation");
+                game->floor = floor_create(10, 2, 1, 1, rand());
+                if (!game->floor) {
+                    slog("ERROR: Floor Generation Failed");
+                }
+                else {
+                    slog("Floor Generated, finding starting room...");
+                    print_floor(game->floor);
+                }
+                for (i = 0; i < game->floor->width * game->floor->height; i++) {
+                    if (game->floor->blueprint[i] == RT_START) {
+                        slog("Starting room found: Index: %i", i);
+                        game->currentStage = game->floor->floorMap[i];
+                        game->currentStage->room = room_load(game->currentStage->filename, get_room_type_string(game->currentStage->type));
+                        set_active_room(game->currentStage->room);
+                        load_stage(game->floor, game->currentStage);
+                        break;
+                    }
+                }
+                if (!game->currentStage->room) {
+                    slog("ERROR: current room is NULL. RIP, enjoy the segfault");
+                }
+                game->player = player_new();
+                gridPos.x = game->currentStage->room->width / 2;
+                gridPos.y = game->currentStage->room->height - 2;
+                set_center(game->player, grid_to_world(gridPos));
+                game->state = GS_PLAYING;
+            }
             if (game->deathMenu->Menu.death.menuButton.clicked) {
 
                 item_manager_free_all();
@@ -143,6 +193,7 @@ void update_game(System* game) {
     case GS_PAUSED:
         menu_update(game->pauseMenu);
         if (game->pauseMenu->Menu.pause.menuButton.clicked) {
+            save_manager_save_all(game);
             item_manager_free_all();
             entity_manager_free_all();
             game->player = NULL;
@@ -174,7 +225,7 @@ void update_game(System* game) {
         break;
 
     case GS_PLAYING:
-
+        slog("DEBUG: Player Health: %d/%d | State: %d | Pos Y: %f", ((PlayerData*)game->player)->stats.health, ((PlayerData*)game->player)->stats.maxHealth, ((PlayerData*)game->player)->state, game->player->position.y);
         entity_manager_think_all();
         entity_manager_update_all();
         item_manager_think_all();
@@ -218,6 +269,7 @@ void update_game(System* game) {
         }
 
         if (((PlayerData*)game->player->data)->stats.health <= 0) {
+            slog("GAME - Switching to death State. Player Health: %d", ((PlayerData*)game->player->data)->stats.health);
             game->state = GS_DEATH;
         }
         if (game->keys[SDL_SCANCODE_P]) {

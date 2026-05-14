@@ -390,4 +390,12 @@ void get_random_item_id_from_pool(ItemPool pool) {
 
 }
 
+Item* item_get_active_list() {
+	return itemManager->activeItems;
+}
+
+Uint32 item_get_max_items() {
+	return itemManager->maxItems;
+}
+
 /*eol@eof*/

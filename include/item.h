@@ -156,4 +156,16 @@ void get_random_item_id_from_pool(ItemPool pool);
 */
 const char* get_item_sprite_path(ItemID id);
 
+/*
+* @brief gets the max number of items
+* @return the max number of items
+*/
+Uint32 item_get_max_items();
+
+/*
+* @brief gets the list of active Items
+* @return the list of active items
+*/
+Item* item_get_active_list();
+
 #endif //__ITEM_H__

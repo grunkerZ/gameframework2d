@@ -24,7 +24,7 @@ typedef struct
 	Uint32		entityMax;
 }EntityManager;
 
-static EntityManager entityManager = { 0 };
+EntityManager entityManager = { 0 };
 
 void entity_manager_close();
 

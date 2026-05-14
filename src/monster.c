@@ -326,7 +326,7 @@ MonsterDef* monster_get_primary_def_for_type(MonsterType type) {
 	return get_monster_def_by_name(names[type]);
 }
 
-void monster_spawn(MonsterType monster, GFC_Vector2D position) {
+Entity* monster_spawn(MonsterType monster, GFC_Vector2D position) {
 	const char* names[] = { "none", "damned1", "imp", "hellhound", "fiend", "repenter", "mimic"};
 	const char* damnedVariants[] = { "damned1", "damned2", "damned3" };
 	const char* nameToSpawn;
@@ -339,8 +339,8 @@ void monster_spawn(MonsterType monster, GFC_Vector2D position) {
 		nameToSpawn = damnedVariants[rand() % 3];
 	}
 
-	monster_spawn_by_name(nameToSpawn, position);
-	return;
+	
+	return monster_spawn_by_name(nameToSpawn, position);
 }
 
 Uint8 get_monster_cost(MonsterType monster) {
